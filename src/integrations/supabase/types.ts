@@ -78,11 +78,13 @@ export type Database = {
           discount_amount: number
           discount_rate: number
           id: string
+          is_completed: boolean
           items: Json
           payment_type: string | null
           quotation_date: string
           quotation_number: string
           shipping_address: string | null
+          status: string
           subtotal: number
           tax_amount: number
           tax_rate: number
@@ -100,11 +102,13 @@ export type Database = {
           discount_amount?: number
           discount_rate?: number
           id?: string
+          is_completed?: boolean
           items?: Json
           payment_type?: string | null
           quotation_date: string
           quotation_number: string
           shipping_address?: string | null
+          status?: string
           subtotal?: number
           tax_amount?: number
           tax_rate?: number
@@ -122,11 +126,13 @@ export type Database = {
           discount_amount?: number
           discount_rate?: number
           id?: string
+          is_completed?: boolean
           items?: Json
           payment_type?: string | null
           quotation_date?: string
           quotation_number?: string
           shipping_address?: string | null
+          status?: string
           subtotal?: number
           tax_amount?: number
           tax_rate?: number

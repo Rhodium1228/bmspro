@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download, List } from "lucide-react";
+import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download, List, CheckCircle2, XCircle } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,8 @@ export default function Quotation() {
   const previewRef = useRef<HTMLDivElement>(null);
   const [currentQuotationId, setCurrentQuotationId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "done">("all");
   
   // Quotation details
   const [quotationNumber, setQuotationNumber] = useState(`QUO-${Date.now().toString().slice(-6)}`);
@@ -251,6 +253,55 @@ export default function Quotation() {
     }
   };
 
+  const toggleQuotationStatus = async (id: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === "sent" ? "unsent" : "sent";
+      const { error } = await supabase
+        .from('quotations')
+        .update({ status: newStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Updated",
+        description: `Quotation marked as ${newStatus}`,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update quotation status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleQuotationCompletion = async (id: string, currentCompletion: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('quotations')
+        .update({ is_completed: !currentCompletion })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Updated",
+        description: `Quotation marked as ${!currentCompletion ? "done" : "pending"}`,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update quotation completion",
+        variant: "destructive",
+      });
+    }
+  };
+
   const resetForm = () => {
     setCurrentQuotationId(null);
     setQuotationNumber(`QUO-${Date.now().toString().slice(-6)}`);
@@ -354,6 +405,26 @@ export default function Quotation() {
                       <span className="text-sm text-muted-foreground">{quotations.length} quotations</span>
                     </div>
                     
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by quotation number, customer name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+
+                    {/* Status Filter Tabs */}
+                    <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | "pending" | "done")} className="w-full">
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="pending">Pending</TabsTrigger>
+                        <TabsTrigger value="done">Done</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    
                     {loadingQuotations ? (
                       <div className="text-center py-8">
                         <p className="text-sm text-muted-foreground">Loading quotations...</p>
@@ -366,7 +437,22 @@ export default function Quotation() {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        {quotations.map((quotation: any) => (
+                        {quotations
+                          .filter((quotation: any) => {
+                            // Apply search filter
+                            const matchesSearch = 
+                              quotation.quotation_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              quotation.customer_name.toLowerCase().includes(searchQuery.toLowerCase());
+                            
+                            // Apply status filter
+                            const matchesStatus = 
+                              statusFilter === "all" ||
+                              (statusFilter === "pending" && !quotation.is_completed) ||
+                              (statusFilter === "done" && quotation.is_completed);
+                            
+                            return matchesSearch && matchesStatus;
+                          })
+                          .map((quotation: any) => (
                           <div key={quotation.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex-1 min-w-0">
@@ -381,16 +467,66 @@ export default function Quotation() {
                                 <p className="text-sm text-muted-foreground truncate">
                                   {quotation.customer_name}
                                 </p>
-                                <div className="flex items-center gap-3 mt-2">
+                                <div className="flex items-center gap-3 mt-2 flex-wrap">
                                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
                                     ${quotation.total.toFixed(2)}
                                   </span>
                                   <span className="text-xs text-muted-foreground">
                                     {quotation.items?.length || 0} items
                                   </span>
+                                  {/* Status Badge */}
+                                  <span className={cn(
+                                    "text-xs px-2 py-0.5 rounded flex items-center gap-1",
+                                    quotation.status === "sent" 
+                                      ? "bg-green-100 text-green-700" 
+                                      : "bg-gray-100 text-gray-700"
+                                  )}>
+                                    {quotation.status === "sent" ? (
+                                      <>
+                                        <CheckCircle2 className="h-3 w-3" />
+                                        Sent
+                                      </>
+                                    ) : (
+                                      <>
+                                        <XCircle className="h-3 w-3" />
+                                        Unsent
+                                      </>
+                                    )}
+                                  </span>
+                                  {/* Completion Badge */}
+                                  {quotation.is_completed && (
+                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                                      Completed
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                               <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleQuotationStatus(quotation.id, quotation.status)}
+                                  className="h-8"
+                                  title={quotation.status === "sent" ? "Mark as unsent" : "Mark as sent"}
+                                >
+                                  {quotation.status === "sent" ? (
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                                  ) : (
+                                    <XCircle className="h-3.5 w-3.5 text-gray-600" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleQuotationCompletion(quotation.id, quotation.is_completed)}
+                                  className="h-8"
+                                  title={quotation.is_completed ? "Mark as pending" : "Mark as done"}
+                                >
+                                  <Check className={cn(
+                                    "h-3.5 w-3.5",
+                                    quotation.is_completed ? "text-blue-600" : "text-gray-400"
+                                  )} />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
