@@ -807,6 +807,26 @@ export default function Quotation() {
                       className="resize-none"
                     />
                   </div>
+
+                  {/* Save Button */}
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={resetForm}
+                      className="gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Clear Form
+                    </Button>
+                    <Button 
+                      onClick={saveQuotation} 
+                      disabled={isSaving}
+                      className="gap-2 min-w-[140px]"
+                    >
+                      <Download className="h-4 w-4" />
+                      {isSaving ? "Saving..." : currentQuotationId ? "Update Quotation" : "Save Quotation"}
+                    </Button>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="tool" className="space-y-4 mt-4">
