@@ -1,8 +1,49 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useState } from "react";
+import { toast } from "sonner";
+
+const employeeFormSchema = z.object({
+  employeeName: z.string().min(1, "Employee name is required"),
+  designation: z.string().min(1, "Designation is required"),
+  email: z.string().email("Invalid email address").min(1, "Email is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  address: z.string().min(1, "Address is required"),
+  parentName: z.string().optional(),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 export default function Employees() {
+  const [open, setOpen] = useState(false);
+  
+  const form = useForm<z.infer<typeof employeeFormSchema>>({
+    resolver: zodResolver(employeeFormSchema),
+    defaultValues: {
+      employeeName: "",
+      designation: "",
+      email: "",
+      phone: "",
+      address: "",
+      parentName: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof employeeFormSchema>) => {
+    console.log(values);
+    toast.success("Employee added successfully");
+    form.reset();
+    setOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -13,10 +54,127 @@ export default function Employees() {
           </h1>
           <p className="text-muted-foreground">Manage your employees</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Employee
-        </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add Employee
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Employee</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="employeeName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Employee Name *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter employee name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="designation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Designation *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter designation" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email *</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="Enter email address" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone *</FormLabel>
+                      <FormControl>
+                        <Input type="tel" placeholder="Enter phone number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address *</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Enter address" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="parentName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Father's/Mother's Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter parent's name (optional)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password *</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Enter password (min. 6 characters)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex gap-2 justify-end pt-4">
+                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Add Employee</Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
