@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      customers: {
+        Row: {
+          address: string | null
+          contact_number: string
+          country_code: string
+          created_at: string
+          credit_limit: number | null
+          customer_name: string
+          email: string | null
+          fax: string | null
+          id: string
+          id_type_name: string | null
+          id_type_number: string | null
+          is_active: boolean
+          is_blacklisted: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          contact_number: string
+          country_code?: string
+          created_at?: string
+          credit_limit?: number | null
+          customer_name: string
+          email?: string | null
+          fax?: string | null
+          id?: string
+          id_type_name?: string | null
+          id_type_number?: string | null
+          is_active?: boolean
+          is_blacklisted?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          contact_number?: string
+          country_code?: string
+          created_at?: string
+          credit_limit?: number | null
+          customer_name?: string
+          email?: string | null
+          fax?: string | null
+          id?: string
+          id_type_name?: string | null
+          id_type_number?: string | null
+          is_active?: boolean
+          is_blacklisted?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       quotations: {
         Row: {
           billing_address: string | null
