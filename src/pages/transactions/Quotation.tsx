@@ -607,141 +607,222 @@ export default function Quotation() {
 
                 <TabsContent value="preview" className="space-y-4 mt-4">
                   <div className="space-y-4">
-                    <div className="flex justify-end items-center gap-2">
-                      <span className="text-sm text-muted-foreground">View as PDF</span>
-                      <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2">
+                    <div className="flex justify-end items-center gap-3">
+                      <span className="text-sm font-medium text-muted-foreground">Preview Document</span>
+                      <Button onClick={downloadPDF} variant="default" size="sm" className="gap-2 shadow-sm">
                         <Download className="h-4 w-4" />
-                        Download
+                        Export PDF
                       </Button>
                     </div>
                     
-                    <div ref={previewRef} className="bg-white p-8 shadow-2xl rounded-lg animate-fade-in">
-                      {/* Company Info - Top Right */}
-                      <div className="flex justify-end mb-8">
-                        <div className="text-right text-xs text-gray-600 space-y-0.5">
-                          <p>{address || "1/56 Pirama RD"}</p>
-                          <p>{customerPhone || "9935393958"}</p>
-                        </div>
-                      </div>
-
-                      {/* Header Section */}
-                      <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-900">
-                        <div>
-                          <h1 className="text-4xl font-bold text-gray-900 uppercase tracking-wide">
-                            {customerCompany || "SOALR CITY"}
-                          </h1>
-                        </div>
-                        <div className="text-right">
-                          <h2 className="text-2xl font-bold text-gray-900">Estimate</h2>
-                        </div>
-                      </div>
-
-                      {/* Customer & Estimate Info */}
-                      <div className="flex justify-between items-start mb-6 text-sm">
-                        <div>
-                          <p className="text-gray-600">For:</p>
-                          <p className="font-medium text-gray-900 mt-1">{customerName || ""}</p>
-                        </div>
-                        <div className="text-right space-y-1">
-                          <div className="flex justify-between gap-8">
-                            <span className="text-gray-600">Estimate No:</span>
-                            <span className="font-medium text-gray-900">{quotationNumber.replace('QUO-', '')}</span>
+                    <div ref={previewRef} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
+                      {/* Modern Header with Gradient */}
+                      <div className="bg-gradient-to-r from-primary/5 to-primary/10 px-10 py-8 border-b border-gray-200">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <h1 className="text-5xl font-black text-gray-900 tracking-tight">
+                              QUOTATION
+                            </h1>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                                #{quotationNumber}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {new Date(quotationDate).toLocaleDateString('en-US', { 
+                                  month: 'long', 
+                                  day: 'numeric', 
+                                  year: 'numeric' 
+                                })}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex justify-between gap-8">
-                            <span className="text-gray-600">Date:</span>
-                            <span className="font-medium text-gray-900">
-                              {new Date(quotationDate).toLocaleDateString('en-GB')}
-                            </span>
+                          <div className="text-right space-y-1">
+                            <p className="text-2xl font-bold text-gray-900">{customerCompany || "Your Company"}</p>
+                            <p className="text-sm text-gray-500">{address || "Company Address"}</p>
+                            <p className="text-sm text-gray-500">{customerPhone || "Contact Number"}</p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Items Table */}
-                      <div className="mb-6">
-                        <table className="w-full border-collapse">
-                          <thead>
-                            <tr className="bg-sky-400">
-                              <th className="text-left py-2 px-3 text-sm font-semibold text-gray-900 border border-sky-400">
-                                Description
-                              </th>
-                              <th className="text-center py-2 px-3 text-sm font-semibold text-gray-900 border border-sky-400">
-                                Quantity
-                              </th>
-                              <th className="text-center py-2 px-3 text-sm font-semibold text-gray-900 border border-sky-400">
-                                Rate
-                              </th>
-                              <th className="text-right py-2 px-3 text-sm font-semibold text-gray-900 border border-sky-400">
-                                Amount
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {items.length > 0 ? (
-                              items.map((item, index) => (
-                                <tr key={item.id} className="border-b border-gray-200">
-                                  <td className="py-3 px-3 text-sm text-gray-900">
-                                    <div className="font-medium">{item.itemName}</div>
-                                    <div className="text-xs text-gray-500">{item.description}</div>
-                                  </td>
-                                  <td className="py-3 px-3 text-sm text-center text-gray-900">{item.quantity}</td>
-                                  <td className="py-3 px-3 text-sm text-center text-gray-900">
-                                    ${item.rate.toFixed(2)}
-                                  </td>
-                                  <td className="py-3 px-3 text-sm text-right text-gray-900 font-medium">
-                                    INR {item.amount.toFixed(2)}
-                                  </td>
-                                </tr>
-                              ))
-                            ) : (
-                              <tr>
-                                <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
-                                  No items added
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Totals Section */}
-                      <div className="flex justify-end mb-4">
-                        <div className="w-80 space-y-2">
-                          <div className="flex justify-between items-center py-1.5 text-sm">
-                            <span className="text-gray-600">Subtotal</span>
-                            <span className="text-gray-900 font-medium">INR {subtotal.toFixed(2)}</span>
+                      {/* Content Area */}
+                      <div className="px-10 py-8 space-y-8">
+                        {/* Modern Info Cards */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Payment Type</p>
+                            <p className="text-lg font-bold text-gray-900 capitalize">{paymentType}</p>
                           </div>
+                          {validUntil && (
+                            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Valid Until</p>
+                              <p className="text-lg font-bold text-gray-900">
+                                {new Date(validUntil).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </p>
+                            </div>
+                          )}
+                          {acsuPoints > 0 && (
+                            <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 shadow-sm border border-amber-200 hover:shadow-md transition-shadow">
+                              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1">Points</p>
+                              <p className="text-lg font-bold text-amber-900">{acsuPoints}</p>
+                            </div>
+                          )}
                           {taxRate > 0 && (
-                            <div className="flex justify-between items-center py-1.5 text-sm">
-                              <span className="text-gray-600">Tax ({taxRate}%)</span>
-                              <span className="text-gray-900 font-medium">INR {taxAmount.toFixed(2)}</span>
+                            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Tax Rate</p>
+                              <p className="text-lg font-bold text-gray-900">{taxRate}%</p>
                             </div>
                           )}
-                          {discountRate > 0 && (
-                            <div className="flex justify-between items-center py-1.5 text-sm">
-                              <span className="text-gray-600">Discount ({discountRate}%)</span>
-                              <span className="text-gray-900 font-medium">-INR {discountAmount.toFixed(2)}</span>
+                        </div>
+
+                        {/* Customer Details Card */}
+                        {customerName && (
+                          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="h-8 w-1 bg-primary rounded-full"></div>
+                              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Bill To</h3>
                             </div>
-                          )}
-                          <div className="flex justify-between items-center py-1.5 text-sm border-t border-gray-300 pt-2">
-                            <span className="text-gray-900 font-semibold">Total</span>
-                            <span className="text-gray-900 font-semibold">INR {total.toFixed(2)}</span>
+                            <div className="space-y-2 ml-3">
+                              <p className="text-2xl font-bold text-gray-900">{customerName}</p>
+                              {customerCompany && (
+                                <p className="text-base text-gray-600 font-medium">{customerCompany}</p>
+                              )}
+                              <div className="flex flex-wrap gap-4 pt-2">
+                                {customerEmail && (
+                                  <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                                    <Mail className="h-3.5 w-3.5" />
+                                    {customerEmail}
+                                  </p>
+                                )}
+                                {customerPhone && (
+                                  <p className="text-sm text-gray-500">{customerPhone}</p>
+                                )}
+                              </div>
+                              {address && (
+                                <p className="text-sm text-gray-500 pt-1">{address}</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Modern Items Table */}
+                        {items.length > 0 ? (
+                          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="overflow-x-auto">
+                              <table className="w-full">
+                                <thead>
+                                  <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
+                                    <th className="text-left py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                      Description
+                                    </th>
+                                    <th className="text-center py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                      Qty
+                                    </th>
+                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                      Rate
+                                    </th>
+                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                      GST
+                                    </th>
+                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                      Disc
+                                    </th>
+                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                      Amount
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                  {items.map((item, index) => (
+                                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                                      <td className="py-4 px-4">
+                                        <div className="font-semibold text-sm text-gray-900">{item.itemName}</div>
+                                        <div className="text-xs text-gray-500 mt-0.5">{item.description}</div>
+                                      </td>
+                                      <td className="py-4 px-4 text-center">
+                                        <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-sm font-medium text-gray-900 bg-gray-100 rounded-md">
+                                          {item.quantity}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4 text-right text-sm text-gray-900 font-medium">
+                                        ${item.rate.toFixed(2)}
+                                      </td>
+                                      <td className="py-4 px-4 text-right text-sm text-gray-600">
+                                        {item.gst}%
+                                      </td>
+                                      <td className="py-4 px-4 text-right text-sm text-gray-600">
+                                        {item.discount}%
+                                      </td>
+                                      <td className="py-4 px-4 text-right text-base font-bold text-gray-900">
+                                        ${item.amount.toFixed(2)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-white rounded-xl shadow-sm border border-gray-100 py-16 text-center">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                              <FileEdit className="h-8 w-8 text-gray-400" />
+                            </div>
+                            <p className="text-sm font-medium text-gray-500">No items added yet</p>
+                            <p className="text-xs text-gray-400 mt-1">Add items in the Create tab to see them here</p>
+                          </div>
+                        )}
+
+                        {/* Modern Totals Card */}
+                        <div className="flex justify-end">
+                          <div className="w-full max-w-md">
+                            <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                              <div className="p-6 space-y-3">
+                                <div className="flex justify-between items-center py-2">
+                                  <span className="text-sm font-medium text-gray-600">Subtotal</span>
+                                  <span className="text-base font-semibold text-gray-900">${subtotal.toFixed(2)}</span>
+                                </div>
+                                {taxRate > 0 && (
+                                  <div className="flex justify-between items-center py-2">
+                                    <span className="text-sm font-medium text-gray-600">Tax ({taxRate}%)</span>
+                                    <span className="text-base font-semibold text-gray-900">${taxAmount.toFixed(2)}</span>
+                                  </div>
+                                )}
+                                {discountRate > 0 && (
+                                  <div className="flex justify-between items-center py-2">
+                                    <span className="text-sm font-medium text-gray-600">Discount ({discountRate}%)</span>
+                                    <span className="text-base font-semibold text-red-600">-${discountAmount.toFixed(2)}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="bg-gradient-to-r from-primary to-primary/90 px-6 py-5">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-base font-bold text-white uppercase tracking-wide">Total Amount</span>
+                                  <span className="text-3xl font-black text-white">${total.toFixed(2)}</span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Final Total Bar - Black Background */}
-                      <div className="bg-gray-900 text-white py-3 px-4 flex justify-between items-center rounded">
-                        <span className="text-lg font-bold">Total</span>
-                        <span className="text-xl font-bold">INR {total.toFixed(2)}</span>
-                      </div>
+                        {/* Terms and Conditions */}
+                        {termsAndConditions && (
+                          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-1 bg-primary rounded-full"></div>
+                              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Terms & Conditions</h3>
+                            </div>
+                            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap ml-3">
+                              {termsAndConditions}
+                            </p>
+                          </div>
+                        )}
 
-                      {/* Terms and Conditions */}
-                      {termsAndConditions && (
-                        <div className="mt-8 pt-6 border-t border-gray-200">
-                          <p className="text-xs font-semibold text-gray-700 mb-2">Terms & Conditions</p>
-                          <p className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">{termsAndConditions}</p>
+                        {/* Footer */}
+                        <div className="text-center pt-6 border-t border-gray-200">
+                          <p className="text-xs text-gray-400 font-medium">
+                            Thank you for your business • Generated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                          </p>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </TabsContent>
