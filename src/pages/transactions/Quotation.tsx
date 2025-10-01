@@ -140,11 +140,11 @@ export default function Quotation() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2 font-heading">
             <FileEdit className="h-8 w-8 text-primary" />
             Quotation Management
           </h1>
-          <p className="text-muted-foreground">Create and manage quotations</p>
+          <p className="text-muted-foreground font-sans">Create and manage quotations</p>
         </div>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
@@ -649,27 +649,27 @@ export default function Quotation() {
                         {/* Modern Info Cards */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Payment Type</p>
-                            <p className="text-lg font-bold text-gray-900 capitalize">{paymentType}</p>
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 font-sans">Payment Type</p>
+                            <p className="text-lg font-bold text-gray-900 capitalize font-heading">{paymentType}</p>
                           </div>
                           {validUntil && (
                             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Valid Until</p>
-                              <p className="text-lg font-bold text-gray-900">
+                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 font-sans">Valid Until</p>
+                              <p className="text-lg font-bold text-gray-900 font-heading">
                                 {new Date(validUntil).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                               </p>
                             </div>
                           )}
                           {acsuPoints > 0 && (
                             <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 shadow-sm border border-amber-200 hover:shadow-md transition-shadow">
-                              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1">Points</p>
-                              <p className="text-lg font-bold text-amber-900">{acsuPoints}</p>
+                              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1 font-sans">Points</p>
+                              <p className="text-lg font-bold text-amber-900 font-heading">{acsuPoints}</p>
                             </div>
                           )}
                           {taxRate > 0 && (
                             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Tax Rate</p>
-                              <p className="text-lg font-bold text-gray-900">{taxRate}%</p>
+                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 font-sans">Tax Rate</p>
+                              <p className="text-lg font-bold text-gray-900 font-heading">{taxRate}%</p>
                             </div>
                           )}
                         </div>
@@ -679,26 +679,26 @@ export default function Quotation() {
                           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                             <div className="flex items-center gap-2 mb-4">
                               <div className="h-8 w-1 bg-primary rounded-full"></div>
-                              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Bill To</h3>
+                              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">Bill To</h3>
                             </div>
                             <div className="space-y-2 ml-3">
-                              <p className="text-2xl font-bold text-gray-900">{customerName}</p>
+                              <p className="text-2xl font-bold text-gray-900 font-heading">{customerName}</p>
                               {customerCompany && (
-                                <p className="text-base text-gray-600 font-medium">{customerCompany}</p>
+                                <p className="text-base text-gray-600 font-medium font-sans">{customerCompany}</p>
                               )}
                               <div className="flex flex-wrap gap-4 pt-2">
                                 {customerEmail && (
-                                  <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                                  <p className="text-sm text-gray-500 flex items-center gap-1.5 font-sans">
                                     <Mail className="h-3.5 w-3.5" />
                                     {customerEmail}
                                   </p>
                                 )}
                                 {customerPhone && (
-                                  <p className="text-sm text-gray-500">{customerPhone}</p>
+                                  <p className="text-sm text-gray-500 font-sans">{customerPhone}</p>
                                 )}
                               </div>
                               {address && (
-                                <p className="text-sm text-gray-500 pt-1">{address}</p>
+                                <p className="text-sm text-gray-500 pt-1 font-sans">{address}</p>
                               )}
                             </div>
                           </div>
@@ -711,22 +711,22 @@ export default function Quotation() {
                               <table className="w-full">
                                 <thead>
                                   <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
-                                    <th className="text-left py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                    <th className="text-left py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider font-sans">
                                       Description
                                     </th>
-                                    <th className="text-center py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                    <th className="text-center py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider font-sans">
                                       Qty
                                     </th>
-                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider font-sans">
                                       Rate
                                     </th>
-                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider font-sans">
                                       GST
                                     </th>
-                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider font-sans">
                                       Disc
                                     </th>
-                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider font-sans">
                                       Amount
                                     </th>
                                   </tr>
@@ -735,24 +735,24 @@ export default function Quotation() {
                                   {items.map((item, index) => (
                                     <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                                       <td className="py-4 px-4">
-                                        <div className="font-semibold text-sm text-gray-900">{item.itemName}</div>
-                                        <div className="text-xs text-gray-500 mt-0.5">{item.description}</div>
+                                        <div className="font-semibold text-sm text-gray-900 font-heading">{item.itemName}</div>
+                                        <div className="text-xs text-gray-500 mt-0.5 font-sans">{item.description}</div>
                                       </td>
                                       <td className="py-4 px-4 text-center">
-                                        <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-sm font-medium text-gray-900 bg-gray-100 rounded-md">
+                                        <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-sm font-medium text-gray-900 bg-gray-100 rounded-md font-heading">
                                           {item.quantity}
                                         </span>
                                       </td>
-                                      <td className="py-4 px-4 text-right text-sm text-gray-900 font-medium">
+                                      <td className="py-4 px-4 text-right text-sm text-gray-900 font-medium font-heading">
                                         ${item.rate.toFixed(2)}
                                       </td>
-                                      <td className="py-4 px-4 text-right text-sm text-gray-600">
+                                      <td className="py-4 px-4 text-right text-sm text-gray-600 font-sans">
                                         {item.gst}%
                                       </td>
-                                      <td className="py-4 px-4 text-right text-sm text-gray-600">
+                                      <td className="py-4 px-4 text-right text-sm text-gray-600 font-sans">
                                         {item.discount}%
                                       </td>
-                                      <td className="py-4 px-4 text-right text-base font-bold text-gray-900">
+                                      <td className="py-4 px-4 text-right text-base font-bold text-gray-900 font-heading">
                                         ${item.amount.toFixed(2)}
                                       </td>
                                     </tr>
@@ -766,8 +766,8 @@ export default function Quotation() {
                             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                               <FileEdit className="h-8 w-8 text-gray-400" />
                             </div>
-                            <p className="text-sm font-medium text-gray-500">No items added yet</p>
-                            <p className="text-xs text-gray-400 mt-1">Add items in the Create tab to see them here</p>
+                            <p className="text-sm font-medium text-gray-500 font-sans">No items added yet</p>
+                            <p className="text-xs text-gray-400 mt-1 font-sans">Add items in the Create tab to see them here</p>
                           </div>
                         )}
 
@@ -777,26 +777,26 @@ export default function Quotation() {
                             <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                               <div className="p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2">
-                                  <span className="text-sm font-medium text-gray-600">Subtotal</span>
-                                  <span className="text-base font-semibold text-gray-900">${subtotal.toFixed(2)}</span>
+                                  <span className="text-sm font-medium text-gray-600 font-sans">Subtotal</span>
+                                  <span className="text-base font-semibold text-gray-900 font-heading">${subtotal.toFixed(2)}</span>
                                 </div>
                                 {taxRate > 0 && (
                                   <div className="flex justify-between items-center py-2">
-                                    <span className="text-sm font-medium text-gray-600">Tax ({taxRate}%)</span>
-                                    <span className="text-base font-semibold text-gray-900">${taxAmount.toFixed(2)}</span>
+                                    <span className="text-sm font-medium text-gray-600 font-sans">Tax ({taxRate}%)</span>
+                                    <span className="text-base font-semibold text-gray-900 font-heading">${taxAmount.toFixed(2)}</span>
                                   </div>
                                 )}
                                 {discountRate > 0 && (
                                   <div className="flex justify-between items-center py-2">
-                                    <span className="text-sm font-medium text-gray-600">Discount ({discountRate}%)</span>
-                                    <span className="text-base font-semibold text-red-600">-${discountAmount.toFixed(2)}</span>
+                                    <span className="text-sm font-medium text-gray-600 font-sans">Discount ({discountRate}%)</span>
+                                    <span className="text-base font-semibold text-red-600 font-heading">-${discountAmount.toFixed(2)}</span>
                                   </div>
                                 )}
                               </div>
                               <div className="bg-gradient-to-r from-primary to-primary/90 px-6 py-5">
                                 <div className="flex justify-between items-center">
-                                  <span className="text-base font-bold text-white uppercase tracking-wide">Total Amount</span>
-                                  <span className="text-3xl font-black text-white">${total.toFixed(2)}</span>
+                                  <span className="text-base font-bold text-white uppercase tracking-wide font-sans">Total Amount</span>
+                                  <span className="text-3xl font-black text-white font-heading">${total.toFixed(2)}</span>
                                 </div>
                               </div>
                             </div>
@@ -808,9 +808,9 @@ export default function Quotation() {
                           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                             <div className="flex items-center gap-2 mb-3">
                               <div className="h-8 w-1 bg-primary rounded-full"></div>
-                              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Terms & Conditions</h3>
+                              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">Terms & Conditions</h3>
                             </div>
-                            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap ml-3">
+                            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap ml-3 font-sans">
                               {termsAndConditions}
                             </p>
                           </div>
@@ -818,9 +818,8 @@ export default function Quotation() {
 
                         {/* Footer */}
                         <div className="text-center pt-6 border-t border-gray-200">
-                          <p className="text-xs text-gray-400 font-medium">
-                            Thank you for your business • Generated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                          </p>
+                          <p className="text-xs text-gray-500 font-sans">Thank you for your business!</p>
+                          <p className="text-xs text-gray-400 mt-1 font-sans">This is a computer-generated quotation and does not require a signature</p>
                         </div>
                       </div>
                     </div>
