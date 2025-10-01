@@ -607,150 +607,141 @@ export default function Quotation() {
 
                 <TabsContent value="preview" className="space-y-4 mt-4">
                   <div className="space-y-4">
-                    <div className="flex justify-end">
-                      <Button onClick={downloadPDF} variant="outline" className="gap-2">
+                    <div className="flex justify-end items-center gap-2">
+                      <span className="text-sm text-muted-foreground">View as PDF</span>
+                      <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2">
                         <Download className="h-4 w-4" />
-                        Download PDF
+                        Download
                       </Button>
                     </div>
                     
-                    <div ref={previewRef} className="bg-white p-12 shadow-xl rounded-xl animate-fade-in">
-                      {/* Header - Clean and Professional */}
-                      <div className="flex justify-between items-start mb-12 pb-6 border-b border-gray-200">
+                    <div ref={previewRef} className="bg-white p-8 shadow-2xl rounded-lg animate-fade-in">
+                      {/* Company Info - Top Right */}
+                      <div className="flex justify-end mb-8">
+                        <div className="text-right text-xs text-gray-600 space-y-0.5">
+                          <p>{address || "1/56 Pirama RD"}</p>
+                          <p>{customerPhone || "9935393958"}</p>
+                        </div>
+                      </div>
+
+                      {/* Header Section */}
+                      <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-900">
                         <div>
-                          <h1 className="text-6xl font-extrabold text-gray-900 mb-2 tracking-tight">
-                            QUOTATION
+                          <h1 className="text-4xl font-bold text-gray-900 uppercase tracking-wide">
+                            {customerCompany || "SOALR CITY"}
                           </h1>
-                          <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">#{quotationNumber}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-gray-900">BMS Pro</p>
-                          <p className="text-xs text-gray-500 mt-1">Business Management System</p>
+                          <h2 className="text-2xl font-bold text-gray-900">Estimate</h2>
                         </div>
                       </div>
 
-                      {/* Quotation Info Grid - Minimal & Clean */}
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</p>
-                          <p className="text-base font-semibold text-gray-900">
-                            {new Date(quotationDate).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </p>
+                      {/* Customer & Estimate Info */}
+                      <div className="flex justify-between items-start mb-6 text-sm">
+                        <div>
+                          <p className="text-gray-600">For:</p>
+                          <p className="font-medium text-gray-900 mt-1">{customerName || ""}</p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Payment</p>
-                          <p className="text-base font-semibold text-gray-900 capitalize">{paymentType}</p>
+                        <div className="text-right space-y-1">
+                          <div className="flex justify-between gap-8">
+                            <span className="text-gray-600">Estimate No:</span>
+                            <span className="font-medium text-gray-900">{quotationNumber.replace('QUO-', '')}</span>
+                          </div>
+                          <div className="flex justify-between gap-8">
+                            <span className="text-gray-600">Date:</span>
+                            <span className="font-medium text-gray-900">
+                              {new Date(quotationDate).toLocaleDateString('en-GB')}
+                            </span>
+                          </div>
                         </div>
-                        {validUntil && (
-                          <div className="space-y-1">
-                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Valid Until</p>
-                            <p className="text-base font-semibold text-gray-900">
-                              {new Date(validUntil).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}
-                            </p>
-                          </div>
-                        )}
-                        {acsuPoints > 0 && (
-                          <div className="space-y-1">
-                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Points</p>
-                            <p className="text-base font-semibold text-gray-900">{acsuPoints}</p>
-                          </div>
-                        )}
                       </div>
 
-                      {/* Customer Details - Minimalist Design */}
-                      {customerName && (
-                        <div className="mb-12 pb-8 border-b border-gray-200">
-                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Bill To</p>
-                          <div className="space-y-2">
-                            <p className="text-xl font-bold text-gray-900">{customerName}</p>
-                            {customerCompany && (
-                              <p className="text-base text-gray-600">{customerCompany}</p>
-                            )}
-                            {customerEmail && (
-                              <p className="text-sm text-gray-500">{customerEmail}</p>
-                            )}
-                            {customerPhone && (
-                              <p className="text-sm text-gray-500">{customerPhone}</p>
-                            )}
-                            {address && (
-                              <p className="text-sm text-gray-500 pt-1">{address}</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Items Table - Clean Design */}
-                      {items.length > 0 ? (
-                        <div className="mb-12">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b-2 border-gray-900">
-                                <th className="text-left py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Item</th>
-                                <th className="text-left py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Description</th>
-                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Qty</th>
-                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Rate</th>
-                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">GST</th>
-                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Disc</th>
-                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Amount</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {items.map((item, index) => (
+                      {/* Items Table */}
+                      <div className="mb-6">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="bg-sky-400">
+                              <th className="text-left py-2 px-3 text-sm font-semibold text-gray-900 border border-sky-400">
+                                Description
+                              </th>
+                              <th className="text-center py-2 px-3 text-sm font-semibold text-gray-900 border border-sky-400">
+                                Quantity
+                              </th>
+                              <th className="text-center py-2 px-3 text-sm font-semibold text-gray-900 border border-sky-400">
+                                Rate
+                              </th>
+                              <th className="text-right py-2 px-3 text-sm font-semibold text-gray-900 border border-sky-400">
+                                Amount
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {items.length > 0 ? (
+                              items.map((item, index) => (
                                 <tr key={item.id} className="border-b border-gray-200">
-                                  <td className="py-4 px-2 text-sm font-medium text-gray-900">{item.itemName}</td>
-                                  <td className="py-4 px-2 text-sm text-gray-600">{item.description}</td>
-                                  <td className="py-4 px-2 text-sm text-right text-gray-900">{item.quantity}</td>
-                                  <td className="py-4 px-2 text-sm text-right text-gray-900">${item.rate.toFixed(2)}</td>
-                                  <td className="py-4 px-2 text-sm text-right text-gray-600">{item.gst}%</td>
-                                  <td className="py-4 px-2 text-sm text-right text-gray-600">{item.discount}%</td>
-                                  <td className="py-4 px-2 text-base text-right font-bold text-gray-900">${item.amount.toFixed(2)}</td>
+                                  <td className="py-3 px-3 text-sm text-gray-900">
+                                    <div className="font-medium">{item.itemName}</div>
+                                    <div className="text-xs text-gray-500">{item.description}</div>
+                                  </td>
+                                  <td className="py-3 px-3 text-sm text-center text-gray-900">{item.quantity}</td>
+                                  <td className="py-3 px-3 text-sm text-center text-gray-900">
+                                    ${item.rate.toFixed(2)}
+                                  </td>
+                                  <td className="py-3 px-3 text-sm text-right text-gray-900 font-medium">
+                                    INR {item.amount.toFixed(2)}
+                                  </td>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="mb-12 py-16 text-center">
-                          <p className="text-sm text-gray-400">No items added</p>
-                        </div>
-                      )}
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
+                                  No items added
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
 
-                      {/* Totals Section - Minimal & Clean */}
-                      <div className="flex justify-end mb-12">
-                        <div className="w-80 space-y-3">
-                          <div className="flex justify-between items-center py-2">
-                            <span className="text-sm text-gray-600">Subtotal</span>
-                            <span className="text-base font-medium text-gray-900">${subtotal.toFixed(2)}</span>
+                      {/* Totals Section */}
+                      <div className="flex justify-end mb-4">
+                        <div className="w-80 space-y-2">
+                          <div className="flex justify-between items-center py-1.5 text-sm">
+                            <span className="text-gray-600">Subtotal</span>
+                            <span className="text-gray-900 font-medium">INR {subtotal.toFixed(2)}</span>
                           </div>
-                          <div className="flex justify-between items-center py-2">
-                            <span className="text-sm text-gray-600">Tax ({taxRate}%)</span>
-                            <span className="text-base font-medium text-gray-900">${taxAmount.toFixed(2)}</span>
-                          </div>
-                          {discountRate > 0 && (
-                            <div className="flex justify-between items-center py-2">
-                              <span className="text-sm text-gray-600">Discount ({discountRate}%)</span>
-                              <span className="text-base font-medium text-gray-900">-${discountAmount.toFixed(2)}</span>
+                          {taxRate > 0 && (
+                            <div className="flex justify-between items-center py-1.5 text-sm">
+                              <span className="text-gray-600">Tax ({taxRate}%)</span>
+                              <span className="text-gray-900 font-medium">INR {taxAmount.toFixed(2)}</span>
                             </div>
                           )}
-                          <div className="flex justify-between items-center pt-4 border-t-2 border-gray-900">
-                            <span className="text-lg font-bold text-gray-900">Total</span>
-                            <span className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                          {discountRate > 0 && (
+                            <div className="flex justify-between items-center py-1.5 text-sm">
+                              <span className="text-gray-600">Discount ({discountRate}%)</span>
+                              <span className="text-gray-900 font-medium">-INR {discountAmount.toFixed(2)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center py-1.5 text-sm border-t border-gray-300 pt-2">
+                            <span className="text-gray-900 font-semibold">Total</span>
+                            <span className="text-gray-900 font-semibold">INR {total.toFixed(2)}</span>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Final Total Bar - Black Background */}
+                      <div className="bg-gray-900 text-white py-3 px-4 flex justify-between items-center rounded">
+                        <span className="text-lg font-bold">Total</span>
+                        <span className="text-xl font-bold">INR {total.toFixed(2)}</span>
                       </div>
 
                       {/* Terms and Conditions */}
                       {termsAndConditions && (
-                        <div className="pt-8 border-t border-gray-200">
-                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Terms & Conditions</p>
+                        <div className="mt-8 pt-6 border-t border-gray-200">
+                          <p className="text-xs font-semibold text-gray-700 mb-2">Terms & Conditions</p>
                           <p className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">{termsAndConditions}</p>
                         </div>
                       )}
-
-                      {/* Footer */}
-                      <div className="mt-16 pt-6 border-t border-gray-200 text-center">
-                        <p className="text-xs text-gray-400">Thank you for your business</p>
-                      </div>
                     </div>
                   </div>
                 </TabsContent>
