@@ -530,17 +530,14 @@ export default function Quotation() {
                   <div className="border rounded-lg p-4 bg-card animate-fade-in">
                     <h3 className="text-sm font-semibold mb-3 text-primary">Address</h3>
                     <div className="space-y-1.5">
-                      <Label htmlFor="address" className="text-xs">Search Australian Address</Label>
+                      <Label htmlFor="address" className="text-xs">Address</Label>
                       <Input
                         id="address"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Start typing to search..."
+                        placeholder="Enter address..."
                         className="h-9"
                       />
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        Search for addresses in Australia
-                      </p>
                     </div>
                   </div>
 
