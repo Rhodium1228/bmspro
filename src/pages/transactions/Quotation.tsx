@@ -159,234 +159,256 @@ export default function Quotation() {
 
                 <TabsContent value="create" className="space-y-6 mt-4">
                   {/* Quotation Details */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold">Quotation Details</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="quotationNumber">Quotation Number</Label>
-                        <Input
-                          id="quotationNumber"
-                          value={quotationNumber}
-                          onChange={(e) => setQuotationNumber(e.target.value)}
-                          placeholder="QUO-000001"
-                        />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Quotation Details</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="quotationNumber">Quotation Number</Label>
+                          <Input
+                            id="quotationNumber"
+                            value={quotationNumber}
+                            onChange={(e) => setQuotationNumber(e.target.value)}
+                            placeholder="QUO-000001"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="quotationDate">Quotation Date</Label>
+                          <Input
+                            id="quotationDate"
+                            type="date"
+                            value={quotationDate}
+                            onChange={(e) => setQuotationDate(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="paymentType">Payment Type</Label>
+                          <Select value={paymentType} onValueChange={(value: "cash" | "online") => setPaymentType(value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select payment type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="cash">Cash</SelectItem>
+                              <SelectItem value="online">Online</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="acsuPoints">ACSU Points</Label>
+                          <Input
+                            id="acsuPoints"
+                            type="number"
+                            value={acsuPoints}
+                            onChange={(e) => setAcsuPoints(Number(e.target.value))}
+                            placeholder="0"
+                            min="0"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="quotationDate">Quotation Date</Label>
-                        <Input
-                          id="quotationDate"
-                          type="date"
-                          value={quotationDate}
-                          onChange={(e) => setQuotationDate(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="paymentType">Payment Type</Label>
-                        <Select value={paymentType} onValueChange={(value: "cash" | "online") => setPaymentType(value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select payment type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cash">Cash</SelectItem>
-                            <SelectItem value="online">Online</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="acsuPoints">ACSU Points</Label>
-                        <Input
-                          id="acsuPoints"
-                          type="number"
-                          value={acsuPoints}
-                          onChange={(e) => setAcsuPoints(Number(e.target.value))}
-                          placeholder="0"
-                          min="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
 
                   {/* Customer Information */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold">Customer Information</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="customerName">Customer Name</Label>
-                        <Input
-                          id="customerName"
-                          value={customerName}
-                          onChange={(e) => setCustomerName(e.target.value)}
-                          placeholder="Search and select customer"
-                        />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Customer Information</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="customerName">Customer Name</Label>
+                          <Input
+                            id="customerName"
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            placeholder="Search and select customer"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="customerEmail">Customer Email</Label>
+                          <Input
+                            id="customerEmail"
+                            type="email"
+                            value={customerEmail}
+                            onChange={(e) => setCustomerEmail(e.target.value)}
+                            placeholder="customer@email.com"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="customerEmail">Customer Email</Label>
-                        <Input
-                          id="customerEmail"
-                          type="email"
-                          value={customerEmail}
-                          onChange={(e) => setCustomerEmail(e.target.value)}
-                          placeholder="customer@email.com"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
 
-                  {/* Add Items Section */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold">Add Items</h3>
-                    <div className="grid grid-cols-12 gap-2 items-end">
-                      <div className="col-span-3 space-y-2">
-                        <Label htmlFor="itemName">Item Name</Label>
-                        <Select value={newItemName} onValueChange={setNewItemName}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select item" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Product A">Product A</SelectItem>
-                            <SelectItem value="Product B">Product B</SelectItem>
-                            <SelectItem value="Service C">Service C</SelectItem>
-                            <SelectItem value="Custom">Custom Item</SelectItem>
-                          </SelectContent>
-                        </Select>
+                  {/* Items Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Items</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-12 gap-2 items-end">
+                          <div className="col-span-3 space-y-2">
+                            <Label htmlFor="itemName">Item Name</Label>
+                            <Select value={newItemName} onValueChange={setNewItemName}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select item" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Product A">Product A</SelectItem>
+                                <SelectItem value="Product B">Product B</SelectItem>
+                                <SelectItem value="Service C">Service C</SelectItem>
+                                <SelectItem value="Custom">Custom Item</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="col-span-2 space-y-2">
+                            <Label htmlFor="itemQty">Quantity</Label>
+                            <Input
+                              id="itemQty"
+                              type="number"
+                              placeholder="Qty"
+                              value={newItemQty}
+                              onChange={(e) => setNewItemQty(Number(e.target.value))}
+                              min="1"
+                            />
+                          </div>
+                          <div className="col-span-2 space-y-2">
+                            <Label htmlFor="itemRate">Rate</Label>
+                            <Input
+                              id="itemRate"
+                              type="number"
+                              placeholder="Rate"
+                              value={newItemRate}
+                              onChange={(e) => setNewItemRate(Number(e.target.value))}
+                              min="0"
+                              step="0.01"
+                            />
+                          </div>
+                          <div className="col-span-2 space-y-2">
+                            <Label htmlFor="itemGst">GST (%)</Label>
+                            <Input
+                              id="itemGst"
+                              type="number"
+                              placeholder="GST %"
+                              value={newItemGst}
+                              onChange={(e) => setNewItemGst(Number(e.target.value))}
+                              min="0"
+                              max="100"
+                              step="0.1"
+                            />
+                          </div>
+                          <div className="col-span-2 space-y-2">
+                            <Label htmlFor="itemDiscount">Discount (%)</Label>
+                            <Input
+                              id="itemDiscount"
+                              type="number"
+                              placeholder="Disc %"
+                              value={newItemDiscount}
+                              onChange={(e) => setNewItemDiscount(Number(e.target.value))}
+                              min="0"
+                              max="100"
+                              step="0.1"
+                            />
+                          </div>
+                          <div className="col-span-1">
+                            <Button onClick={addItem} className="w-full">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="itemDescription">Item Description</Label>
+                          <Textarea
+                            id="itemDescription"
+                            placeholder="Item description"
+                            value={newItemDesc}
+                            onChange={(e) => setNewItemDesc(e.target.value)}
+                            rows={2}
+                          />
+                        </div>
                       </div>
-                      <div className="col-span-2 space-y-2">
-                        <Label htmlFor="itemQty">Quantity</Label>
-                        <Input
-                          id="itemQty"
-                          type="number"
-                          placeholder="Qty"
-                          value={newItemQty}
-                          onChange={(e) => setNewItemQty(Number(e.target.value))}
-                          min="1"
-                        />
-                      </div>
-                      <div className="col-span-2 space-y-2">
-                        <Label htmlFor="itemRate">Rate</Label>
-                        <Input
-                          id="itemRate"
-                          type="number"
-                          placeholder="Rate"
-                          value={newItemRate}
-                          onChange={(e) => setNewItemRate(Number(e.target.value))}
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-                      <div className="col-span-2 space-y-2">
-                        <Label htmlFor="itemGst">GST (%)</Label>
-                        <Input
-                          id="itemGst"
-                          type="number"
-                          placeholder="GST %"
-                          value={newItemGst}
-                          onChange={(e) => setNewItemGst(Number(e.target.value))}
-                          min="0"
-                          max="100"
-                          step="0.1"
-                        />
-                      </div>
-                      <div className="col-span-2 space-y-2">
-                        <Label htmlFor="itemDiscount">Discount (%)</Label>
-                        <Input
-                          id="itemDiscount"
-                          type="number"
-                          placeholder="Disc %"
-                          value={newItemDiscount}
-                          onChange={(e) => setNewItemDiscount(Number(e.target.value))}
-                          min="0"
-                          max="100"
-                          step="0.1"
-                        />
-                      </div>
-                      <div className="col-span-1">
-                        <Button onClick={addItem} className="w-full">
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="itemDescription">Item Description</Label>
-                      <Textarea
-                        id="itemDescription"
-                        placeholder="Item description"
-                        value={newItemDesc}
-                        onChange={(e) => setNewItemDesc(e.target.value)}
-                        rows={2}
-                      />
-                    </div>
-                  </div>
 
-                  {/* Items Table */}
-                  {items.length > 0 && (
-                    <div className="border rounded-lg">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Item</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead className="text-right">Qty</TableHead>
-                            <TableHead className="text-right">Rate</TableHead>
-                            <TableHead className="text-right">GST%</TableHead>
-                            <TableHead className="text-right">Disc%</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
-                            <TableHead className="w-[50px]"></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {items.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell className="font-medium">{item.itemName}</TableCell>
-                              <TableCell className="max-w-[200px] truncate">{item.description}</TableCell>
-                              <TableCell className="text-right">{item.quantity}</TableCell>
-                              <TableCell className="text-right">${item.rate.toFixed(2)}</TableCell>
-                              <TableCell className="text-right">{item.gst}%</TableCell>
-                              <TableCell className="text-right">{item.discount}%</TableCell>
-                              <TableCell className="text-right font-medium">${item.amount.toFixed(2)}</TableCell>
-                              <TableCell>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => removeItem(item.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
+                      {/* Items Table */}
+                      {items.length > 0 && (
+                        <div className="border rounded-lg mt-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Item</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead className="text-right">Qty</TableHead>
+                                <TableHead className="text-right">Rate</TableHead>
+                                <TableHead className="text-right">GST%</TableHead>
+                                <TableHead className="text-right">Disc%</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead className="w-[50px]"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {items.map((item) => (
+                                <TableRow key={item.id}>
+                                  <TableCell className="font-medium">{item.itemName}</TableCell>
+                                  <TableCell className="max-w-[200px] truncate">{item.description}</TableCell>
+                                  <TableCell className="text-right">{item.quantity}</TableCell>
+                                  <TableCell className="text-right">${item.rate.toFixed(2)}</TableCell>
+                                  <TableCell className="text-right">{item.gst}%</TableCell>
+                                  <TableCell className="text-right">{item.discount}%</TableCell>
+                                  <TableCell className="text-right font-medium">${item.amount.toFixed(2)}</TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => removeItem(item.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
                   {/* Address Section */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold">Address</h3>
-                    <div className="space-y-2">
-                      <Label htmlFor="address">Search Australian Address</Label>
-                      <Input
-                        id="address"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Search for address in Australia"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Start typing to search for addresses in Australia
-                      </p>
-                    </div>
-                  </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Address</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <Label htmlFor="address">Search Australian Address</Label>
+                        <Input
+                          id="address"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          placeholder="Search for address in Australia"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Start typing to search for addresses in Australia
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
 
                   {/* Terms and Conditions */}
-                  <div className="space-y-2">
-                    <Label htmlFor="terms">Terms and Conditions</Label>
-                    <Textarea
-                      id="terms"
-                      value={termsAndConditions}
-                      onChange={(e) => setTermsAndConditions(e.target.value)}
-                      placeholder="Enter terms and conditions..."
-                      rows={4}
-                    />
-                  </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Terms and Conditions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Textarea
+                        id="terms"
+                        value={termsAndConditions}
+                        onChange={(e) => setTermsAndConditions(e.target.value)}
+                        placeholder="Enter terms and conditions..."
+                        rows={4}
+                      />
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="tool" className="space-y-4 mt-4">
