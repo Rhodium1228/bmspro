@@ -6,35 +6,55 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface QuotationItem {
   id: string;
+  itemName: string;
   description: string;
   quantity: number;
   rate: number;
+  gst: number;
+  discount: number;
   amount: number;
 }
 
 export default function Quotation() {
   const { toast } = useToast();
   const [items, setItems] = useState<QuotationItem[]>([]);
+  
+  // Quotation details
+  const [quotationNumber, setQuotationNumber] = useState(`QUO-${Date.now().toString().slice(-6)}`);
+  const [quotationDate, setQuotationDate] = useState(new Date().toISOString().split('T')[0]);
+  const [paymentType, setPaymentType] = useState<"cash" | "online">("cash");
+  const [acsuPoints, setAcsuPoints] = useState(0);
+  
+  // Customer details
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  const [quotationDate, setQuotationDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Address
+  const [address, setAddress] = useState("");
+  
+  // Terms and conditions
+  const [termsAndConditions, setTermsAndConditions] = useState("");
+  
   const [validUntil, setValidUntil] = useState("");
-  const [notes, setNotes] = useState("");
   const [taxRate, setTaxRate] = useState(18);
   const [discountRate, setDiscountRate] = useState(0);
   
   // New item form
+  const [newItemName, setNewItemName] = useState("");
   const [newItemDesc, setNewItemDesc] = useState("");
   const [newItemQty, setNewItemQty] = useState(1);
   const [newItemRate, setNewItemRate] = useState(0);
+  const [newItemGst, setNewItemGst] = useState(10);
+  const [newItemDiscount, setNewItemDiscount] = useState(0);
 
   const addItem = () => {
-    if (!newItemDesc || newItemQty <= 0 || newItemRate <= 0) {
+    if (!newItemName || !newItemDesc || newItemQty <= 0 || newItemRate <= 0) {
       toast({
         title: "Invalid Item",
         description: "Please fill all item fields with valid values",
@@ -43,18 +63,29 @@ export default function Quotation() {
       return;
     }
 
+    const subtotal = newItemQty * newItemRate;
+    const gstAmount = (subtotal * newItemGst) / 100;
+    const discountAmount = (subtotal * newItemDiscount) / 100;
+    const totalAmount = subtotal + gstAmount - discountAmount;
+
     const newItem: QuotationItem = {
       id: Date.now().toString(),
+      itemName: newItemName,
       description: newItemDesc,
       quantity: newItemQty,
       rate: newItemRate,
-      amount: newItemQty * newItemRate,
+      gst: newItemGst,
+      discount: newItemDiscount,
+      amount: totalAmount,
     };
 
     setItems([...items, newItem]);
+    setNewItemName("");
     setNewItemDesc("");
     setNewItemQty(1);
     setNewItemRate(0);
+    setNewItemGst(10);
+    setNewItemDiscount(0);
   };
 
   const removeItem = (id: string) => {
@@ -127,27 +158,17 @@ export default function Quotation() {
                 </TabsList>
 
                 <TabsContent value="create" className="space-y-6 mt-4">
-                  {/* Customer Information */}
+                  {/* Quotation Details */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold">Customer Information</h3>
+                    <h3 className="font-semibold">Quotation Details</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="customerName">Customer Name</Label>
+                        <Label htmlFor="quotationNumber">Quotation Number</Label>
                         <Input
-                          id="customerName"
-                          value={customerName}
-                          onChange={(e) => setCustomerName(e.target.value)}
-                          placeholder="Enter customer name"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="customerEmail">Customer Email</Label>
-                        <Input
-                          id="customerEmail"
-                          type="email"
-                          value={customerEmail}
-                          onChange={(e) => setCustomerEmail(e.target.value)}
-                          placeholder="customer@email.com"
+                          id="quotationNumber"
+                          value={quotationNumber}
+                          onChange={(e) => setQuotationNumber(e.target.value)}
+                          placeholder="QUO-000001"
                         />
                       </div>
                       <div className="space-y-2">
@@ -160,12 +181,52 @@ export default function Quotation() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="validUntil">Valid Until</Label>
+                        <Label htmlFor="paymentType">Payment Type</Label>
+                        <Select value={paymentType} onValueChange={(value: "cash" | "online") => setPaymentType(value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select payment type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cash">Cash</SelectItem>
+                            <SelectItem value="online">Online</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="acsuPoints">ACSU Points</Label>
                         <Input
-                          id="validUntil"
-                          type="date"
-                          value={validUntil}
-                          onChange={(e) => setValidUntil(e.target.value)}
+                          id="acsuPoints"
+                          type="number"
+                          value={acsuPoints}
+                          onChange={(e) => setAcsuPoints(Number(e.target.value))}
+                          placeholder="0"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Customer Information */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Customer Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="customerName">Customer Name</Label>
+                        <Input
+                          id="customerName"
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          placeholder="Search and select customer"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="customerEmail">Customer Email</Label>
+                        <Input
+                          id="customerEmail"
+                          type="email"
+                          value={customerEmail}
+                          onChange={(e) => setCustomerEmail(e.target.value)}
+                          placeholder="customer@email.com"
                         />
                       </div>
                     </div>
@@ -174,16 +235,25 @@ export default function Quotation() {
                   {/* Add Items Section */}
                   <div className="space-y-4">
                     <h3 className="font-semibold">Add Items</h3>
-                    <div className="grid grid-cols-12 gap-2">
-                      <div className="col-span-5">
-                        <Input
-                          placeholder="Item description"
-                          value={newItemDesc}
-                          onChange={(e) => setNewItemDesc(e.target.value)}
-                        />
+                    <div className="grid grid-cols-12 gap-2 items-end">
+                      <div className="col-span-3 space-y-2">
+                        <Label htmlFor="itemName">Item Name</Label>
+                        <Select value={newItemName} onValueChange={setNewItemName}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select item" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Product A">Product A</SelectItem>
+                            <SelectItem value="Product B">Product B</SelectItem>
+                            <SelectItem value="Service C">Service C</SelectItem>
+                            <SelectItem value="Custom">Custom Item</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <div className="col-span-2">
+                      <div className="col-span-2 space-y-2">
+                        <Label htmlFor="itemQty">Quantity</Label>
                         <Input
+                          id="itemQty"
                           type="number"
                           placeholder="Qty"
                           value={newItemQty}
@@ -191,8 +261,10 @@ export default function Quotation() {
                           min="1"
                         />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-2 space-y-2">
+                        <Label htmlFor="itemRate">Rate</Label>
                         <Input
+                          id="itemRate"
                           type="number"
                           placeholder="Rate"
                           value={newItemRate}
@@ -201,11 +273,47 @@ export default function Quotation() {
                           step="0.01"
                         />
                       </div>
-                      <div className="col-span-2">
+                      <div className="col-span-2 space-y-2">
+                        <Label htmlFor="itemGst">GST (%)</Label>
+                        <Input
+                          id="itemGst"
+                          type="number"
+                          placeholder="GST %"
+                          value={newItemGst}
+                          onChange={(e) => setNewItemGst(Number(e.target.value))}
+                          min="0"
+                          max="100"
+                          step="0.1"
+                        />
+                      </div>
+                      <div className="col-span-2 space-y-2">
+                        <Label htmlFor="itemDiscount">Discount (%)</Label>
+                        <Input
+                          id="itemDiscount"
+                          type="number"
+                          placeholder="Disc %"
+                          value={newItemDiscount}
+                          onChange={(e) => setNewItemDiscount(Number(e.target.value))}
+                          min="0"
+                          max="100"
+                          step="0.1"
+                        />
+                      </div>
+                      <div className="col-span-1">
                         <Button onClick={addItem} className="w-full">
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="itemDescription">Item Description</Label>
+                      <Textarea
+                        id="itemDescription"
+                        placeholder="Item description"
+                        value={newItemDesc}
+                        onChange={(e) => setNewItemDesc(e.target.value)}
+                        rows={2}
+                      />
                     </div>
                   </div>
 
@@ -215,9 +323,12 @@ export default function Quotation() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead>Item</TableHead>
                             <TableHead>Description</TableHead>
-                            <TableHead className="text-right">Quantity</TableHead>
+                            <TableHead className="text-right">Qty</TableHead>
                             <TableHead className="text-right">Rate</TableHead>
+                            <TableHead className="text-right">GST%</TableHead>
+                            <TableHead className="text-right">Disc%</TableHead>
                             <TableHead className="text-right">Amount</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                           </TableRow>
@@ -225,10 +336,13 @@ export default function Quotation() {
                         <TableBody>
                           {items.map((item) => (
                             <TableRow key={item.id}>
-                              <TableCell>{item.description}</TableCell>
+                              <TableCell className="font-medium">{item.itemName}</TableCell>
+                              <TableCell className="max-w-[200px] truncate">{item.description}</TableCell>
                               <TableCell className="text-right">{item.quantity}</TableCell>
                               <TableCell className="text-right">${item.rate.toFixed(2)}</TableCell>
-                              <TableCell className="text-right">${item.amount.toFixed(2)}</TableCell>
+                              <TableCell className="text-right">{item.gst}%</TableCell>
+                              <TableCell className="text-right">{item.discount}%</TableCell>
+                              <TableCell className="text-right font-medium">${item.amount.toFixed(2)}</TableCell>
                               <TableCell>
                                 <Button
                                   variant="ghost"
@@ -245,15 +359,32 @@ export default function Quotation() {
                     </div>
                   )}
 
-                  {/* Notes */}
+                  {/* Address Section */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Address</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Search Australian Address</Label>
+                      <Input
+                        id="address"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Search for address in Australia"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Start typing to search for addresses in Australia
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Terms and Conditions */}
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Notes</Label>
+                    <Label htmlFor="terms">Terms and Conditions</Label>
                     <Textarea
-                      id="notes"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Additional notes or terms..."
-                      rows={3}
+                      id="terms"
+                      value={termsAndConditions}
+                      onChange={(e) => setTermsAndConditions(e.target.value)}
+                      placeholder="Enter terms and conditions..."
+                      rows={4}
                     />
                   </div>
                 </TabsContent>
@@ -352,10 +483,10 @@ export default function Quotation() {
                       </div>
                     </div>
 
-                    {notes && (
+                    {termsAndConditions && (
                       <div className="space-y-2 pt-4 border-t">
-                        <p className="font-semibold">Notes:</p>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{notes}</p>
+                        <p className="font-semibold">Terms & Conditions:</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{termsAndConditions}</p>
                       </div>
                     )}
                   </div>
