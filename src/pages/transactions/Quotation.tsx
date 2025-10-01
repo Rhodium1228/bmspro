@@ -12,8 +12,6 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 interface QuotationItem {
   id: string;
@@ -30,7 +28,6 @@ export default function Quotation() {
   const { toast } = useToast();
   const [items, setItems] = useState<QuotationItem[]>([]);
   const previewRef = useRef<HTMLDivElement>(null);
-  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   
   // Quotation details
   const [quotationNumber, setQuotationNumber] = useState(`QUO-${Date.now().toString().slice(-6)}`);
@@ -116,88 +113,11 @@ export default function Quotation() {
   const discountAmount = (subtotal * discountRate) / 100;
   const total = subtotal + taxAmount - discountAmount;
 
-  const generatePDF = async () => {
-    if (!previewRef.current) return null;
-
-    try {
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2,
-        logging: false,
-        useCORS: true,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-
-      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      
-      const blob = pdf.output("blob");
-      setPdfBlob(blob);
-      
-      return blob;
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "PDF Generation Failed",
-        description: "Could not generate PDF. Please try again.",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
-
   const downloadPDF = async () => {
-    if (!previewRef.current) return;
-
-    try {
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2,
-        logging: false,
-        useCORS: true,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-
-      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`Quotation-${quotationNumber}.pdf`);
-
-      toast({
-        title: "PDF Downloaded",
-        description: "Quotation PDF has been downloaded successfully",
-      });
-    } catch (error) {
-      console.error("Error downloading PDF:", error);
-      toast({
-        title: "Download Failed",
-        description: "Could not download PDF. Please try again.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Download PDF",
+      description: "PDF download functionality will be implemented with jsPDF",
+    });
   };
 
   const sendEmail = async () => {
@@ -209,9 +129,6 @@ export default function Quotation() {
       });
       return;
     }
-
-    const pdfData = await generatePDF();
-    if (!pdfData) return;
 
     toast({
       title: "Email Feature",
