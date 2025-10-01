@@ -14,7 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      quotations: {
+        Row: {
+          billing_address: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string | null
+          discount_amount: number
+          discount_rate: number
+          id: string
+          items: Json
+          payment_type: string | null
+          quotation_date: string
+          quotation_number: string
+          shipping_address: string | null
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          terms_conditions: string | null
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_address?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          discount_amount?: number
+          discount_rate?: number
+          id?: string
+          items?: Json
+          payment_type?: string | null
+          quotation_date: string
+          quotation_number: string
+          shipping_address?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          terms_conditions?: string | null
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_address?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          discount_amount?: number
+          discount_rate?: number
+          id?: string
+          items?: Json
+          payment_type?: string | null
+          quotation_date?: string
+          quotation_number?: string
+          shipping_address?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          terms_conditions?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download } from "lucide-react";
+import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download, List } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface QuotationItem {
   id: string;
@@ -26,8 +28,11 @@ interface QuotationItem {
 
 export default function Quotation() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [items, setItems] = useState<QuotationItem[]>([]);
   const previewRef = useRef<HTMLDivElement>(null);
+  const [currentQuotationId, setCurrentQuotationId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Quotation details
   const [quotationNumber, setQuotationNumber] = useState(`QUO-${Date.now().toString().slice(-6)}`);
@@ -113,6 +118,158 @@ export default function Quotation() {
   const discountAmount = (subtotal * discountRate) / 100;
   const total = subtotal + taxAmount - discountAmount;
 
+  // Fetch quotations
+  const { data: quotations = [], isLoading: loadingQuotations } = useQuery({
+    queryKey: ['quotations'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('quotations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const saveQuotation = async () => {
+    if (!customerName || items.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please add customer details and at least one item",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const quotationData = {
+        user_id: user.id,
+        quotation_number: quotationNumber,
+        quotation_date: quotationDate,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: customerPhone,
+        billing_address: address,
+        shipping_address: address,
+        payment_type: paymentType,
+        items: items as any,
+        subtotal: subtotal,
+        tax_rate: taxRate,
+        tax_amount: taxAmount,
+        discount_rate: discountRate,
+        discount_amount: discountAmount,
+        total: total,
+        terms_conditions: termsAndConditions,
+      };
+
+      if (currentQuotationId) {
+        const { error } = await supabase
+          .from('quotations')
+          .update(quotationData)
+          .eq('id', currentQuotationId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Quotation updated successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from('quotations')
+          .insert(quotationData);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Quotation saved successfully",
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save quotation",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const loadQuotation = (quotation: any) => {
+    setCurrentQuotationId(quotation.id);
+    setQuotationNumber(quotation.quotation_number);
+    setQuotationDate(quotation.quotation_date);
+    setPaymentType(quotation.payment_type);
+    setCustomerName(quotation.customer_name);
+    setCustomerEmail(quotation.customer_email || "");
+    setCustomerPhone(quotation.customer_phone || "");
+    setAddress(quotation.billing_address || "");
+    setTermsAndConditions(quotation.terms_conditions || "");
+    setTaxRate(quotation.tax_rate);
+    setDiscountRate(quotation.discount_rate);
+    setItems(quotation.items);
+
+    toast({
+      title: "Loaded",
+      description: "Quotation loaded successfully",
+    });
+  };
+
+  const deleteQuotation = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('quotations')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Deleted",
+        description: "Quotation deleted successfully",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete quotation",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setCurrentQuotationId(null);
+    setQuotationNumber(`QUO-${Date.now().toString().slice(-6)}`);
+    setQuotationDate(new Date().toISOString().split('T')[0]);
+    setPaymentType("cash");
+    setAcsuPoints(0);
+    setSelectedCustomer("");
+    setCustomerName("");
+    setCustomerEmail("");
+    setCustomerPhone("");
+    setCustomerCompany("");
+    setAddress("");
+    setTermsAndConditions("");
+    setValidUntil("");
+    setTaxRate(18);
+    setDiscountRate(0);
+    setItems([]);
+  };
+
   const downloadPDF = async () => {
     toast({
       title: "Download PDF",
@@ -146,10 +303,16 @@ export default function Quotation() {
           </h1>
           <p className="text-muted-foreground font-sans">Create and manage quotations</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Quotation
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={saveQuotation} disabled={isSaving} className="gap-2">
+            <Download className="h-4 w-4" />
+            {isSaving ? "Saving..." : currentQuotationId ? "Update" : "Save"}
+          </Button>
+          <Button onClick={resetForm} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Quotation
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -161,7 +324,11 @@ export default function Quotation() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="create" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="list" className="gap-2">
+                    <List className="h-4 w-4" />
+                    List
+                  </TabsTrigger>
                   <TabsTrigger value="create" className="gap-2">
                     <Plus className="h-4 w-4" />
                     Create
@@ -179,6 +346,75 @@ export default function Quotation() {
                     Send Email
                   </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="list" className="space-y-4 mt-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Previous Quotations</h3>
+                      <span className="text-sm text-muted-foreground">{quotations.length} quotations</span>
+                    </div>
+                    
+                    {loadingQuotations ? (
+                      <div className="text-center py-8">
+                        <p className="text-sm text-muted-foreground">Loading quotations...</p>
+                      </div>
+                    ) : quotations.length === 0 ? (
+                      <div className="text-center py-12 border rounded-lg bg-muted/20">
+                        <FileEdit className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-sm font-medium text-muted-foreground">No quotations yet</p>
+                        <p className="text-xs text-muted-foreground mt-1">Create your first quotation to see it here</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {quotations.map((quotation: any) => (
+                          <div key={quotation.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="font-semibold text-sm truncate">
+                                    {quotation.quotation_number}
+                                  </h4>
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(quotation.quotation_date).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {quotation.customer_name}
+                                </p>
+                                <div className="flex items-center gap-3 mt-2">
+                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                    ${quotation.total.toFixed(2)}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {quotation.items?.length || 0} items
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => loadQuotation(quotation)}
+                                  className="h-8"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deleteQuotation(quotation.id)}
+                                  className="h-8 text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
 
                 <TabsContent value="create" className="space-y-4 mt-4">
                   {/* Quotation Details */}
