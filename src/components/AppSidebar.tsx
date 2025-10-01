@@ -13,6 +13,7 @@ import {
   Wallet,
   Building,
   ChevronDown,
+  Briefcase,
 } from "lucide-react";
 import {
   Sidebar,
@@ -56,6 +57,7 @@ const menuItems = [
     icon: FileText,
     items: [
       { title: "Quotation", url: "/transactions/quotation", icon: FileEdit },
+      { title: "Job Card", url: "/transactions/jobcard", icon: Briefcase },
     ],
   },
   {

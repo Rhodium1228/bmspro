@@ -13,6 +13,7 @@ import Items from "./pages/masters/Items";
 import Employees from "./pages/masters/Employees";
 import Customers from "./pages/masters/Customers";
 import Quotation from "./pages/transactions/Quotation";
+import JobCard from "./pages/transactions/JobCard";
 import AccountMaster from "./pages/accounts/Master";
 import AccountSettings from "./pages/accounts/Settings";
 import Company from "./pages/more/Company";
@@ -100,6 +101,17 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Quotation />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/transactions/jobcard"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <JobCard />
                   </Layout>
                 </ProtectedRoute>
               }
