@@ -229,6 +229,16 @@ export default function Quotation() {
                           className="h-9"
                         />
                       </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="validUntil" className="text-xs">Valid Until</Label>
+                        <Input
+                          id="validUntil"
+                          type="date"
+                          value={validUntil}
+                          onChange={(e) => setValidUntil(e.target.value)}
+                          className="h-9"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -604,108 +614,155 @@ export default function Quotation() {
                       </Button>
                     </div>
                     
-                    <div ref={previewRef} className="bg-white p-8 shadow-lg rounded-lg border-2 border-border">
-                      {/* Header */}
-                      <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-primary">
+                    <div ref={previewRef} className="bg-white p-10 shadow-2xl rounded-lg border border-gray-200">
+                      {/* Header with elegant design */}
+                      <div className="flex justify-between items-start mb-10 pb-8 border-b-4 border-primary/20">
                         <div>
-                          <h1 className="text-4xl font-bold text-primary mb-2">QUOTATION</h1>
-                          <p className="text-sm text-gray-600">Quote No: {quotationNumber}</p>
+                          <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-3">
+                            QUOTATION
+                          </h1>
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium text-gray-700">Quote Number</p>
+                            <p className="text-xl font-bold text-primary">{quotationNumber}</p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-gray-700">BMS Pro</p>
-                          <p className="text-xs text-gray-600">Business Management System</p>
+                        <div className="text-right space-y-2">
+                          <div className="bg-primary/5 px-6 py-4 rounded-lg">
+                            <p className="text-lg font-bold text-primary">BMS Pro</p>
+                            <p className="text-xs text-gray-600 font-medium">Business Management System</p>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Date and Payment Info */}
-                      <div className="grid grid-cols-2 gap-6 mb-8">
-                        <div>
-                          <p className="text-xs font-semibold text-gray-500 mb-1">DATE</p>
-                          <p className="text-sm text-gray-900">{new Date(quotationDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                      {/* Quotation Information Cards */}
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-lg border border-blue-200">
+                          <p className="text-xs font-bold text-blue-700 mb-2 uppercase tracking-wider">Date</p>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {new Date(quotationDate).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </p>
                         </div>
-                        <div>
-                          <p className="text-xs font-semibold text-gray-500 mb-1">PAYMENT TYPE</p>
-                          <p className="text-sm text-gray-900 capitalize">{paymentType}</p>
+                        <div className="bg-gradient-to-br from-green-50 to-green-100/50 p-4 rounded-lg border border-green-200">
+                          <p className="text-xs font-bold text-green-700 mb-2 uppercase tracking-wider">Payment Type</p>
+                          <p className="text-sm font-semibold text-gray-900 capitalize">{paymentType}</p>
                         </div>
                         {validUntil && (
-                          <div>
-                            <p className="text-xs font-semibold text-gray-500 mb-1">VALID UNTIL</p>
-                            <p className="text-sm text-gray-900">{new Date(validUntil).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                          <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 p-4 rounded-lg border border-amber-200">
+                            <p className="text-xs font-bold text-amber-700 mb-2 uppercase tracking-wider">Valid Until</p>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {new Date(validUntil).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </p>
                           </div>
                         )}
                         {acsuPoints > 0 && (
-                          <div>
-                            <p className="text-xs font-semibold text-gray-500 mb-1">ACSU POINTS</p>
-                            <p className="text-sm text-gray-900">{acsuPoints}</p>
+                          <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 p-4 rounded-lg border border-purple-200">
+                            <p className="text-xs font-bold text-purple-700 mb-2 uppercase tracking-wider">ACSU Points</p>
+                            <p className="text-sm font-semibold text-gray-900">{acsuPoints}</p>
                           </div>
                         )}
                       </div>
 
                       {/* Customer Details */}
                       {customerName && (
-                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                          <p className="text-xs font-semibold text-gray-500 mb-2">BILL TO</p>
-                          <p className="text-base font-semibold text-gray-900">{customerName}</p>
-                          {customerCompany && <p className="text-sm text-gray-700">{customerCompany}</p>}
-                          {customerEmail && <p className="text-sm text-gray-600">{customerEmail}</p>}
-                          {customerPhone && <p className="text-sm text-gray-600">{customerPhone}</p>}
-                          {address && <p className="text-sm text-gray-600 mt-2">{address}</p>}
+                        <div className="mb-10 p-6 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl border border-gray-200 shadow-sm">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="h-8 w-1 bg-primary rounded-full"></div>
+                            <p className="text-xs font-bold text-primary uppercase tracking-wider">Bill To</p>
+                          </div>
+                          <div className="space-y-2 pl-4">
+                            <p className="text-lg font-bold text-gray-900">{customerName}</p>
+                            {customerCompany && (
+                              <p className="text-sm font-medium text-gray-700">{customerCompany}</p>
+                            )}
+                            <div className="space-y-1 pt-2">
+                              {customerEmail && (
+                                <p className="text-sm text-gray-600 flex items-center gap-2">
+                                  <span className="font-medium">Email:</span> {customerEmail}
+                                </p>
+                              )}
+                              {customerPhone && (
+                                <p className="text-sm text-gray-600 flex items-center gap-2">
+                                  <span className="font-medium">Phone:</span> {customerPhone}
+                                </p>
+                              )}
+                              {address && (
+                                <p className="text-sm text-gray-600 flex items-start gap-2 pt-1">
+                                  <span className="font-medium">Address:</span> 
+                                  <span className="flex-1">{address}</span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       )}
 
                       {/* Items Table */}
-                      {items.length > 0 && (
-                        <div className="mb-8">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b-2 border-gray-300">
-                                <th className="text-left py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Item</th>
-                                <th className="text-left py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Description</th>
-                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Qty</th>
-                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Rate</th>
-                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">GST</th>
-                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Disc</th>
-                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Amount</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {items.map((item, index) => (
-                                <tr key={item.id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                                  <td className="py-3 px-2 text-sm font-medium text-gray-900">{item.itemName}</td>
-                                  <td className="py-3 px-2 text-sm text-gray-700">{item.description}</td>
-                                  <td className="py-3 px-2 text-sm text-right text-gray-900">{item.quantity}</td>
-                                  <td className="py-3 px-2 text-sm text-right text-gray-900">${item.rate.toFixed(2)}</td>
-                                  <td className="py-3 px-2 text-sm text-right text-gray-700">{item.gst}%</td>
-                                  <td className="py-3 px-2 text-sm text-right text-gray-700">{item.discount}%</td>
-                                  <td className="py-3 px-2 text-sm text-right font-semibold text-gray-900">${item.amount.toFixed(2)}</td>
+                      {items.length > 0 ? (
+                        <div className="mb-10">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="h-8 w-1 bg-primary rounded-full"></div>
+                            <p className="text-xs font-bold text-primary uppercase tracking-wider">Items</p>
+                          </div>
+                          <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                            <table className="w-full">
+                              <thead className="bg-gradient-to-r from-primary/10 to-primary/5">
+                                <tr className="border-b-2 border-primary/20">
+                                  <th className="text-left py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Item</th>
+                                  <th className="text-left py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                  <th className="text-right py-4 px-3 text-xs font-bold text-gray-700 uppercase tracking-wider">Qty</th>
+                                  <th className="text-right py-4 px-3 text-xs font-bold text-gray-700 uppercase tracking-wider">Rate</th>
+                                  <th className="text-right py-4 px-3 text-xs font-bold text-gray-700 uppercase tracking-wider">GST</th>
+                                  <th className="text-right py-4 px-3 text-xs font-bold text-gray-700 uppercase tracking-wider">Disc</th>
+                                  <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Amount</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="bg-white">
+                                {items.map((item, index) => (
+                                  <tr key={item.id} className={`border-b border-gray-100 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'} hover:bg-blue-50/30 transition-colors`}>
+                                    <td className="py-4 px-4 text-sm font-semibold text-gray-900">{item.itemName}</td>
+                                    <td className="py-4 px-4 text-sm text-gray-700">{item.description}</td>
+                                    <td className="py-4 px-3 text-sm text-right font-medium text-gray-900">{item.quantity}</td>
+                                    <td className="py-4 px-3 text-sm text-right font-medium text-gray-900">${item.rate.toFixed(2)}</td>
+                                    <td className="py-4 px-3 text-sm text-right text-gray-600">{item.gst}%</td>
+                                    <td className="py-4 px-3 text-sm text-right text-gray-600">{item.discount}%</td>
+                                    <td className="py-4 px-4 text-sm text-right font-bold text-primary">${item.amount.toFixed(2)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mb-10 p-8 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center">
+                          <p className="text-sm text-gray-500">No items added yet</p>
                         </div>
                       )}
 
                       {/* Totals Section */}
-                      <div className="flex justify-end mb-8">
-                        <div className="w-80">
-                          <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">Subtotal:</span>
-                              <span className="font-medium text-gray-900">${subtotal.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">Tax ({taxRate}%):</span>
-                              <span className="font-medium text-gray-900">${taxAmount.toFixed(2)}</span>
-                            </div>
-                            {discountRate > 0 && (
-                              <div className="flex justify-between text-sm text-red-600">
-                                <span>Discount ({discountRate}%):</span>
-                                <span className="font-medium">-${discountAmount.toFixed(2)}</span>
+                      <div className="flex justify-end mb-10">
+                        <div className="w-96">
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-md overflow-hidden">
+                            <div className="p-6 space-y-4">
+                              <div className="flex justify-between items-center pb-3 border-b border-gray-300">
+                                <span className="text-sm font-medium text-gray-600">Subtotal</span>
+                                <span className="font-semibold text-gray-900">${subtotal.toFixed(2)}</span>
                               </div>
-                            )}
-                            <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-primary">
-                              <span className="text-gray-900">Total:</span>
-                              <span className="text-primary">${total.toFixed(2)}</span>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-gray-600">Tax ({taxRate}%)</span>
+                                <span className="font-semibold text-gray-900">${taxAmount.toFixed(2)}</span>
+                              </div>
+                              {discountRate > 0 && (
+                                <div className="flex justify-between items-center text-red-600">
+                                  <span className="text-sm font-medium">Discount ({discountRate}%)</span>
+                                  <span className="font-semibold">-${discountAmount.toFixed(2)}</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5">
+                              <div className="flex justify-between items-center">
+                                <span className="text-lg font-bold text-white">Total Amount</span>
+                                <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -713,15 +770,23 @@ export default function Quotation() {
 
                       {/* Terms and Conditions */}
                       {termsAndConditions && (
-                        <div className="pt-6 border-t border-gray-300">
-                          <p className="text-xs font-semibold text-gray-700 mb-2 uppercase">Terms & Conditions</p>
-                          <p className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">{termsAndConditions}</p>
+                        <div className="pt-8 border-t-2 border-gray-200">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="h-8 w-1 bg-primary rounded-full"></div>
+                            <p className="text-xs font-bold text-primary uppercase tracking-wider">Terms & Conditions</p>
+                          </div>
+                          <div className="p-5 bg-amber-50/50 rounded-lg border border-amber-200">
+                            <p className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed">{termsAndConditions}</p>
+                          </div>
                         </div>
                       )}
 
                       {/* Footer */}
-                      <div className="mt-12 pt-6 border-t border-gray-200 text-center">
-                        <p className="text-xs text-gray-500">Thank you for your business!</p>
+                      <div className="mt-12 pt-8 border-t-2 border-gray-200">
+                        <div className="text-center space-y-2">
+                          <p className="text-sm font-semibold text-gray-700">Thank you for your business!</p>
+                          <p className="text-xs text-gray-500">This is a computer-generated quotation</p>
+                        </div>
                       </div>
                     </div>
                   </div>
