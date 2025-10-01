@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check } from "lucide-react";
+import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface QuotationItem {
   id: string;
@@ -27,6 +29,8 @@ interface QuotationItem {
 export default function Quotation() {
   const { toast } = useToast();
   const [items, setItems] = useState<QuotationItem[]>([]);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   
   // Quotation details
   const [quotationNumber, setQuotationNumber] = useState(`QUO-${Date.now().toString().slice(-6)}`);
@@ -112,6 +116,90 @@ export default function Quotation() {
   const discountAmount = (subtotal * discountRate) / 100;
   const total = subtotal + taxAmount - discountAmount;
 
+  const generatePDF = async () => {
+    if (!previewRef.current) return null;
+
+    try {
+      const canvas = await html2canvas(previewRef.current, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 0;
+
+      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      
+      const blob = pdf.output("blob");
+      setPdfBlob(blob);
+      
+      return blob;
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "PDF Generation Failed",
+        description: "Could not generate PDF. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
+  const downloadPDF = async () => {
+    if (!previewRef.current) return;
+
+    try {
+      const canvas = await html2canvas(previewRef.current, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 0;
+
+      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`Quotation-${quotationNumber}.pdf`);
+
+      toast({
+        title: "PDF Downloaded",
+        description: "Quotation PDF has been downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Download Failed",
+        description: "Could not download PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const sendEmail = async () => {
     if (!customerEmail) {
       toast({
@@ -122,9 +210,12 @@ export default function Quotation() {
       return;
     }
 
+    const pdfData = await generatePDF();
+    if (!pdfData) return;
+
     toast({
       title: "Email Feature",
-      description: "Email functionality will be set up with Resend integration",
+      description: "Email functionality with PDF attachment will be set up with Resend integration",
     });
   };
 
@@ -588,79 +679,148 @@ export default function Quotation() {
                 </TabsContent>
 
                 <TabsContent value="preview" className="space-y-4 mt-4">
-                  <div className="space-y-4 p-6 border rounded-lg bg-background">
-                    <div className="space-y-2">
-                      <h2 className="text-2xl font-bold">Quotation</h2>
-                      <p className="text-sm text-muted-foreground">Date: {quotationDate}</p>
-                      {validUntil && <p className="text-sm text-muted-foreground">Valid Until: {validUntil}</p>}
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <Button onClick={downloadPDF} variant="outline" className="gap-2">
+                        <Download className="h-4 w-4" />
+                        Download PDF
+                      </Button>
                     </div>
+                    
+                    <div ref={previewRef} className="bg-white p-8 shadow-lg rounded-lg border-2 border-border">
+                      {/* Header */}
+                      <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-primary">
+                        <div>
+                          <h1 className="text-4xl font-bold text-primary mb-2">QUOTATION</h1>
+                          <p className="text-sm text-gray-600">Quote No: {quotationNumber}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-gray-700">BMS Pro</p>
+                          <p className="text-xs text-gray-600">Business Management System</p>
+                        </div>
+                      </div>
 
-                    {customerName && (
-                      <div className="space-y-1">
-                        <p className="font-semibold">Customer:</p>
-                        <p>{customerName}</p>
-                        {customerEmail && <p className="text-sm text-muted-foreground">{customerEmail}</p>}
+                      {/* Date and Payment Info */}
+                      <div className="grid grid-cols-2 gap-6 mb-8">
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 mb-1">DATE</p>
+                          <p className="text-sm text-gray-900">{new Date(quotationDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 mb-1">PAYMENT TYPE</p>
+                          <p className="text-sm text-gray-900 capitalize">{paymentType}</p>
+                        </div>
+                        {validUntil && (
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1">VALID UNTIL</p>
+                            <p className="text-sm text-gray-900">{new Date(validUntil).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                          </div>
+                        )}
+                        {acsuPoints > 0 && (
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1">ACSU POINTS</p>
+                            <p className="text-sm text-gray-900">{acsuPoints}</p>
+                          </div>
+                        )}
                       </div>
-                    )}
 
-                    {items.length > 0 && (
-                      <div className="border rounded-lg overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Description</TableHead>
-                              <TableHead className="text-right">Qty</TableHead>
-                              <TableHead className="text-right">Rate</TableHead>
-                              <TableHead className="text-right">Amount</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {items.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell>{item.description}</TableCell>
-                                <TableCell className="text-right">{item.quantity}</TableCell>
-                                <TableCell className="text-right">${item.rate.toFixed(2)}</TableCell>
-                                <TableCell className="text-right">${item.amount.toFixed(2)}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-
-                    <div className="space-y-2 pt-4 border-t">
-                      <div className="flex justify-between">
-                        <span>Subtotal:</span>
-                        <span>${subtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Tax ({taxRate}%):</span>
-                        <span>${taxAmount.toFixed(2)}</span>
-                      </div>
-                      {discountRate > 0 && (
-                        <div className="flex justify-between text-destructive">
-                          <span>Discount ({discountRate}%):</span>
-                          <span>-${discountAmount.toFixed(2)}</span>
+                      {/* Customer Details */}
+                      {customerName && (
+                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                          <p className="text-xs font-semibold text-gray-500 mb-2">BILL TO</p>
+                          <p className="text-base font-semibold text-gray-900">{customerName}</p>
+                          {customerCompany && <p className="text-sm text-gray-700">{customerCompany}</p>}
+                          {customerEmail && <p className="text-sm text-gray-600">{customerEmail}</p>}
+                          {customerPhone && <p className="text-sm text-gray-600">{customerPhone}</p>}
+                          {address && <p className="text-sm text-gray-600 mt-2">{address}</p>}
                         </div>
                       )}
-                      <div className="flex justify-between text-lg font-bold pt-2 border-t">
-                        <span>Total:</span>
-                        <span className="text-primary">${total.toFixed(2)}</span>
+
+                      {/* Items Table */}
+                      {items.length > 0 && (
+                        <div className="mb-8">
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b-2 border-gray-300">
+                                <th className="text-left py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Item</th>
+                                <th className="text-left py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Description</th>
+                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Qty</th>
+                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Rate</th>
+                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">GST</th>
+                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Disc</th>
+                                <th className="text-right py-3 px-2 text-xs font-semibold text-gray-700 uppercase">Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {items.map((item, index) => (
+                                <tr key={item.id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                                  <td className="py-3 px-2 text-sm font-medium text-gray-900">{item.itemName}</td>
+                                  <td className="py-3 px-2 text-sm text-gray-700">{item.description}</td>
+                                  <td className="py-3 px-2 text-sm text-right text-gray-900">{item.quantity}</td>
+                                  <td className="py-3 px-2 text-sm text-right text-gray-900">${item.rate.toFixed(2)}</td>
+                                  <td className="py-3 px-2 text-sm text-right text-gray-700">{item.gst}%</td>
+                                  <td className="py-3 px-2 text-sm text-right text-gray-700">{item.discount}%</td>
+                                  <td className="py-3 px-2 text-sm text-right font-semibold text-gray-900">${item.amount.toFixed(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {/* Totals Section */}
+                      <div className="flex justify-end mb-8">
+                        <div className="w-80">
+                          <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Subtotal:</span>
+                              <span className="font-medium text-gray-900">${subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Tax ({taxRate}%):</span>
+                              <span className="font-medium text-gray-900">${taxAmount.toFixed(2)}</span>
+                            </div>
+                            {discountRate > 0 && (
+                              <div className="flex justify-between text-sm text-red-600">
+                                <span>Discount ({discountRate}%):</span>
+                                <span className="font-medium">-${discountAmount.toFixed(2)}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-primary">
+                              <span className="text-gray-900">Total:</span>
+                              <span className="text-primary">${total.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Terms and Conditions */}
+                      {termsAndConditions && (
+                        <div className="pt-6 border-t border-gray-300">
+                          <p className="text-xs font-semibold text-gray-700 mb-2 uppercase">Terms & Conditions</p>
+                          <p className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">{termsAndConditions}</p>
+                        </div>
+                      )}
+
+                      {/* Footer */}
+                      <div className="mt-12 pt-6 border-t border-gray-200 text-center">
+                        <p className="text-xs text-gray-500">Thank you for your business!</p>
                       </div>
                     </div>
-
-                    {termsAndConditions && (
-                      <div className="space-y-2 pt-4 border-t">
-                        <p className="font-semibold">Terms & Conditions:</p>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{termsAndConditions}</p>
-                      </div>
-                    )}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="email" className="space-y-4 mt-4">
                   <div className="space-y-4">
-                    <h3 className="font-semibold">Send Quotation</h3>
+                    <h3 className="font-semibold">Send Quotation via Email</h3>
+                    <div className="p-4 bg-muted/50 rounded-lg border">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        📎 PDF attachment will be generated and attached automatically
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Filename: Quotation-{quotationNumber}.pdf
+                      </p>
+                    </div>
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="emailTo">To</Label>
@@ -676,7 +836,7 @@ export default function Quotation() {
                         <Label htmlFor="emailSubject">Subject</Label>
                         <Input
                           id="emailSubject"
-                          defaultValue={`Quotation for ${customerName || 'Your Business'}`}
+                          defaultValue={`Quotation ${quotationNumber} - ${customerName || 'Your Business'}`}
                           placeholder="Email subject"
                         />
                       </div>
@@ -685,13 +845,13 @@ export default function Quotation() {
                         <Textarea
                           id="emailMessage"
                           placeholder="Email message..."
-                          rows={5}
-                          defaultValue={`Dear ${customerName || 'Customer'},\n\nPlease find attached our quotation for your reference.\n\nBest regards,\nBMS Pro Team`}
+                          rows={6}
+                          defaultValue={`Dear ${customerName || 'Customer'},\n\nPlease find attached our quotation (${quotationNumber}) for your reference.\n\nQuotation Details:\n- Total Amount: $${total.toFixed(2)}\n- Payment Type: ${paymentType}\n- Valid Until: ${validUntil || 'As specified'}\n\nIf you have any questions or need further clarification, please don't hesitate to contact us.\n\nBest regards,\nBMS Pro Team`}
                         />
                       </div>
-                      <Button onClick={sendEmail} className="w-full gap-2">
+                      <Button onClick={sendEmail} className="w-full gap-2" disabled={!customerEmail || items.length === 0}>
                         <Send className="h-4 w-4" />
-                        Send Quotation
+                        Send Quotation with PDF
                       </Button>
                     </div>
                   </div>
