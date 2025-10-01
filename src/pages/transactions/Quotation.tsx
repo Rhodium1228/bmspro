@@ -7,7 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send } from "lucide-react";
+import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 interface QuotationItem {
@@ -32,8 +35,20 @@ export default function Quotation() {
   const [acsuPoints, setAcsuPoints] = useState(0);
   
   // Customer details
+  const [selectedCustomer, setSelectedCustomer] = useState<string>("");
+  const [customerSearchOpen, setCustomerSearchOpen] = useState(false);
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerCompany, setCustomerCompany] = useState("");
+  
+  // Mock customer data - replace with actual data from backend
+  const existingCustomers = [
+    { id: "1", name: "John Doe", email: "john@example.com", phone: "+61 400 000 001", company: "ABC Corp" },
+    { id: "2", name: "Jane Smith", email: "jane@example.com", phone: "+61 400 000 002", company: "XYZ Ltd" },
+    { id: "3", name: "Bob Wilson", email: "bob@example.com", phone: "+61 400 000 003", company: "Tech Solutions" },
+  ];
   
   // Address
   const [address, setAddress] = useState("");
@@ -211,30 +226,169 @@ export default function Quotation() {
 
                   {/* Customer Information */}
                   <div className="border rounded-lg p-4 bg-card animate-fade-in">
-                    <h3 className="text-sm font-semibold mb-3 text-primary">Customer Information</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="customerName" className="text-xs">Customer Name</Label>
-                        <Input
-                          id="customerName"
-                          value={customerName}
-                          onChange={(e) => setCustomerName(e.target.value)}
-                          placeholder="Search and select customer"
-                          className="h-9"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="customerEmail" className="text-xs">Customer Email</Label>
-                        <Input
-                          id="customerEmail"
-                          type="email"
-                          value={customerEmail}
-                          onChange={(e) => setCustomerEmail(e.target.value)}
-                          placeholder="customer@email.com"
-                          className="h-9"
-                        />
-                      </div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-primary">Customer Information</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAddCustomer(!showAddCustomer)}
+                        className="h-7 text-xs gap-1.5"
+                      >
+                        <UserPlus className="h-3.5 w-3.5" />
+                        {showAddCustomer ? "Search Customer" : "Add New"}
+                      </Button>
                     </div>
+                    
+                    {!showAddCustomer ? (
+                      <div className="space-y-3">
+                        {/* Search Existing Customer */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Search Customer</Label>
+                          <Popover open={customerSearchOpen} onOpenChange={setCustomerSearchOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={customerSearchOpen}
+                                className="w-full justify-between h-9 font-normal"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                                  {selectedCustomer
+                                    ? existingCustomers.find((customer) => customer.id === selectedCustomer)?.name
+                                    : "Search for a customer..."}
+                                </span>
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[400px] p-0" align="start">
+                              <Command>
+                                <CommandInput placeholder="Search customer by name..." />
+                                <CommandList>
+                                  <CommandEmpty>No customer found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {existingCustomers.map((customer) => (
+                                      <CommandItem
+                                        key={customer.id}
+                                        value={customer.name}
+                                        onSelect={() => {
+                                          setSelectedCustomer(customer.id);
+                                          setCustomerName(customer.name);
+                                          setCustomerEmail(customer.email);
+                                          setCustomerPhone(customer.phone);
+                                          setCustomerCompany(customer.company);
+                                          setCustomerSearchOpen(false);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            selectedCustomer === customer.id ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">{customer.name}</span>
+                                          <span className="text-xs text-muted-foreground">{customer.email} • {customer.company}</span>
+                                        </div>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        
+                        {/* Display Selected Customer Details */}
+                        {selectedCustomer && (
+                          <div className="grid grid-cols-2 gap-3 p-3 bg-muted/30 rounded-md border">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-0.5">Name</p>
+                              <p className="text-xs font-medium">{customerName}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-0.5">Email</p>
+                              <p className="text-xs">{customerEmail}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-0.5">Phone</p>
+                              <p className="text-xs">{customerPhone}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-0.5">Company</p>
+                              <p className="text-xs">{customerCompany}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {/* Add New Customer Form */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="newCustomerName" className="text-xs">Customer Name*</Label>
+                            <Input
+                              id="newCustomerName"
+                              value={customerName}
+                              onChange={(e) => setCustomerName(e.target.value)}
+                              placeholder="Enter customer name"
+                              className="h-9"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="newCustomerEmail" className="text-xs">Email*</Label>
+                            <Input
+                              id="newCustomerEmail"
+                              type="email"
+                              value={customerEmail}
+                              onChange={(e) => setCustomerEmail(e.target.value)}
+                              placeholder="customer@email.com"
+                              className="h-9"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="newCustomerPhone" className="text-xs">Phone</Label>
+                            <Input
+                              id="newCustomerPhone"
+                              value={customerPhone}
+                              onChange={(e) => setCustomerPhone(e.target.value)}
+                              placeholder="+61 400 000 000"
+                              className="h-9"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="newCustomerCompany" className="text-xs">Company</Label>
+                            <Input
+                              id="newCustomerCompany"
+                              value={customerCompany}
+                              onChange={(e) => setCustomerCompany(e.target.value)}
+                              placeholder="Company name"
+                              className="h-9"
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => {
+                            if (customerName && customerEmail) {
+                              toast({
+                                title: "Customer Added",
+                                description: "New customer has been added successfully",
+                              });
+                              setShowAddCustomer(false);
+                            } else {
+                              toast({
+                                title: "Required Fields",
+                                description: "Please fill in customer name and email",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                          className="w-full h-9"
+                        >
+                          <UserPlus className="h-3.5 w-3.5 mr-2" />
+                          Save Customer
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Items Section */}
