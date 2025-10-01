@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Building2,
   Package,
@@ -8,6 +9,7 @@ import {
   TrendingUp,
   DollarSign,
   Activity,
+  MapPin,
 } from "lucide-react";
 
 const stats = [
@@ -48,6 +50,15 @@ const recentActivity = [
   { action: "Bank account verified", time: "1 day ago", icon: Building2 },
 ];
 
+const workerLocations = [
+  { location: "Sydney Office", workers: 45, status: "active", color: "bg-green-500" },
+  { location: "Melbourne Office", workers: 32, status: "active", color: "bg-green-500" },
+  { location: "Brisbane Office", workers: 28, status: "active", color: "bg-blue-500" },
+  { location: "Perth Office", workers: 18, status: "active", color: "bg-blue-500" },
+  { location: "Adelaide Office", workers: 15, status: "active", color: "bg-orange-500" },
+  { location: "Remote Workers", workers: 18, status: "remote", color: "bg-purple-500" },
+];
+
 export default function Dashboard() {
   return (
     <div className="space-y-6">
@@ -72,6 +83,31 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            Workers Location Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {workerLocations.map((location) => (
+              <div key={location.location} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors">
+                <div className={`h-3 w-3 rounded-full ${location.color} animate-pulse`} />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{location.location}</p>
+                  <p className="text-xs text-muted-foreground">{location.workers} workers</p>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {location.status}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="hover:shadow-md transition-shadow">
