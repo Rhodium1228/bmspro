@@ -17,13 +17,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const countryCodes = [
   { code: "+61", country: "Australia", flag: "🇦🇺" },
-  { code: "+1", country: "USA/Canada", flag: "🇺🇸" },
-  { code: "+44", country: "UK", flag: "🇬🇧" },
+  { code: "+64", country: "New Zealand", flag: "🇳🇿" },
   { code: "+91", country: "India", flag: "🇮🇳" },
-  { code: "+86", country: "China", flag: "🇨🇳" },
-  { code: "+81", country: "Japan", flag: "🇯🇵" },
-  { code: "+49", country: "Germany", flag: "🇩🇪" },
-  { code: "+33", country: "France", flag: "🇫🇷" },
 ];
 
 const formSchema = z.object({
