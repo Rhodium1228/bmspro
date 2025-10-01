@@ -614,179 +614,142 @@ export default function Quotation() {
                       </Button>
                     </div>
                     
-                    <div ref={previewRef} className="bg-white p-10 shadow-2xl rounded-lg border border-gray-200">
-                      {/* Header with elegant design */}
-                      <div className="flex justify-between items-start mb-10 pb-8 border-b-4 border-primary/20">
+                    <div ref={previewRef} className="bg-white p-12 shadow-xl rounded-xl animate-fade-in">
+                      {/* Header - Clean and Professional */}
+                      <div className="flex justify-between items-start mb-12 pb-6 border-b border-gray-200">
                         <div>
-                          <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-3">
+                          <h1 className="text-6xl font-extrabold text-gray-900 mb-2 tracking-tight">
                             QUOTATION
                           </h1>
-                          <div className="space-y-1">
-                            <p className="text-sm font-medium text-gray-700">Quote Number</p>
-                            <p className="text-xl font-bold text-primary">{quotationNumber}</p>
-                          </div>
+                          <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">#{quotationNumber}</p>
                         </div>
-                        <div className="text-right space-y-2">
-                          <div className="bg-primary/5 px-6 py-4 rounded-lg">
-                            <p className="text-lg font-bold text-primary">BMS Pro</p>
-                            <p className="text-xs text-gray-600 font-medium">Business Management System</p>
-                          </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-gray-900">BMS Pro</p>
+                          <p className="text-xs text-gray-500 mt-1">Business Management System</p>
                         </div>
                       </div>
 
-                      {/* Quotation Information Cards */}
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-lg border border-blue-200">
-                          <p className="text-xs font-bold text-blue-700 mb-2 uppercase tracking-wider">Date</p>
-                          <p className="text-sm font-semibold text-gray-900">
+                      {/* Quotation Info Grid - Minimal & Clean */}
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</p>
+                          <p className="text-base font-semibold text-gray-900">
                             {new Date(quotationDate).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-50 to-green-100/50 p-4 rounded-lg border border-green-200">
-                          <p className="text-xs font-bold text-green-700 mb-2 uppercase tracking-wider">Payment Type</p>
-                          <p className="text-sm font-semibold text-gray-900 capitalize">{paymentType}</p>
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Payment</p>
+                          <p className="text-base font-semibold text-gray-900 capitalize">{paymentType}</p>
                         </div>
                         {validUntil && (
-                          <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 p-4 rounded-lg border border-amber-200">
-                            <p className="text-xs font-bold text-amber-700 mb-2 uppercase tracking-wider">Valid Until</p>
-                            <p className="text-sm font-semibold text-gray-900">
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Valid Until</p>
+                            <p className="text-base font-semibold text-gray-900">
                               {new Date(validUntil).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </p>
                           </div>
                         )}
                         {acsuPoints > 0 && (
-                          <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 p-4 rounded-lg border border-purple-200">
-                            <p className="text-xs font-bold text-purple-700 mb-2 uppercase tracking-wider">ACSU Points</p>
-                            <p className="text-sm font-semibold text-gray-900">{acsuPoints}</p>
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Points</p>
+                            <p className="text-base font-semibold text-gray-900">{acsuPoints}</p>
                           </div>
                         )}
                       </div>
 
-                      {/* Customer Details */}
+                      {/* Customer Details - Minimalist Design */}
                       {customerName && (
-                        <div className="mb-10 p-6 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl border border-gray-200 shadow-sm">
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="h-8 w-1 bg-primary rounded-full"></div>
-                            <p className="text-xs font-bold text-primary uppercase tracking-wider">Bill To</p>
-                          </div>
-                          <div className="space-y-2 pl-4">
-                            <p className="text-lg font-bold text-gray-900">{customerName}</p>
+                        <div className="mb-12 pb-8 border-b border-gray-200">
+                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Bill To</p>
+                          <div className="space-y-2">
+                            <p className="text-xl font-bold text-gray-900">{customerName}</p>
                             {customerCompany && (
-                              <p className="text-sm font-medium text-gray-700">{customerCompany}</p>
+                              <p className="text-base text-gray-600">{customerCompany}</p>
                             )}
-                            <div className="space-y-1 pt-2">
-                              {customerEmail && (
-                                <p className="text-sm text-gray-600 flex items-center gap-2">
-                                  <span className="font-medium">Email:</span> {customerEmail}
-                                </p>
-                              )}
-                              {customerPhone && (
-                                <p className="text-sm text-gray-600 flex items-center gap-2">
-                                  <span className="font-medium">Phone:</span> {customerPhone}
-                                </p>
-                              )}
-                              {address && (
-                                <p className="text-sm text-gray-600 flex items-start gap-2 pt-1">
-                                  <span className="font-medium">Address:</span> 
-                                  <span className="flex-1">{address}</span>
-                                </p>
-                              )}
-                            </div>
+                            {customerEmail && (
+                              <p className="text-sm text-gray-500">{customerEmail}</p>
+                            )}
+                            {customerPhone && (
+                              <p className="text-sm text-gray-500">{customerPhone}</p>
+                            )}
+                            {address && (
+                              <p className="text-sm text-gray-500 pt-1">{address}</p>
+                            )}
                           </div>
                         </div>
                       )}
 
-                      {/* Items Table */}
+                      {/* Items Table - Clean Design */}
                       {items.length > 0 ? (
-                        <div className="mb-10">
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="h-8 w-1 bg-primary rounded-full"></div>
-                            <p className="text-xs font-bold text-primary uppercase tracking-wider">Items</p>
-                          </div>
-                          <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
-                            <table className="w-full">
-                              <thead className="bg-gradient-to-r from-primary/10 to-primary/5">
-                                <tr className="border-b-2 border-primary/20">
-                                  <th className="text-left py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Item</th>
-                                  <th className="text-left py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
-                                  <th className="text-right py-4 px-3 text-xs font-bold text-gray-700 uppercase tracking-wider">Qty</th>
-                                  <th className="text-right py-4 px-3 text-xs font-bold text-gray-700 uppercase tracking-wider">Rate</th>
-                                  <th className="text-right py-4 px-3 text-xs font-bold text-gray-700 uppercase tracking-wider">GST</th>
-                                  <th className="text-right py-4 px-3 text-xs font-bold text-gray-700 uppercase tracking-wider">Disc</th>
-                                  <th className="text-right py-4 px-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Amount</th>
+                        <div className="mb-12">
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b-2 border-gray-900">
+                                <th className="text-left py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Item</th>
+                                <th className="text-left py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Description</th>
+                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Qty</th>
+                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Rate</th>
+                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">GST</th>
+                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Disc</th>
+                                <th className="text-right py-4 px-2 text-xs font-bold text-gray-900 uppercase tracking-wider">Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {items.map((item, index) => (
+                                <tr key={item.id} className="border-b border-gray-200">
+                                  <td className="py-4 px-2 text-sm font-medium text-gray-900">{item.itemName}</td>
+                                  <td className="py-4 px-2 text-sm text-gray-600">{item.description}</td>
+                                  <td className="py-4 px-2 text-sm text-right text-gray-900">{item.quantity}</td>
+                                  <td className="py-4 px-2 text-sm text-right text-gray-900">${item.rate.toFixed(2)}</td>
+                                  <td className="py-4 px-2 text-sm text-right text-gray-600">{item.gst}%</td>
+                                  <td className="py-4 px-2 text-sm text-right text-gray-600">{item.discount}%</td>
+                                  <td className="py-4 px-2 text-base text-right font-bold text-gray-900">${item.amount.toFixed(2)}</td>
                                 </tr>
-                              </thead>
-                              <tbody className="bg-white">
-                                {items.map((item, index) => (
-                                  <tr key={item.id} className={`border-b border-gray-100 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'} hover:bg-blue-50/30 transition-colors`}>
-                                    <td className="py-4 px-4 text-sm font-semibold text-gray-900">{item.itemName}</td>
-                                    <td className="py-4 px-4 text-sm text-gray-700">{item.description}</td>
-                                    <td className="py-4 px-3 text-sm text-right font-medium text-gray-900">{item.quantity}</td>
-                                    <td className="py-4 px-3 text-sm text-right font-medium text-gray-900">${item.rate.toFixed(2)}</td>
-                                    <td className="py-4 px-3 text-sm text-right text-gray-600">{item.gst}%</td>
-                                    <td className="py-4 px-3 text-sm text-right text-gray-600">{item.discount}%</td>
-                                    <td className="py-4 px-4 text-sm text-right font-bold text-primary">${item.amount.toFixed(2)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       ) : (
-                        <div className="mb-10 p-8 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center">
-                          <p className="text-sm text-gray-500">No items added yet</p>
+                        <div className="mb-12 py-16 text-center">
+                          <p className="text-sm text-gray-400">No items added</p>
                         </div>
                       )}
 
-                      {/* Totals Section */}
-                      <div className="flex justify-end mb-10">
-                        <div className="w-96">
-                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-md overflow-hidden">
-                            <div className="p-6 space-y-4">
-                              <div className="flex justify-between items-center pb-3 border-b border-gray-300">
-                                <span className="text-sm font-medium text-gray-600">Subtotal</span>
-                                <span className="font-semibold text-gray-900">${subtotal.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-600">Tax ({taxRate}%)</span>
-                                <span className="font-semibold text-gray-900">${taxAmount.toFixed(2)}</span>
-                              </div>
-                              {discountRate > 0 && (
-                                <div className="flex justify-between items-center text-red-600">
-                                  <span className="text-sm font-medium">Discount ({discountRate}%)</span>
-                                  <span className="font-semibold">-${discountAmount.toFixed(2)}</span>
-                                </div>
-                              )}
+                      {/* Totals Section - Minimal & Clean */}
+                      <div className="flex justify-end mb-12">
+                        <div className="w-80 space-y-3">
+                          <div className="flex justify-between items-center py-2">
+                            <span className="text-sm text-gray-600">Subtotal</span>
+                            <span className="text-base font-medium text-gray-900">${subtotal.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-2">
+                            <span className="text-sm text-gray-600">Tax ({taxRate}%)</span>
+                            <span className="text-base font-medium text-gray-900">${taxAmount.toFixed(2)}</span>
+                          </div>
+                          {discountRate > 0 && (
+                            <div className="flex justify-between items-center py-2">
+                              <span className="text-sm text-gray-600">Discount ({discountRate}%)</span>
+                              <span className="text-base font-medium text-gray-900">-${discountAmount.toFixed(2)}</span>
                             </div>
-                            <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5">
-                              <div className="flex justify-between items-center">
-                                <span className="text-lg font-bold text-white">Total Amount</span>
-                                <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
-                              </div>
-                            </div>
+                          )}
+                          <div className="flex justify-between items-center pt-4 border-t-2 border-gray-900">
+                            <span className="text-lg font-bold text-gray-900">Total</span>
+                            <span className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Terms and Conditions */}
                       {termsAndConditions && (
-                        <div className="pt-8 border-t-2 border-gray-200">
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="h-8 w-1 bg-primary rounded-full"></div>
-                            <p className="text-xs font-bold text-primary uppercase tracking-wider">Terms & Conditions</p>
-                          </div>
-                          <div className="p-5 bg-amber-50/50 rounded-lg border border-amber-200">
-                            <p className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed">{termsAndConditions}</p>
-                          </div>
+                        <div className="pt-8 border-t border-gray-200">
+                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Terms & Conditions</p>
+                          <p className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">{termsAndConditions}</p>
                         </div>
                       )}
 
                       {/* Footer */}
-                      <div className="mt-12 pt-8 border-t-2 border-gray-200">
-                        <div className="text-center space-y-2">
-                          <p className="text-sm font-semibold text-gray-700">Thank you for your business!</p>
-                          <p className="text-xs text-gray-500">This is a computer-generated quotation</p>
-                        </div>
+                      <div className="mt-16 pt-6 border-t border-gray-200 text-center">
+                        <p className="text-xs text-gray-400">Thank you for your business</p>
                       </div>
                     </div>
                   </div>
