@@ -1,3 +1,5 @@
+// ===== IMPORTS =====
+// React and UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
@@ -5,12 +7,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
+// Form handling and validation
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+
+// State and notifications
 import { useState } from "react";
 import { toast } from "sonner";
 
+// ===== FORM VALIDATION SCHEMA =====
+/**
+ * Zod schema for employee form validation
+ * Defines required fields, types, and validation rules
+ */
 const employeeFormSchema = z.object({
   employeeName: z.string().min(1, "Employee name is required"),
   designation: z.string().min(1, "Designation is required"),
@@ -21,9 +32,23 @@ const employeeFormSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+/**
+ * Employees Component
+ * 
+ * Manages employee records with:
+ * - Add new employee dialog
+ * - Employee list display
+ * - Form validation
+ * 
+ * TODO: Connect to Supabase backend for data persistence
+ */
 export default function Employees() {
+  // ===== STATE =====
+  // Control dialog open/close state
   const [open, setOpen] = useState(false);
   
+  // ===== FORM SETUP =====
+  // Initialize form with validation schema and default values
   const form = useForm<z.infer<typeof employeeFormSchema>>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: {
@@ -37,6 +62,12 @@ export default function Employees() {
     },
   });
 
+  // ===== FORM HANDLERS =====
+  /**
+   * Handle form submission
+   * Currently logs data and shows success toast
+   * TODO: Save to Supabase database
+   */
   const onSubmit = (values: z.infer<typeof employeeFormSchema>) => {
     console.log(values);
     toast.success("Employee added successfully");
@@ -44,8 +75,10 @@ export default function Employees() {
     setOpen(false);
   };
 
+  // ===== RENDER =====
   return (
     <div className="space-y-6">
+      {/* Page header with title and add button */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -54,6 +87,8 @@ export default function Employees() {
           </h1>
           <p className="text-muted-foreground">Manage your employees</p>
         </div>
+        
+        {/* Add employee dialog */}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
@@ -65,8 +100,11 @@ export default function Employees() {
             <DialogHeader>
               <DialogTitle>Add New Employee</DialogTitle>
             </DialogHeader>
+            
+            {/* Employee form */}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {/* Employee Name Field */}
                 <FormField
                   control={form.control}
                   name="employeeName"
@@ -81,6 +119,7 @@ export default function Employees() {
                   )}
                 />
 
+                {/* Designation Field */}
                 <FormField
                   control={form.control}
                   name="designation"
@@ -95,6 +134,7 @@ export default function Employees() {
                   )}
                 />
 
+                {/* Email Field */}
                 <FormField
                   control={form.control}
                   name="email"
@@ -109,6 +149,7 @@ export default function Employees() {
                   )}
                 />
 
+                {/* Phone Field */}
                 <FormField
                   control={form.control}
                   name="phone"
@@ -123,6 +164,7 @@ export default function Employees() {
                   )}
                 />
 
+                {/* Address Field */}
                 <FormField
                   control={form.control}
                   name="address"
@@ -137,6 +179,7 @@ export default function Employees() {
                   )}
                 />
 
+                {/* Parent Name Field (Optional) */}
                 <FormField
                   control={form.control}
                   name="parentName"
@@ -151,6 +194,7 @@ export default function Employees() {
                   )}
                 />
 
+                {/* Password Field */}
                 <FormField
                   control={form.control}
                   name="password"
@@ -165,6 +209,7 @@ export default function Employees() {
                   )}
                 />
 
+                {/* Form action buttons */}
                 <div className="flex gap-2 justify-end pt-4">
                   <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                     Cancel
@@ -177,11 +222,13 @@ export default function Employees() {
         </Dialog>
       </div>
 
+      {/* Employee list card */}
       <Card>
         <CardHeader>
           <CardTitle>Employees</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* TODO: Replace with actual employee list from database */}
           <p className="text-muted-foreground">No employees added yet.</p>
         </CardContent>
       </Card>

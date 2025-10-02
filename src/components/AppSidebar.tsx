@@ -1,4 +1,8 @@
+// ===== IMPORTS =====
+// Navigation and routing
 import { NavLink, useLocation } from "react-router-dom";
+
+// Icons from lucide-react
 import {
   LayoutDashboard,
   Database,
@@ -15,6 +19,8 @@ import {
   ChevronDown,
   Briefcase,
 } from "lucide-react";
+
+// Sidebar UI components
 import {
   Sidebar,
   SidebarContent,
@@ -29,13 +35,36 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+
+// Collapsible components for expandable menu sections
 import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
+
+// Application logo
 import logo from "@/assets/bms-pro-logo.jpg";
 
+// ===== MENU CONFIGURATION =====
+/**
+ * Navigation menu structure
+ * Defines all menu items, their icons, and routes
+ * 
+ * Structure:
+ * - Dashboard: Main dashboard page (single item)
+ * - Masters: Master data management (expandable section)
+ *   - Bank accounts
+ *   - Items/Products
+ *   - Employee management
+ *   - Customer management
+ * - Transactions: Business transactions (expandable section)
+ *   - Quotations
+ *   - Job cards
+ * - More: Additional settings (expandable section)
+ *   - Company information
+ *   - Other options
+ */
 const menuItems = [
   {
     title: "Dashboard",
@@ -70,42 +99,70 @@ const menuItems = [
   },
 ];
 
+/**
+ * AppSidebar Component
+ * 
+ * Main navigation sidebar for the application
+ * Features:
+ * - Collapsible sidebar with logo
+ * - Hierarchical menu structure
+ * - Active route highlighting
+ * - Expandable sections for grouped items
+ */
 export function AppSidebar() {
+  // ===== HOOKS =====
+  // Get sidebar state (collapsed/expanded)
   const { state } = useSidebar();
+  // Get current location for active route highlighting
   const location = useLocation();
 
+  // ===== STYLING HELPERS =====
+  /**
+   * Get navigation link classes based on active state
+   * Active links are highlighted with primary colors
+   * Inactive links show accent color on hover
+   */
   const getNavCls = (isActive: boolean) =>
     isActive
       ? "bg-primary text-primary-foreground font-medium"
       : "hover:bg-sidebar-accent";
 
+  // ===== RENDER =====
   return (
     <Sidebar>
       <SidebarContent className="bg-sidebar-background">
+        {/* Logo section - hidden when sidebar is collapsed */}
         <div className="p-4 flex items-center justify-center border-b border-sidebar-border">
           {state !== "collapsed" && (
             <img src={logo} alt="BMS PRO" className="h-12 object-contain" />
           )}
         </div>
 
+        {/* Navigation menu */}
         <SidebarGroup>
           <SidebarMenu>
+            {/* Loop through all menu items */}
             {menuItems.map((item) =>
               item.items ? (
+                // Expandable menu section with sub-items
                 <Collapsible key={item.title} defaultOpen>
                   <SidebarMenuItem>
+                    {/* Main menu item trigger */}
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton className="text-sidebar-foreground hover:bg-sidebar-accent">
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
+                        {/* Chevron icon rotates when section is expanded */}
                         <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
+                    {/* Sub-menu items */}
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         {item.items.map((subItem) => (
                           <SidebarMenuSubItem key={subItem.url}>
                             <SidebarMenuSubButton asChild>
+                              {/* Navigation link with active state highlighting */}
                               <NavLink
                                 to={subItem.url}
                                 className={({ isActive }) => getNavCls(isActive)}
@@ -121,6 +178,7 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 </Collapsible>
               ) : (
+                // Single menu item without sub-items
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

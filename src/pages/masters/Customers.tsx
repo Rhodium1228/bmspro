@@ -1,4 +1,8 @@
+// ===== IMPORTS =====
+// React and state management
 import { useState } from "react";
+
+// UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, UserCog, Pencil, Trash2 } from "lucide-react";
@@ -8,19 +12,33 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Form handling and validation
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+
+// Database and data fetching
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+// ===== CONSTANTS =====
+/**
+ * Supported country codes for phone numbers
+ * Includes flag emoji, country code, and country name
+ */
 const countryCodes = [
   { code: "+61", country: "Australia", flag: "🇦🇺" },
   { code: "+64", country: "New Zealand", flag: "🇳🇿" },
   { code: "+91", country: "India", flag: "🇮🇳" },
 ];
 
+// ===== FORM VALIDATION SCHEMA =====
+/**
+ * Zod schema for customer form validation
+ * Defines required fields, types, and validation rules
+ */
 const formSchema = z.object({
   customer_name: z.string().min(1, "Customer name is required"),
   country_code: z.string().min(1, "Country code is required"),
@@ -35,19 +53,38 @@ const formSchema = z.object({
   is_blacklisted: z.boolean().default(false),
 });
 
+// Type definition for form values
 type FormValues = z.infer<typeof formSchema>;
 
+/**
+ * Customers Component
+ * 
+ * Complete customer management system with:
+ * - Add new customers
+ * - Edit existing customers
+ * - Delete customers
+ * - Display customer list with status badges
+ * - Integration with Supabase database
+ * - Support for multiple country codes
+ * - Credit limit tracking
+ * - Active/Blacklisted status management
+ */
 export default function Customers() {
-  const [open, setOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // ===== STATE =====
+  const [open, setOpen] = useState(false); // Dialog open state
+  const [editingId, setEditingId] = useState<string | null>(null); // Track which customer is being edited
+  
+  // ===== HOOKS =====
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // ===== FORM SETUP =====
+  // Initialize form with validation schema and default values
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       customer_name: "",
-      country_code: "+61",
+      country_code: "+61", // Default to Australia
       contact_number: "",
       email: "",
       fax: "",
@@ -60,6 +97,11 @@ export default function Customers() {
     },
   });
 
+  // ===== DATA FETCHING =====
+  /**
+   * Fetch all customers from Supabase
+   * Automatically refetches when data is invalidated
+   */
   const { data: customers, isLoading } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
@@ -73,11 +115,19 @@ export default function Customers() {
     },
   });
 
+  // ===== FORM HANDLERS =====
+  /**
+   * Handle form submission for both create and update operations
+   * - Creates new customer if editingId is null
+   * - Updates existing customer if editingId has a value
+   */
   const onSubmit = async (values: FormValues) => {
     try {
+      // Get authenticated user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Prepare customer data for database
       const customerData = {
         customer_name: values.customer_name,
         country_code: values.country_code,
@@ -94,6 +144,7 @@ export default function Customers() {
       };
 
       if (editingId) {
+        // Update existing customer
         const { error } = await supabase
           .from("customers")
           .update(customerData)
@@ -102,6 +153,7 @@ export default function Customers() {
         if (error) throw error;
         toast({ title: "Customer updated successfully" });
       } else {
+        // Create new customer
         const { error } = await supabase
           .from("customers")
           .insert([customerData]);
@@ -110,6 +162,7 @@ export default function Customers() {
         toast({ title: "Customer added successfully" });
       }
 
+      // Refresh customer list and close dialog
       queryClient.invalidateQueries({ queryKey: ["customers"] });
       setOpen(false);
       form.reset();
@@ -124,6 +177,9 @@ export default function Customers() {
     }
   };
 
+  /**
+   * Load customer data into form for editing
+   */
   const handleEdit = (customer: any) => {
     setEditingId(customer.id);
     form.reset({
@@ -142,6 +198,9 @@ export default function Customers() {
     setOpen(true);
   };
 
+  /**
+   * Delete customer from database
+   */
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
@@ -163,6 +222,10 @@ export default function Customers() {
     }
   };
 
+  /**
+   * Handle dialog open/close state changes
+   * Resets form when dialog is closed
+   */
   const handleDialogChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
@@ -171,8 +234,10 @@ export default function Customers() {
     }
   };
 
+  // ===== RENDER =====
   return (
     <div className="space-y-6">
+      {/* Page header with title and add button */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -181,6 +246,8 @@ export default function Customers() {
           </h1>
           <p className="text-muted-foreground">Manage your customers</p>
         </div>
+        
+        {/* Add/Edit customer dialog */}
         <Dialog open={open} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button className="gap-2">
@@ -192,8 +259,11 @@ export default function Customers() {
             <DialogHeader>
               <DialogTitle>{editingId ? "Edit Customer" : "Add New Customer"}</DialogTitle>
             </DialogHeader>
+            
+            {/* Customer form */}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {/* Customer Name Field */}
                 <FormField
                   control={form.control}
                   name="customer_name"
@@ -208,6 +278,7 @@ export default function Customers() {
                   )}
                 />
 
+                {/* Country Code and Phone Number Fields */}
                 <div className="grid grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
@@ -249,6 +320,7 @@ export default function Customers() {
                   />
                 </div>
 
+                {/* Email Field */}
                 <FormField
                   control={form.control}
                   name="email"
@@ -263,6 +335,7 @@ export default function Customers() {
                   )}
                 />
 
+                {/* Fax Field */}
                 <FormField
                   control={form.control}
                   name="fax"
@@ -277,6 +350,7 @@ export default function Customers() {
                   )}
                 />
 
+                {/* ID Type Fields */}
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -307,6 +381,7 @@ export default function Customers() {
                   />
                 </div>
 
+                {/* Credit Limit Field */}
                 <FormField
                   control={form.control}
                   name="credit_limit"
@@ -321,6 +396,7 @@ export default function Customers() {
                   )}
                 />
 
+                {/* Address Field */}
                 <FormField
                   control={form.control}
                   name="address"
@@ -339,6 +415,7 @@ export default function Customers() {
                   )}
                 />
 
+                {/* Status Checkboxes */}
                 <div className="flex gap-6">
                   <FormField
                     control={form.control}
@@ -373,6 +450,7 @@ export default function Customers() {
                   />
                 </div>
 
+                {/* Submit Button */}
                 <Button type="submit" className="w-full">
                   {editingId ? "Update Customer" : "Add Customer"}
                 </Button>
@@ -382,6 +460,7 @@ export default function Customers() {
         </Dialog>
       </div>
 
+      {/* Customer list card */}
       <Card>
         <CardHeader>
           <CardTitle>Customers</CardTitle>
@@ -391,16 +470,20 @@ export default function Customers() {
             <p className="text-muted-foreground">Loading customers...</p>
           ) : customers && customers.length > 0 ? (
             <div className="space-y-4">
+              {/* Loop through all customers */}
               {customers.map((customer) => (
                 <Card key={customer.id}>
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start">
+                      {/* Customer information */}
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-lg">{customer.customer_name}</h3>
+                          {/* Active status badge */}
                           {customer.is_active && (
                             <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Active</span>
                           )}
+                          {/* Blacklisted status badge */}
                           {customer.is_blacklisted && (
                             <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Blacklisted</span>
                           )}
@@ -425,6 +508,7 @@ export default function Customers() {
                           </p>
                         )}
                       </div>
+                      {/* Action buttons */}
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
