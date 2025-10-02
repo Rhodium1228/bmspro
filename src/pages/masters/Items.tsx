@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Package } from "lucide-react";
+import { Plus, Package, Pencil, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const itemFormSchema = z.object({
   itemGroup: z.string().min(1, "Item group is required"),
@@ -22,6 +24,8 @@ const itemFormSchema = z.object({
 
 export default function Items() {
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   
   const form = useForm<z.infer<typeof itemFormSchema>>({
     resolver: zodResolver(itemFormSchema),
@@ -34,11 +38,103 @@ export default function Items() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof itemFormSchema>) => {
-    console.log(values);
-    toast.success("Item added successfully");
-    form.reset();
-    setOpen(false);
+  const { data: items, isLoading } = useQuery({
+    queryKey: ["items"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("items")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof itemFormSchema>) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      if (editingId) {
+        const { error } = await supabase
+          .from("items")
+          .update({
+            item_group: values.itemGroup,
+            unit_of_measurement: values.unitOfMeasurement,
+            item_name: values.itemName,
+            brand_details: values.brandDetails || null,
+            remarks: values.remarks || null,
+          })
+          .eq("id", editingId)
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+        toast.success("Item updated successfully");
+      } else {
+        const { error } = await supabase.from("items").insert({
+          user_id: user.id,
+          item_group: values.itemGroup,
+          unit_of_measurement: values.unitOfMeasurement,
+          item_name: values.itemName,
+          brand_details: values.brandDetails || null,
+          remarks: values.remarks || null,
+        });
+
+        if (error) throw error;
+        toast.success("Item added successfully");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      form.reset();
+      setOpen(false);
+      setEditingId(null);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save item");
+    }
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingId(item.id);
+    form.reset({
+      itemGroup: item.item_group,
+      unitOfMeasurement: item.unit_of_measurement,
+      itemName: item.item_name,
+      brandDetails: item.brand_details || "",
+      remarks: item.remarks || "",
+    });
+    setOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("items")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      toast.success("Item deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete item");
+    }
+  };
+
+  const handleDialogChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      form.reset();
+      setEditingId(null);
+    }
   };
 
   return (
@@ -51,7 +147,7 @@ export default function Items() {
           </h1>
           <p className="text-muted-foreground">Manage your inventory items</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
@@ -60,7 +156,7 @@ export default function Items() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Add New Item</DialogTitle>
+              <DialogTitle>{editingId ? "Edit Item" : "Add New Item"}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -158,10 +254,10 @@ export default function Items() {
                 />
 
                 <div className="flex gap-2 justify-end pt-4">
-                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => handleDialogChange(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit">Add Item</Button>
+                  <Button type="submit">{editingId ? "Update Item" : "Add Item"}</Button>
                 </div>
               </form>
             </Form>
@@ -174,7 +270,56 @@ export default function Items() {
           <CardTitle>Inventory Items</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No items added yet.</p>
+          {isLoading ? (
+            <p className="text-muted-foreground">Loading items...</p>
+          ) : items && items.length > 0 ? (
+            <div className="space-y-4">
+              {items.map((item) => (
+                <Card key={item.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2 flex-1">
+                        <div>
+                          <h3 className="font-semibold text-lg">{item.item_name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Group: {item.item_group} | Unit: {item.unit_of_measurement}
+                          </p>
+                        </div>
+                        {item.brand_details && (
+                          <p className="text-sm">
+                            <span className="font-medium">Brand:</span> {item.brand_details}
+                          </p>
+                        )}
+                        {item.remarks && (
+                          <p className="text-sm">
+                            <span className="font-medium">Remarks:</span> {item.remarks}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleEdit(item)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No items added yet.</p>
+          )}
         </CardContent>
       </Card>
     </div>

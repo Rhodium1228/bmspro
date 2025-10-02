@@ -1,84 +1,151 @@
-// ===== IMPORTS =====
-// React and UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, Pencil, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
-// Form handling and validation
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
-// State and notifications
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-// ===== FORM VALIDATION SCHEMA =====
-/**
- * Zod schema for employee form validation
- * Defines required fields, types, and validation rules
- */
 const employeeFormSchema = z.object({
-  employeeName: z.string().min(1, "Employee name is required"),
+  name: z.string().min(1, "Employee name is required"),
   designation: z.string().min(1, "Designation is required"),
   email: z.string().email("Invalid email address").min(1, "Email is required"),
   phone: z.string().min(1, "Phone number is required"),
   address: z.string().min(1, "Address is required"),
   parentName: z.string().optional(),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters").optional(),
 });
 
-/**
- * Employees Component
- * 
- * Manages employee records with:
- * - Add new employee dialog
- * - Employee list display
- * - Form validation
- * 
- * TODO: Connect to Supabase backend for data persistence
- */
 export default function Employees() {
-  // ===== STATE =====
-  // Control dialog open/close state
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   
-  // ===== FORM SETUP =====
-  // Initialize form with validation schema and default values
   const form = useForm<z.infer<typeof employeeFormSchema>>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: {
-      employeeName: "",
+      name: "",
       designation: "",
       email: "",
       phone: "",
       address: "",
-      parentName: "",
       password: "",
+      parentName: "",
     },
   });
 
-  // ===== FORM HANDLERS =====
-  /**
-   * Handle form submission
-   * Currently logs data and shows success toast
-   * TODO: Save to Supabase database
-   */
-  const onSubmit = (values: z.infer<typeof employeeFormSchema>) => {
-    console.log(values);
-    toast.success("Employee added successfully");
-    form.reset();
-    setOpen(false);
+  const { data: employees, isLoading } = useQuery({
+    queryKey: ["employees"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("employees")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof employeeFormSchema>) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      if (editingId) {
+        const { error } = await supabase
+          .from("employees")
+          .update({
+            name: values.name,
+            designation: values.designation,
+            email: values.email,
+            phone: values.phone,
+            address: values.address,
+            parent_name: values.parentName || null,
+          })
+          .eq("id", editingId)
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+        toast.success("Employee updated successfully");
+      } else {
+        const { error } = await supabase.from("employees").insert({
+          user_id: user.id,
+          name: values.name,
+          designation: values.designation,
+          email: values.email,
+          phone: values.phone,
+          address: values.address,
+          parent_name: values.parentName || null,
+        });
+
+        if (error) throw error;
+        toast.success("Employee added successfully");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      form.reset();
+      setOpen(false);
+      setEditingId(null);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save employee");
+    }
   };
 
-  // ===== RENDER =====
+  const handleEdit = (employee: any) => {
+    setEditingId(employee.id);
+    form.reset({
+      name: employee.name,
+      designation: employee.designation,
+      email: employee.email,
+      phone: employee.phone,
+      address: employee.address,
+      parentName: employee.parent_name || "",
+      password: "",
+    });
+    setOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("employees")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      toast.success("Employee deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete employee");
+    }
+  };
+
+  const handleDialogChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      form.reset();
+      setEditingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Page header with title and add button */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -88,8 +155,7 @@ export default function Employees() {
           <p className="text-muted-foreground">Manage your employees</p>
         </div>
         
-        {/* Add employee dialog */}
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
@@ -98,16 +164,14 @@ export default function Employees() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Employee</DialogTitle>
+              <DialogTitle>{editingId ? "Edit Employee" : "Add New Employee"}</DialogTitle>
             </DialogHeader>
             
-            {/* Employee form */}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                {/* Employee Name Field */}
                 <FormField
                   control={form.control}
-                  name="employeeName"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Employee Name *</FormLabel>
@@ -119,7 +183,6 @@ export default function Employees() {
                   )}
                 />
 
-                {/* Designation Field */}
                 <FormField
                   control={form.control}
                   name="designation"
@@ -134,7 +197,6 @@ export default function Employees() {
                   )}
                 />
 
-                {/* Email Field */}
                 <FormField
                   control={form.control}
                   name="email"
@@ -149,7 +211,6 @@ export default function Employees() {
                   )}
                 />
 
-                {/* Phone Field */}
                 <FormField
                   control={form.control}
                   name="phone"
@@ -164,7 +225,6 @@ export default function Employees() {
                   )}
                 />
 
-                {/* Address Field */}
                 <FormField
                   control={form.control}
                   name="address"
@@ -179,7 +239,6 @@ export default function Employees() {
                   )}
                 />
 
-                {/* Parent Name Field (Optional) */}
                 <FormField
                   control={form.control}
                   name="parentName"
@@ -194,27 +253,27 @@ export default function Employees() {
                   )}
                 />
 
-                {/* Password Field */}
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password *</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter password (min. 6 characters)" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {!editingId && (
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password *</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="Enter password (min. 6 characters)" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
-                {/* Form action buttons */}
                 <div className="flex gap-2 justify-end pt-4">
-                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => handleDialogChange(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit">Add Employee</Button>
+                  <Button type="submit">{editingId ? "Update Employee" : "Add Employee"}</Button>
                 </div>
               </form>
             </Form>
@@ -222,14 +281,65 @@ export default function Employees() {
         </Dialog>
       </div>
 
-      {/* Employee list card */}
       <Card>
         <CardHeader>
-          <CardTitle>Employees</CardTitle>
+          <CardTitle>Employee List</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* TODO: Replace with actual employee list from database */}
-          <p className="text-muted-foreground">No employees added yet.</p>
+          {isLoading ? (
+            <p className="text-muted-foreground">Loading employees...</p>
+          ) : employees && employees.length > 0 ? (
+            <div className="space-y-4">
+              {employees.map((employee) => (
+                <Card key={employee.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2 flex-1">
+                        <div>
+                          <h3 className="font-semibold text-lg">{employee.name}</h3>
+                          <p className="text-sm text-muted-foreground">{employee.designation}</p>
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          <p>
+                            <span className="font-medium">Email:</span> {employee.email}
+                          </p>
+                          <p>
+                            <span className="font-medium">Phone:</span> {employee.phone}
+                          </p>
+                          <p>
+                            <span className="font-medium">Address:</span> {employee.address}
+                          </p>
+                          {employee.parent_name && (
+                            <p>
+                              <span className="font-medium">Parent Name:</span> {employee.parent_name}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleEdit(employee)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleDelete(employee.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No employees added yet.</p>
+          )}
         </CardContent>
       </Card>
     </div>

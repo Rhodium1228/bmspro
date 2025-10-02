@@ -68,6 +68,81 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          address: string
+          created_at: string
+          designation: string
+          email: string
+          id: string
+          name: string
+          parent_name: string | null
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          designation: string
+          email: string
+          id?: string
+          name: string
+          parent_name?: string | null
+          phone: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          designation?: string
+          email?: string
+          id?: string
+          name?: string
+          parent_name?: string | null
+          phone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      items: {
+        Row: {
+          brand_details: string | null
+          created_at: string
+          id: string
+          item_group: string
+          item_name: string
+          remarks: string | null
+          unit_of_measurement: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand_details?: string | null
+          created_at?: string
+          id?: string
+          item_group: string
+          item_name: string
+          remarks?: string | null
+          unit_of_measurement: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand_details?: string | null
+          created_at?: string
+          id?: string
+          item_group?: string
+          item_name?: string
+          remarks?: string | null
+          unit_of_measurement?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       organization_profiles: {
         Row: {
           company_name: string
