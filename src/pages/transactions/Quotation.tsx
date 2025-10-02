@@ -35,6 +35,8 @@ export default function Quotation() {
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "done">("all");
+  const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
+  const [activeTab, setActiveTab] = useState("list");
   
   // Quotation details
   const [quotationNumber, setQuotationNumber] = useState(`QUO-${Date.now().toString().slice(-6)}`);
@@ -319,6 +321,8 @@ export default function Quotation() {
     setTaxRate(18);
     setDiscountRate(0);
     setItems([]);
+    setIsCreatingQuotation(true);
+    setActiveTab("create");
   };
 
   const downloadPDF = async () => {
@@ -374,28 +378,32 @@ export default function Quotation() {
               <CardTitle>Quotation Workspace</CardTitle>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="create" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className={cn("grid w-full", isCreatingQuotation ? "grid-cols-5" : "grid-cols-1")}>
                   <TabsTrigger value="list" className="gap-2">
                     <List className="h-4 w-4" />
                     List
                   </TabsTrigger>
-                  <TabsTrigger value="create" className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Create
-                  </TabsTrigger>
-                  <TabsTrigger value="tool" className="gap-2">
-                    <Wrench className="h-4 w-4" />
-                    Tool
-                  </TabsTrigger>
-                  <TabsTrigger value="preview" className="gap-2">
-                    <Eye className="h-4 w-4" />
-                    Preview
-                  </TabsTrigger>
-                  <TabsTrigger value="email" className="gap-2">
-                    <Mail className="h-4 w-4" />
-                    Send Email
-                  </TabsTrigger>
+                  {isCreatingQuotation && (
+                    <>
+                      <TabsTrigger value="create" className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Create
+                      </TabsTrigger>
+                      <TabsTrigger value="tool" className="gap-2">
+                        <Wrench className="h-4 w-4" />
+                        Tool
+                      </TabsTrigger>
+                      <TabsTrigger value="preview" className="gap-2">
+                        <Eye className="h-4 w-4" />
+                        Preview
+                      </TabsTrigger>
+                      <TabsTrigger value="email" className="gap-2">
+                        <Mail className="h-4 w-4" />
+                        Send Email
+                      </TabsTrigger>
+                    </>
+                  )}
                 </TabsList>
 
                 <TabsContent value="list" className="space-y-4 mt-4">
