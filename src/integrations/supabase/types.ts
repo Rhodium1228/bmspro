@@ -68,6 +68,48 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_profiles: {
+        Row: {
+          company_name: string
+          country_code: string
+          created_at: string
+          email: string
+          full_phone: string
+          id: string
+          is_merchant: boolean
+          mobile_number: string
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          company_name: string
+          country_code?: string
+          created_at?: string
+          email: string
+          full_phone: string
+          id?: string
+          is_merchant?: boolean
+          mobile_number: string
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          company_name?: string
+          country_code?: string
+          created_at?: string
+          email?: string
+          full_phone?: string
+          id?: string
+          is_merchant?: boolean
+          mobile_number?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       quotations: {
         Row: {
           billing_address: string | null
