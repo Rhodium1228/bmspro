@@ -61,14 +61,6 @@ const menuItems = [
     ],
   },
   {
-    title: "Accounts",
-    icon: Wallet,
-    items: [
-      { title: "Account Master", url: "/accounts/master", icon: Database },
-      { title: "Account Settings", url: "/accounts/settings", icon: Settings },
-    ],
-  },
-  {
     title: "More",
     icon: MoreHorizontal,
     items: [

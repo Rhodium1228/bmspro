@@ -14,8 +14,6 @@ import Employees from "./pages/masters/Employees";
 import Customers from "./pages/masters/Customers";
 import Quotation from "./pages/transactions/Quotation";
 import JobCard from "./pages/transactions/JobCard";
-import AccountMaster from "./pages/accounts/Master";
-import AccountSettings from "./pages/accounts/Settings";
 import Company from "./pages/more/Company";
 import Options from "./pages/more/Options";
 import NotFound from "./pages/NotFound";
@@ -112,28 +110,6 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <JobCard />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/accounts/master"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <AccountMaster />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/accounts/settings"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <AccountSettings />
                   </Layout>
                 </ProtectedRoute>
               }
