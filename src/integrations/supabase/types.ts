@@ -185,6 +185,48 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_orders: {
+        Row: {
+          created_at: string
+          delivery_date: string
+          id: string
+          notes: string | null
+          order_date: string
+          order_number: string
+          status: string
+          supplier_name: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_date: string
+          id?: string
+          notes?: string | null
+          order_date: string
+          order_number: string
+          status?: string
+          supplier_name: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery_date?: string
+          id?: string
+          notes?: string | null
+          order_date?: string
+          order_number?: string
+          status?: string
+          supplier_name?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       quotations: {
         Row: {
           billing_address: string | null
@@ -255,6 +297,48 @@ export type Database = {
           tax_rate?: number
           terms_conditions?: string | null
           total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sale_orders: {
+        Row: {
+          created_at: string
+          customer_name: string
+          delivery_date: string
+          id: string
+          notes: string | null
+          order_date: string
+          order_number: string
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          delivery_date: string
+          id?: string
+          notes?: string | null
+          order_date: string
+          order_number: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          delivery_date?: string
+          id?: string
+          notes?: string | null
+          order_date?: string
+          order_number?: string
+          status?: string
+          total_amount?: number
           updated_at?: string
           user_id?: string
         }

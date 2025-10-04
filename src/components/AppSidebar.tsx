@@ -18,6 +18,8 @@ import {
   Building,
   ChevronDown,
   Briefcase,
+  ShoppingCart,
+  ShoppingBag,
 } from "lucide-react";
 
 // Sidebar UI components
@@ -86,6 +88,8 @@ const menuItems = [
     icon: FileText,
     items: [
       { title: "Quotation", url: "/transactions/quotation", icon: FileEdit },
+      { title: "Sale Order", url: "/transactions/sale-order", icon: ShoppingCart },
+      { title: "Purchase Order", url: "/transactions/purchase-order", icon: ShoppingBag },
       { title: "Job Card", url: "/transactions/jobcard", icon: Briefcase },
     ],
   },
