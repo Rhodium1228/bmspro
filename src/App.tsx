@@ -23,6 +23,8 @@ import Items from "./pages/masters/Items";
 import Employees from "./pages/masters/Employees";
 import Customers from "./pages/masters/Customers";
 import Quotation from "./pages/transactions/Quotation";
+import SaleOrder from "./pages/transactions/SaleOrder";
+import PurchaseOrder from "./pages/transactions/PurchaseOrder";
 import JobCard from "./pages/transactions/JobCard";
 import Company from "./pages/more/Company";
 import Options from "./pages/more/Options";
@@ -137,6 +139,28 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Quotation />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/transactions/sale-order"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SaleOrder />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/transactions/purchase-order"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PurchaseOrder />
                   </Layout>
                 </ProtectedRoute>
               }
