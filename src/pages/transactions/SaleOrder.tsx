@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Eye } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -38,14 +39,41 @@ const SaleOrder = () => {
   const [totalAmount, setTotalAmount] = useState("");
   const [status, setStatus] = useState("pending");
   const [notes, setNotes] = useState("");
+  const [quotationId, setQuotationId] = useState("");
+  const [poNumber, setPoNumber] = useState("");
+  const [poDate, setPoDate] = useState("");
+  const [poApprovedNote, setPoApprovedNote] = useState("");
+  const [viewingOrder, setViewingOrder] = useState<any>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-  // Fetch sale orders
+  // Fetch sale orders (API: GetSalePOList)
   const { data: saleOrders = [], isLoading } = useQuery({
     queryKey: ["saleOrders"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sale_orders")
-        .select("*")
+        .select(`
+          *,
+          quotations (
+            quotation_number,
+            customer_name,
+            total
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch quotations for dropdown
+  const { data: quotations = [] } = useQuery({
+    queryKey: ["quotations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("quotations")
+        .select("id, quotation_number, customer_name, total")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -61,6 +89,10 @@ const SaleOrder = () => {
     setTotalAmount("");
     setStatus("pending");
     setNotes("");
+    setQuotationId("");
+    setPoNumber("");
+    setPoDate("");
+    setPoApprovedNote("");
     setEditingId(null);
   };
 
@@ -86,6 +118,10 @@ const SaleOrder = () => {
         total_amount: parseFloat(totalAmount),
         status,
         notes,
+        quotation_id: quotationId || null,
+        po_number: poNumber || null,
+        po_date: poDate || null,
+        po_approved_note: poApprovedNote || null,
         user_id: user.id,
       };
 
@@ -134,7 +170,76 @@ const SaleOrder = () => {
     setTotalAmount(order.total_amount.toString());
     setStatus(order.status);
     setNotes(order.notes || "");
+    setQuotationId(order.quotation_id || "");
+    setPoNumber(order.po_number || "");
+    setPoDate(order.po_date || "");
+    setPoApprovedNote(order.po_approved_note || "");
     setIsDialogOpen(true);
+  };
+
+  // API: GetSalePOView - View single order details
+  const handleView = async (orderId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("sale_orders")
+        .select(`
+          *,
+          quotations (
+            quotation_number,
+            customer_name,
+            total,
+            items,
+            quotation_date
+          )
+        `)
+        .eq("id", orderId)
+        .single();
+
+      if (error) throw error;
+      setViewingOrder(data);
+      setIsViewDialogOpen(true);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // API: UpdateConfirmedPO - Update PO details
+  const handleUpdatePO = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!viewingOrder) return;
+
+    try {
+      const { error } = await supabase
+        .from("sale_orders")
+        .update({
+          po_number: poNumber,
+          po_date: poDate,
+          po_approved_note: poApprovedNote,
+        })
+        .eq("id", viewingOrder.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "PO details updated successfully",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["saleOrders"] });
+      setIsViewDialogOpen(false);
+      setViewingOrder(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -200,6 +305,7 @@ const SaleOrder = () => {
                   <TableHead>Order Date</TableHead>
                   <TableHead>Delivery Date</TableHead>
                   <TableHead>Amount</TableHead>
+                  <TableHead>PO Number</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -207,13 +313,13 @@ const SaleOrder = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filteredOrders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                       No sale orders found
                     </TableCell>
                   </TableRow>
@@ -267,6 +373,22 @@ const SaleOrder = () => {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="quotation">Link to Quotation (Optional)</Label>
+              <Select value={quotationId} onValueChange={setQuotationId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a quotation" />
+                </SelectTrigger>
+                <SelectContent>
+                  {quotations.map((q: any) => (
+                    <SelectItem key={q.id} value={q.id}>
+                      {q.quotation_number} - {q.customer_name} (${q.total})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="orderNumber">Order Number *</Label>
@@ -340,6 +462,36 @@ const SaleOrder = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="poNumber">PO Number</Label>
+                <Input
+                  id="poNumber"
+                  value={poNumber}
+                  onChange={(e) => setPoNumber(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="poDate">PO Date</Label>
+                <Input
+                  id="poDate"
+                  type="date"
+                  value={poDate}
+                  onChange={(e) => setPoDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="poApprovedNote">PO Approved Note</Label>
+              <Textarea
+                id="poApprovedNote"
+                value={poApprovedNote}
+                onChange={(e) => setPoApprovedNote(e.target.value)}
+                rows={2}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
               <Textarea
@@ -363,6 +515,113 @@ const SaleOrder = () => {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View/Update PO Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Sale Order Details & PO Update</DialogTitle>
+          </DialogHeader>
+          {viewingOrder && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Order Number</Label>
+                  <p className="font-medium">{viewingOrder.order_number}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Customer</Label>
+                  <p className="font-medium">{viewingOrder.customer_name}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Order Date</Label>
+                  <p>{new Date(viewingOrder.order_date).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Delivery Date</Label>
+                  <p>{new Date(viewingOrder.delivery_date).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Total Amount</Label>
+                  <p className="font-medium">${viewingOrder.total_amount.toFixed(2)}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Status</Label>
+                  <p className="font-medium capitalize">{viewingOrder.status}</p>
+                </div>
+              </div>
+
+              {viewingOrder.quotations && (
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold mb-2">Linked Quotation</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-muted-foreground">Quotation Number</Label>
+                      <p>{viewingOrder.quotations.quotation_number}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Quotation Total</Label>
+                      <p>${viewingOrder.quotations.total}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleUpdatePO} className="border-t pt-4 space-y-4">
+                <h3 className="font-semibold">Update PO Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="viewPoNumber">PO Number *</Label>
+                    <Input
+                      id="viewPoNumber"
+                      value={poNumber}
+                      onChange={(e) => setPoNumber(e.target.value)}
+                      placeholder={viewingOrder.po_number || "Enter PO number"}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="viewPoDate">PO Date *</Label>
+                    <Input
+                      id="viewPoDate"
+                      type="date"
+                      value={poDate}
+                      onChange={(e) => setPoDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="viewPoApprovedNote">PO Approved Note</Label>
+                  <Textarea
+                    id="viewPoApprovedNote"
+                    value={poApprovedNote}
+                    onChange={(e) => setPoApprovedNote(e.target.value)}
+                    placeholder={viewingOrder.po_approved_note || "Optional note"}
+                    rows={3}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsViewDialogOpen(false);
+                      setViewingOrder(null);
+                      setPoNumber("");
+                      setPoDate("");
+                      setPoApprovedNote("");
+                    }}
+                  >
+                    Close
+                  </Button>
+                  <Button type="submit">Update PO</Button>
+                </div>
+              </form>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -193,6 +193,10 @@ export type Database = {
           notes: string | null
           order_date: string
           order_number: string
+          po_approved_note: string | null
+          po_date: string | null
+          po_number: string | null
+          quotation_id: string | null
           status: string
           supplier_name: string
           total_amount: number
@@ -206,6 +210,10 @@ export type Database = {
           notes?: string | null
           order_date: string
           order_number: string
+          po_approved_note?: string | null
+          po_date?: string | null
+          po_number?: string | null
+          quotation_id?: string | null
           status?: string
           supplier_name: string
           total_amount?: number
@@ -219,13 +227,25 @@ export type Database = {
           notes?: string | null
           order_date?: string
           order_number?: string
+          po_approved_note?: string | null
+          po_date?: string | null
+          po_number?: string | null
+          quotation_id?: string | null
           status?: string
           supplier_name?: string
           total_amount?: number
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quotations: {
         Row: {
@@ -311,6 +331,10 @@ export type Database = {
           notes: string | null
           order_date: string
           order_number: string
+          po_approved_note: string | null
+          po_date: string | null
+          po_number: string | null
+          quotation_id: string | null
           status: string
           total_amount: number
           updated_at: string
@@ -324,6 +348,10 @@ export type Database = {
           notes?: string | null
           order_date: string
           order_number: string
+          po_approved_note?: string | null
+          po_date?: string | null
+          po_number?: string | null
+          quotation_id?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
@@ -337,12 +365,24 @@ export type Database = {
           notes?: string | null
           order_date?: string
           order_number?: string
+          po_approved_note?: string | null
+          po_date?: string | null
+          po_number?: string | null
+          quotation_id?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sale_orders_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
