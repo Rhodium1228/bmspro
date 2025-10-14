@@ -94,6 +94,9 @@ export default function Quotation() {
     const discountAmount = (subtotal * newItemDiscount) / 100;
     const totalAmount = subtotal + gstAmount - discountAmount;
 
+    // Find the selected item from master to get datasheet URL
+    const selectedMasterItem = masterItems.find(item => item.item_name === newItemName);
+
     const newItem: QuotationItem = {
       id: Date.now().toString(),
       itemName: newItemName,
@@ -103,6 +106,7 @@ export default function Quotation() {
       gst: newItemGst,
       discount: newItemDiscount,
       amount: totalAmount,
+      datasheetUrl: selectedMasterItem?.datasheet_url || undefined,
     };
 
     setItems([...items, newItem]);
@@ -152,6 +156,24 @@ export default function Quotation() {
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch items from master
+  const { data: masterItems = [] } = useQuery({
+    queryKey: ['items'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('item_name');
 
       if (error) throw error;
       return data;
@@ -815,15 +837,23 @@ export default function Quotation() {
                       <div className="grid grid-cols-12 gap-2 items-end">
                         <div className="col-span-3 space-y-1.5">
                           <Label htmlFor="itemName" className="text-xs">Item Name</Label>
-                          <Select value={newItemName} onValueChange={setNewItemName}>
+                          <Select value={newItemName} onValueChange={(value) => {
+                            setNewItemName(value);
+                            // Auto-fill description from master item
+                            const selectedItem = masterItems.find(item => item.item_name === value);
+                            if (selectedItem) {
+                              setNewItemDesc(selectedItem.brand_details || selectedItem.remarks || value);
+                            }
+                          }}>
                             <SelectTrigger className="h-9">
                               <SelectValue placeholder="Select item" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Product A">Product A</SelectItem>
-                              <SelectItem value="Product B">Product B</SelectItem>
-                              <SelectItem value="Service C">Service C</SelectItem>
-                              <SelectItem value="Custom">Custom Item</SelectItem>
+                              {masterItems.map((item) => (
+                                <SelectItem key={item.id} value={item.item_name}>
+                                  {item.item_name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
