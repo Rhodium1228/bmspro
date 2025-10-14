@@ -28,6 +28,9 @@ import PurchaseOrder from "./pages/transactions/PurchaseOrder";
 import JobCard from "./pages/transactions/JobCard";
 import Company from "./pages/more/Company";
 import Options from "./pages/more/Options";
+import Master from "./pages/accounts/Master";
+import AccountSettings from "./pages/accounts/Settings";
+import QuotationSettings from "./pages/accounts/QuotationSettings";
 import NotFound from "./pages/NotFound";
 
 // ===== QUERY CLIENT CONFIGURATION =====
@@ -194,6 +197,39 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Options />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/accounts/master"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Master />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/accounts/settings"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AccountSettings />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/accounts/quotation-settings"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <QuotationSettings />
                   </Layout>
                 </ProtectedRoute>
               }
