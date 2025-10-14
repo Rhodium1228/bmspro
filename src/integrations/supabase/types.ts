@@ -111,6 +111,7 @@ export type Database = {
         Row: {
           brand_details: string | null
           created_at: string
+          datasheet_url: string | null
           id: string
           item_group: string
           item_name: string
@@ -122,6 +123,7 @@ export type Database = {
         Insert: {
           brand_details?: string | null
           created_at?: string
+          datasheet_url?: string | null
           id?: string
           item_group: string
           item_name: string
@@ -133,6 +135,7 @@ export type Database = {
         Update: {
           brand_details?: string | null
           created_at?: string
+          datasheet_url?: string | null
           id?: string
           item_group?: string
           item_name?: string

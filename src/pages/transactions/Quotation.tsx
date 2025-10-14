@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download, List, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download, List, CheckCircle2, XCircle, FileText, Paperclip } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,7 @@ interface QuotationItem {
   gst: number;
   discount: number;
   amount: number;
+  datasheetUrl?: string;
 }
 
 export default function Quotation() {
@@ -1152,7 +1153,7 @@ export default function Quotation() {
                                     <td className="py-3 px-3 text-sm font-semibold text-gray-900 text-right align-top">${item.amount.toFixed(2)}</td>
                                   </tr>
                                 ))
-                              ) : (
+                               ) : (
                                 <tr>
                                   <td colSpan={6} className="py-8 text-center text-sm text-gray-500">No items added yet</td>
                                 </tr>
@@ -1165,6 +1166,29 @@ export default function Quotation() {
                         {items.length > 0 && (
                           <div className="flex justify-end mt-4">
                             <p className="text-sm font-semibold">Parts Subtotal: ${subtotal.toFixed(2)}</p>
+                          </div>
+                        )}
+
+                        {/* Datasheets Section */}
+                        {items.some(item => item.datasheetUrl) && (
+                          <div className="mt-6">
+                            <h4 className="text-sm font-semibold mb-3 text-gray-700">Attached Datasheets:</h4>
+                            <div className="space-y-2">
+                              {items.filter(item => item.datasheetUrl).map((item) => (
+                                <div key={item.id} className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-200">
+                                  <FileText className="h-4 w-4 text-gray-500" />
+                                  <span className="font-medium">{item.itemName}:</span>
+                                  <a 
+                                    href={item.datasheetUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    View Datasheet
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1249,13 +1273,32 @@ export default function Quotation() {
                 <TabsContent value="email" className="space-y-4 mt-4">
                   <div className="space-y-4">
                     <h3 className="font-semibold">Send Quotation via Email</h3>
-                    <div className="p-4 bg-muted/50 rounded-lg border">
-                      <p className="text-sm text-muted-foreground mb-2">
-                        📎 PDF attachment will be generated and attached automatically
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Filename: Quotation-{quotationNumber}.pdf
-                      </p>
+                    <div className="p-4 bg-muted/50 rounded-lg border space-y-3">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          📎 PDF attachment will be generated and attached automatically
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Filename: Quotation-{quotationNumber}.pdf
+                        </p>
+                      </div>
+                      
+                      {items.some(item => item.datasheetUrl) && (
+                        <div className="border-t pt-3">
+                          <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                            <Paperclip className="h-4 w-4" />
+                            Additional Datasheets to be attached:
+                          </p>
+                          <div className="space-y-1">
+                            {items.filter(item => item.datasheetUrl).map((item) => (
+                              <div key={item.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <FileText className="h-3 w-3" />
+                                <span>{item.itemName} - Datasheet.pdf</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-4">
                       <div className="space-y-2">
