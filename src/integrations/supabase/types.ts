@@ -247,6 +247,48 @@ export type Database = {
           },
         ]
       }
+      quotation_settings: {
+        Row: {
+          created_at: string
+          font: string
+          footer_text: string | null
+          header_text: string | null
+          id: string
+          logo_url: string | null
+          primary_color: string
+          secondary_color: string
+          template: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          font?: string
+          footer_text?: string | null
+          header_text?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          template?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          font?: string
+          footer_text?: string | null
+          header_text?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          template?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       quotations: {
         Row: {
           billing_address: string | null

@@ -76,9 +76,12 @@ export default function Company() {
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [selectedFont, setSelectedFont] = useState("inter");
   const [headerText, setHeaderText] = useState("");
+  const [footerText, setFooterText] = useState("");
   const [logo, setLogo] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [primaryColor, setPrimaryColor] = useState("#1D8FCC");
   const [secondaryColor, setSecondaryColor] = useState("#0B1E3D");
+  const [settingsLoading, setSettingsLoading] = useState(false);
 
   // ===== FORM SETUP =====
   const organisationForm = useForm<OrganisationFormData>({
@@ -123,6 +126,26 @@ export default function Company() {
     },
   });
 
+  /**
+   * Fetch quotation settings from database
+   */
+  const { data: quotationSettings, isLoading: loadingQuotationSettings } = useQuery({
+    queryKey: ['quotation-settings'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('quotation_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // ===== EFFECTS =====
   /**
    * Load profile data into form when fetched
@@ -139,6 +162,21 @@ export default function Company() {
       });
     }
   }, [profile]);
+
+  /**
+   * Load quotation settings into form when fetched
+   */
+  useEffect(() => {
+    if (quotationSettings) {
+      setSelectedTemplate(quotationSettings.template || "modern");
+      setSelectedFont(quotationSettings.font || "inter");
+      setHeaderText(quotationSettings.header_text || "");
+      setFooterText(quotationSettings.footer_text || "");
+      setPrimaryColor(quotationSettings.primary_color || "#1D8FCC");
+      setSecondaryColor(quotationSettings.secondary_color || "#0B1E3D");
+      setLogoPreview(quotationSettings.logo_url || null);
+    }
+  }, [quotationSettings]);
 
   // ===== FORM HANDLERS =====
   /**
@@ -216,10 +254,36 @@ export default function Company() {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+      if (!validTypes.includes(file.type)) {
+        showToast({
+          title: "Invalid file type",
+          description: "Please upload an image (JPG, PNG, GIF, WEBP) or PDF file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showToast({
+          title: "File too large",
+          description: "Please upload a file smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setLogo(file);
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setLogoPreview(previewUrl);
+      
       showToast({
-        title: "Logo uploaded",
-        description: "Your logo has been uploaded successfully.",
+        title: "Logo selected",
+        description: "Logo will be uploaded when you save settings.",
       });
     }
   };
@@ -227,11 +291,70 @@ export default function Company() {
   /**
    * Handle quotation settings save
    */
-  const handleQuotationSettingsSave = () => {
-    showToast({
-      title: "Settings saved",
-      description: "Your quotation settings have been saved successfully.",
-    });
+  const handleQuotationSettingsSave = async () => {
+    try {
+      setSettingsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      let logoUrl = logoPreview;
+
+      // Upload logo if a new file is selected
+      if (logo) {
+        const fileExt = logo.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('quotation-logos')
+          .upload(fileName, logo, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('quotation-logos')
+          .getPublicUrl(fileName);
+
+        logoUrl = publicUrl;
+      }
+
+      const settingsData = {
+        user_id: user.id,
+        template: selectedTemplate,
+        font: selectedFont,
+        header_text: headerText,
+        footer_text: footerText,
+        logo_url: logoUrl,
+        primary_color: primaryColor,
+        secondary_color: secondaryColor,
+      };
+
+      // Check if settings exist
+      if (quotationSettings) {
+        const { error } = await supabase
+          .from('quotation_settings')
+          .update(settingsData)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('quotation_settings')
+          .insert(settingsData);
+
+        if (error) throw error;
+      }
+
+      toast.success("Quotation settings saved successfully");
+      queryClient.invalidateQueries({ queryKey: ['quotation-settings'] });
+      setLogo(null);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save quotation settings");
+    } finally {
+      setSettingsLoading(false);
+    }
   };
 
   // ===== RENDER =====
@@ -535,65 +658,57 @@ export default function Company() {
 
             <TabsContent value="fonts" className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="heading-font">Heading Font</Label>
+                <Label htmlFor="font-select">Document Font</Label>
                 <Select value={selectedFont} onValueChange={setSelectedFont}>
-                  <SelectTrigger id="heading-font">
-                    <SelectValue placeholder="Select heading font" />
+                  <SelectTrigger id="font-select">
+                    <SelectValue placeholder="Select font" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="inter">Inter</SelectItem>
-                    <SelectItem value="roboto">Roboto</SelectItem>
-                    <SelectItem value="opensans">Open Sans</SelectItem>
-                    <SelectItem value="lato">Lato</SelectItem>
-                    <SelectItem value="montserrat">Montserrat</SelectItem>
+                  <SelectContent className="bg-card z-50">
+                    <SelectItem value="inter" style={{ fontFamily: 'Inter' }}>Inter</SelectItem>
+                    <SelectItem value="roboto" style={{ fontFamily: 'Roboto' }}>Roboto</SelectItem>
+                    <SelectItem value="opensans" style={{ fontFamily: 'Open Sans' }}>Open Sans</SelectItem>
+                    <SelectItem value="lato" style={{ fontFamily: 'Lato' }}>Lato</SelectItem>
+                    <SelectItem value="montserrat" style={{ fontFamily: 'Montserrat' }}>Montserrat</SelectItem>
+                    <SelectItem value="poppins" style={{ fontFamily: 'Poppins' }}>Poppins</SelectItem>
+                    <SelectItem value="raleway" style={{ fontFamily: 'Raleway' }}>Raleway</SelectItem>
+                    <SelectItem value="playfair" style={{ fontFamily: 'Playfair Display' }}>Playfair Display</SelectItem>
+                    <SelectItem value="merriweather" style={{ fontFamily: 'Merriweather' }}>Merriweather</SelectItem>
+                    <SelectItem value="sourcesans" style={{ fontFamily: 'Source Sans Pro' }}>Source Sans Pro</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="body-font">Body Font</Label>
-                <Select defaultValue="inter">
-                  <SelectTrigger id="body-font">
-                    <SelectValue placeholder="Select body font" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="inter">Inter</SelectItem>
-                    <SelectItem value="roboto">Roboto</SelectItem>
-                    <SelectItem value="opensans">Open Sans</SelectItem>
-                    <SelectItem value="lato">Lato</SelectItem>
-                    <SelectItem value="arial">Arial</SelectItem>
-                  </SelectContent>
-                </Select>
+                <p className="text-sm text-muted-foreground">
+                  This font will be applied to all text in the quotation
+                </p>
               </div>
             </TabsContent>
 
             <TabsContent value="header" className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="company-name-header">Company Name</Label>
-                <Input 
-                  id="company-name-header" 
-                  placeholder="Enter company name"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="header-text">Header Text</Label>
                 <Textarea 
                   id="header-text"
-                  placeholder="Enter header text or tagline"
+                  placeholder="Enter header text or tagline (appears at the top of quotation)"
                   value={headerText}
                   onChange={(e) => setHeaderText(e.target.value)}
                   rows={3}
                 />
+                <p className="text-sm text-muted-foreground">
+                  Add a custom message or tagline at the top of your quotations
+                </p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="footer-text">Footer Text</Label>
                 <Textarea 
                   id="footer-text"
-                  placeholder="Enter footer text"
-                  rows={2}
+                  placeholder="Enter footer text (appears at the bottom of quotation)"
+                  value={footerText}
+                  onChange={(e) => setFooterText(e.target.value)}
+                  rows={3}
                 />
+                <p className="text-sm text-muted-foreground">
+                  Add payment details, contact information, or legal text
+                </p>
               </div>
             </TabsContent>
 
@@ -601,116 +716,154 @@ export default function Company() {
               <div className="space-y-2">
                 <Label htmlFor="logo-upload">Company Logo</Label>
                 <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <Input 
-                      id="logo-upload" 
-                      type="file" 
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="cursor-pointer"
-                    />
-                  </div>
-                  <Button variant="outline" className="shrink-0">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload
-                  </Button>
+                  <Input 
+                    id="logo-upload" 
+                    type="file" 
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,application/pdf"
+                    onChange={handleLogoUpload}
+                    className="cursor-pointer"
+                  />
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  Upload an image (JPG, PNG, GIF, WEBP) or PDF file. Max size: 5MB
+                </p>
                 {logo && (
-                  <p className="text-sm text-muted-foreground">
-                    Selected: {logo.name}
+                  <p className="text-sm text-success">
+                    ✓ Selected: {logo.name}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label>Logo Preview</Label>
-                <div className="border-2 border-dashed border-border rounded-lg p-8 flex items-center justify-center bg-muted/20">
-                  {logo ? (
-                    <img 
-                      src={URL.createObjectURL(logo)} 
-                      alt="Logo preview" 
-                      className="max-h-32 object-contain"
-                    />
+                <div className="border-2 border-dashed border-border rounded-lg p-8 flex items-center justify-center bg-muted/20 min-h-[200px]">
+                  {logoPreview ? (
+                    logoPreview.endsWith('.pdf') ? (
+                      <div className="text-center">
+                        <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">PDF Logo Selected</p>
+                      </div>
+                    ) : (
+                      <img 
+                        src={logoPreview} 
+                        alt="Logo preview" 
+                        className="max-h-40 object-contain"
+                      />
+                    )
                   ) : (
-                    <p className="text-muted-foreground">No logo uploaded</p>
+                    <div className="text-center">
+                      <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground">No logo uploaded</p>
+                    </div>
                   )}
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="colors" className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="primary-color">Primary Color</Label>
-                <div className="flex items-center gap-4">
-                  <Input 
-                    id="primary-color" 
-                    type="color"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="h-10 w-20 cursor-pointer"
-                  />
-                  <Input 
-                    type="text"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="flex-1"
-                    placeholder="#1D8FCC"
-                  />
-                </div>
-              </div>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Choose colors that will be applied to your quotation template
+                </p>
 
-              <div className="space-y-2">
-                <Label htmlFor="secondary-color">Secondary Color</Label>
-                <div className="flex items-center gap-4">
-                  <Input 
-                    id="secondary-color" 
-                    type="color"
-                    value={secondaryColor}
-                    onChange={(e) => setSecondaryColor(e.target.value)}
-                    className="h-10 w-20 cursor-pointer"
-                  />
-                  <Input 
-                    type="text"
-                    value={secondaryColor}
-                    onChange={(e) => setSecondaryColor(e.target.value)}
-                    className="flex-1"
-                    placeholder="#0B1E3D"
-                  />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* Standard Color Palette */}
+                  {[
+                    { name: 'Blue', primary: '#1D8FCC', secondary: '#0B1E3D' },
+                    { name: 'Green', primary: '#10B981', secondary: '#047857' },
+                    { name: 'Purple', primary: '#8B5CF6', secondary: '#6D28D9' },
+                    { name: 'Red', primary: '#EF4444', secondary: '#B91C1C' },
+                    { name: 'Orange', primary: '#F97316', secondary: '#C2410C' },
+                    { name: 'Teal', primary: '#14B8A6', secondary: '#0F766E' },
+                    { name: 'Indigo', primary: '#6366F1', secondary: '#4338CA' },
+                    { name: 'Pink', primary: '#EC4899', secondary: '#BE185D' },
+                  ].map((colorScheme) => (
+                    <Card 
+                      key={colorScheme.name}
+                      className={`cursor-pointer transition-all ${
+                        primaryColor === colorScheme.primary ? 'ring-2 ring-primary' : ''
+                      }`}
+                      onClick={() => {
+                        setPrimaryColor(colorScheme.primary);
+                        setSecondaryColor(colorScheme.secondary);
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="space-y-2">
+                          <div 
+                            className="h-16 rounded-md"
+                            style={{ backgroundColor: colorScheme.primary }}
+                          />
+                          <div 
+                            className="h-8 rounded-md"
+                            style={{ backgroundColor: colorScheme.secondary }}
+                          />
+                          <p className="text-sm font-medium text-center">{colorScheme.name}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="text-color">Text Color</Label>
-                <div className="flex items-center gap-4">
-                  <Input 
-                    id="text-color" 
-                    type="color"
-                    defaultValue="#000000"
-                    className="h-10 w-20 cursor-pointer"
-                  />
-                  <Input 
-                    type="text"
-                    defaultValue="#000000"
-                    className="flex-1"
-                    placeholder="#000000"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Label className="mb-2 block">Preview</Label>
-                <div className="border rounded-lg p-6 space-y-2">
-                  <div 
-                    className="h-12 rounded-md flex items-center justify-center text-white font-semibold"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    Primary Color
+                <div className="pt-4 space-y-4 border-t">
+                  <h4 className="font-medium">Custom Colors</h4>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="primary-color">Primary Color</Label>
+                    <div className="flex items-center gap-4">
+                      <Input 
+                        id="primary-color" 
+                        type="color"
+                        value={primaryColor}
+                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        className="h-10 w-20 cursor-pointer"
+                      />
+                      <Input 
+                        type="text"
+                        value={primaryColor}
+                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        className="flex-1"
+                        placeholder="#1D8FCC"
+                      />
+                    </div>
                   </div>
-                  <div 
-                    className="h-12 rounded-md flex items-center justify-center text-white font-semibold"
-                    style={{ backgroundColor: secondaryColor }}
-                  >
-                    Secondary Color
+
+                  <div className="space-y-2">
+                    <Label htmlFor="secondary-color">Secondary Color</Label>
+                    <div className="flex items-center gap-4">
+                      <Input 
+                        id="secondary-color" 
+                        type="color"
+                        value={secondaryColor}
+                        onChange={(e) => setSecondaryColor(e.target.value)}
+                        className="h-10 w-20 cursor-pointer"
+                      />
+                      <Input 
+                        type="text"
+                        value={secondaryColor}
+                        onChange={(e) => setSecondaryColor(e.target.value)}
+                        className="flex-1"
+                        placeholder="#0B1E3D"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Label className="mb-3 block">Color Preview</Label>
+                  <div className="border rounded-lg p-6 space-y-3">
+                    <div 
+                      className="h-12 rounded-md flex items-center justify-center text-white font-semibold"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      Primary Color
+                    </div>
+                    <div 
+                      className="h-12 rounded-md flex items-center justify-center text-white font-semibold"
+                      style={{ backgroundColor: secondaryColor }}
+                    >
+                      Secondary Color
+                    </div>
                   </div>
                 </div>
               </div>
@@ -718,8 +871,12 @@ export default function Company() {
           </Tabs>
 
           <div className="flex justify-end mt-6">
-            <Button onClick={handleQuotationSettingsSave} size="lg">
-              Save Quotation Settings
+            <Button 
+              onClick={handleQuotationSettingsSave} 
+              size="lg"
+              disabled={settingsLoading || loadingQuotationSettings}
+            >
+              {settingsLoading ? "Saving..." : "Save Quotation Settings"}
             </Button>
           </div>
         </CardContent>

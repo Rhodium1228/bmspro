@@ -139,6 +139,24 @@ export default function Quotation() {
     },
   });
 
+  // Fetch quotation settings
+  const { data: quotationSettings } = useQuery({
+    queryKey: ['quotation-settings'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('quotation_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const saveQuotation = async () => {
     if (!customerName || items.length === 0) {
       toast({
@@ -1015,16 +1033,69 @@ export default function Quotation() {
                       </Button>
                     </div>
                     
-                    <div ref={previewRef} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
-                      {/* Modern Header with Gradient */}
-                      <div className="bg-gradient-to-r from-primary/5 to-primary/10 px-10 py-8 border-b border-gray-200">
+                    <div 
+                      ref={previewRef} 
+                      className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in"
+                      style={{ 
+                        fontFamily: quotationSettings?.font === 'inter' ? 'Inter' :
+                                   quotationSettings?.font === 'roboto' ? 'Roboto' :
+                                   quotationSettings?.font === 'opensans' ? 'Open Sans' :
+                                   quotationSettings?.font === 'lato' ? 'Lato' :
+                                   quotationSettings?.font === 'montserrat' ? 'Montserrat' :
+                                   quotationSettings?.font === 'poppins' ? 'Poppins' :
+                                   quotationSettings?.font === 'raleway' ? 'Raleway' :
+                                   quotationSettings?.font === 'playfair' ? 'Playfair Display' :
+                                   quotationSettings?.font === 'merriweather' ? 'Merriweather' :
+                                   quotationSettings?.font === 'sourcesans' ? 'Source Sans Pro' : 'Inter'
+                      }}
+                    >
+                      {/* Header Text */}
+                      {quotationSettings?.header_text && (
+                        <div 
+                          className="px-10 py-4 text-center border-b"
+                          style={{ 
+                            backgroundColor: quotationSettings?.primary_color || '#1D8FCC',
+                            color: 'white'
+                          }}
+                        >
+                          <p className="text-sm font-medium">{quotationSettings.header_text}</p>
+                        </div>
+                      )}
+
+                      {/* Header with Gradient */}
+                      <div 
+                        className="px-10 py-8 border-b border-gray-200"
+                        style={{
+                          background: quotationSettings?.template === 'classic' 
+                            ? `linear-gradient(to right, ${quotationSettings?.secondary_color || '#0B1E3D'}10, ${quotationSettings?.secondary_color || '#0B1E3D'}05)`
+                            : quotationSettings?.template === 'minimal'
+                            ? 'linear-gradient(to right, #f9fafb, #f3f4f6)'
+                            : `linear-gradient(to right, ${quotationSettings?.primary_color || '#1D8FCC'}10, ${quotationSettings?.primary_color || '#1D8FCC'}05)`
+                        }}
+                      >
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
-                            <h1 className="text-5xl font-black text-gray-900 tracking-tight">
+                            {quotationSettings?.logo_url && (
+                              <img 
+                                src={quotationSettings.logo_url} 
+                                alt="Company Logo" 
+                                className="h-16 object-contain mb-4"
+                              />
+                            )}
+                            <h1 
+                              className="text-5xl font-black tracking-tight"
+                              style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}
+                            >
                               QUOTATION
                             </h1>
                             <div className="flex items-center gap-3">
-                              <span className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                              <span 
+                                className="text-sm font-semibold px-3 py-1 rounded-full"
+                                style={{ 
+                                  backgroundColor: `${quotationSettings?.primary_color || '#1D8FCC'}20`,
+                                  color: quotationSettings?.primary_color || '#1D8FCC'
+                                }}
+                              >
                                 #{quotationNumber}
                               </span>
                               <span className="text-sm text-gray-500">
@@ -1037,7 +1108,12 @@ export default function Quotation() {
                             </div>
                           </div>
                           <div className="text-right space-y-1">
-                            <p className="text-2xl font-bold text-gray-900">{customerCompany || "Your Company"}</p>
+                            <p 
+                              className="text-2xl font-bold"
+                              style={{ color: quotationSettings?.secondary_color || '#0B1E3D' }}
+                            >
+                              {customerCompany || "Your Company"}
+                            </p>
                             <p className="text-sm text-gray-500">{address || "Company Address"}</p>
                             <p className="text-sm text-gray-500">{customerPhone || "Contact Number"}</p>
                           </div>
@@ -1078,7 +1154,10 @@ export default function Quotation() {
                         {customerName && (
                           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                             <div className="flex items-center gap-2 mb-4">
-                              <div className="h-8 w-1 bg-primary rounded-full"></div>
+                              <div 
+                                className="h-8 w-1 rounded-full"
+                                style={{ backgroundColor: quotationSettings?.primary_color || '#1D8FCC' }}
+                              ></div>
                               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">Bill To</h3>
                             </div>
                             <div className="space-y-2 ml-3">
@@ -1193,7 +1272,12 @@ export default function Quotation() {
                                   </div>
                                 )}
                               </div>
-                              <div className="bg-gradient-to-r from-primary to-primary/90 px-6 py-5">
+                              <div 
+                                className="px-6 py-5"
+                                style={{
+                                  background: `linear-gradient(to right, ${quotationSettings?.primary_color || '#1D8FCC'}, ${quotationSettings?.secondary_color || '#0B1E3D'})`
+                                }}
+                              >
                                 <div className="flex justify-between items-center">
                                   <span className="text-base font-bold text-white uppercase tracking-wide font-sans">Total Amount</span>
                                   <span className="text-3xl font-black text-white font-heading">${total.toFixed(2)}</span>
@@ -1207,7 +1291,10 @@ export default function Quotation() {
                         {termsAndConditions && (
                           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                             <div className="flex items-center gap-2 mb-3">
-                              <div className="h-8 w-1 bg-primary rounded-full"></div>
+                              <div 
+                                className="h-8 w-1 rounded-full"
+                                style={{ backgroundColor: quotationSettings?.primary_color || '#1D8FCC' }}
+                              ></div>
                               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">Terms & Conditions</h3>
                             </div>
                             <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap ml-3 font-sans">
@@ -1218,8 +1305,14 @@ export default function Quotation() {
 
                         {/* Footer */}
                         <div className="text-center pt-6 border-t border-gray-200">
-                          <p className="text-xs text-gray-500 font-sans">Thank you for your business!</p>
-                          <p className="text-xs text-gray-400 mt-1 font-sans">This is a computer-generated quotation and does not require a signature</p>
+                          {quotationSettings?.footer_text ? (
+                            <p className="text-sm text-gray-600 whitespace-pre-wrap">{quotationSettings.footer_text}</p>
+                          ) : (
+                            <>
+                              <p className="text-xs text-gray-500 font-sans">Thank you for your business!</p>
+                              <p className="text-xs text-gray-400 mt-1 font-sans">This is a computer-generated quotation and does not require a signature</p>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
