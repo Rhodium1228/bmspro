@@ -613,43 +613,149 @@ export default function Company() {
 
             <TabsContent value="templates" className="space-y-4">
               <div className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <p className="text-sm text-muted-foreground">Choose a template style for your quotations</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Modern Template */}
                   <Card 
-                    className={`cursor-pointer transition-all ${selectedTemplate === "modern" ? "ring-2 ring-primary" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "modern" ? "ring-2 ring-primary shadow-lg" : ""}`}
                     onClick={() => setSelectedTemplate("modern")}
                   >
-                    <CardContent className="p-6">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 to-primary/5 rounded-md mb-3 flex items-center justify-center">
-                        <span className="text-muted-foreground">Modern</span>
+                    <CardContent className="p-4">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg mb-3 overflow-hidden border border-blue-200">
+                        <div className="h-full p-3 space-y-2">
+                          <div className="h-6 bg-blue-500 rounded"></div>
+                          <div className="h-3 bg-blue-400/50 rounded w-3/4"></div>
+                          <div className="h-3 bg-blue-400/30 rounded w-1/2"></div>
+                          <div className="mt-4 space-y-1">
+                            <div className="h-2 bg-gray-300 rounded"></div>
+                            <div className="h-2 bg-gray-300 rounded"></div>
+                            <div className="h-2 bg-gray-300 rounded w-4/5"></div>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="font-semibold">Modern Template</h3>
-                      <p className="text-sm text-muted-foreground">Clean and professional design</p>
+                      <h3 className="font-semibold text-base">Modern</h3>
+                      <p className="text-xs text-muted-foreground">Clean gradients with bold headers</p>
                     </CardContent>
                   </Card>
 
+                  {/* Classic Template */}
                   <Card 
-                    className={`cursor-pointer transition-all ${selectedTemplate === "classic" ? "ring-2 ring-primary" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "classic" ? "ring-2 ring-primary shadow-lg" : ""}`}
                     onClick={() => setSelectedTemplate("classic")}
                   >
-                    <CardContent className="p-6">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-md mb-3 flex items-center justify-center">
-                        <span className="text-muted-foreground">Classic</span>
+                    <CardContent className="p-4">
+                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-2 border-gray-800">
+                        <div className="h-full p-3 space-y-2">
+                          <div className="h-8 bg-gray-800 rounded-none"></div>
+                          <div className="space-y-1 mt-3">
+                            <div className="h-2 bg-gray-800 rounded-none w-2/3"></div>
+                            <div className="h-2 bg-gray-600 rounded-none w-1/2"></div>
+                          </div>
+                          <div className="mt-4 space-y-1">
+                            <div className="h-2 bg-gray-400 rounded-none"></div>
+                            <div className="h-2 bg-gray-400 rounded-none"></div>
+                            <div className="h-2 bg-gray-400 rounded-none w-3/4"></div>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="font-semibold">Classic Template</h3>
-                      <p className="text-sm text-muted-foreground">Traditional business layout</p>
+                      <h3 className="font-semibold text-base">Classic</h3>
+                      <p className="text-xs text-muted-foreground">Traditional business layout</p>
                     </CardContent>
                   </Card>
 
+                  {/* Minimal Template */}
                   <Card 
-                    className={`cursor-pointer transition-all ${selectedTemplate === "minimal" ? "ring-2 ring-primary" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "minimal" ? "ring-2 ring-primary shadow-lg" : ""}`}
                     onClick={() => setSelectedTemplate("minimal")}
                   >
-                    <CardContent className="p-6">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-muted/50 to-muted/20 rounded-md mb-3 flex items-center justify-center">
-                        <span className="text-muted-foreground">Minimal</span>
+                    <CardContent className="p-4">
+                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border border-gray-200">
+                        <div className="h-full p-4 space-y-3">
+                          <div className="h-4 bg-gray-900 rounded-full w-1/3"></div>
+                          <div className="h-2 bg-gray-300 rounded w-1/2"></div>
+                          <div className="mt-6 space-y-2">
+                            <div className="h-1.5 bg-gray-200 rounded"></div>
+                            <div className="h-1.5 bg-gray-200 rounded w-5/6"></div>
+                            <div className="h-1.5 bg-gray-200 rounded w-4/5"></div>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="font-semibold">Minimal Template</h3>
-                      <p className="text-sm text-muted-foreground">Simple and elegant style</p>
+                      <h3 className="font-semibold text-base">Minimal</h3>
+                      <p className="text-xs text-muted-foreground">Simple and elegant design</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Professional Template */}
+                  <Card 
+                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "professional" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    onClick={() => setSelectedTemplate("professional")}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-[3/4] bg-gradient-to-b from-indigo-50 to-white rounded-lg mb-3 overflow-hidden border border-indigo-200">
+                        <div className="h-full p-3 space-y-2">
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="h-4 w-4 bg-indigo-600 rounded-full"></div>
+                            <div className="h-3 bg-indigo-600/30 rounded w-1/3"></div>
+                          </div>
+                          <div className="h-5 bg-indigo-600 rounded w-2/3"></div>
+                          <div className="mt-4 space-y-1.5">
+                            <div className="h-2 bg-gray-300 rounded"></div>
+                            <div className="h-2 bg-gray-300 rounded"></div>
+                            <div className="h-2 bg-gray-300 rounded w-3/4"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-base">Professional</h3>
+                      <p className="text-xs text-muted-foreground">Corporate style with logo prominence</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Bold Template */}
+                  <Card 
+                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "bold" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    onClick={() => setSelectedTemplate("bold")}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 rounded-lg mb-3 overflow-hidden">
+                        <div className="h-full p-3 space-y-2">
+                          <div className="h-8 bg-white rounded-lg shadow-lg"></div>
+                          <div className="h-3 bg-white/80 rounded w-2/3"></div>
+                          <div className="mt-4 space-y-1">
+                            <div className="h-2 bg-white/60 rounded"></div>
+                            <div className="h-2 bg-white/60 rounded"></div>
+                            <div className="h-2 bg-white/60 rounded w-4/5"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-base">Bold</h3>
+                      <p className="text-xs text-muted-foreground">Vibrant colors with strong impact</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Elegant Template */}
+                  <Card 
+                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "elegant" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    onClick={() => setSelectedTemplate("elegant")}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-amber-50 via-white to-amber-50 rounded-lg mb-3 overflow-hidden border-2 border-amber-200">
+                        <div className="h-full p-3 space-y-2">
+                          <div className="text-center mb-2">
+                            <div className="h-5 bg-amber-600 rounded-sm w-1/2 mx-auto"></div>
+                          </div>
+                          <div className="border-t-2 border-b-2 border-amber-300 py-2 my-2">
+                            <div className="h-2 bg-amber-600/50 rounded w-3/4 mx-auto"></div>
+                          </div>
+                          <div className="mt-4 space-y-1">
+                            <div className="h-2 bg-gray-300 rounded"></div>
+                            <div className="h-2 bg-gray-300 rounded w-5/6"></div>
+                            <div className="h-2 bg-gray-300 rounded w-4/5"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-base">Elegant</h3>
+                      <p className="text-xs text-muted-foreground">Sophisticated with decorative borders</p>
                     </CardContent>
                   </Card>
                 </div>
