@@ -1,18 +1,21 @@
 // ===== IMPORTS =====
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Building, Lock, User, Mail, Phone } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Building, Lock, User, Mail, Phone, FileText, Upload } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 // ===== CONSTANTS =====
 /**
@@ -67,6 +70,15 @@ export default function Company() {
   // ===== STATE =====
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
+  const { toast: showToast } = useToast();
+  
+  // Quotation Settings State
+  const [selectedTemplate, setSelectedTemplate] = useState("modern");
+  const [selectedFont, setSelectedFont] = useState("inter");
+  const [headerText, setHeaderText] = useState("");
+  const [logo, setLogo] = useState<File | null>(null);
+  const [primaryColor, setPrimaryColor] = useState("#1D8FCC");
+  const [secondaryColor, setSecondaryColor] = useState("#0B1E3D");
 
   // ===== FORM SETUP =====
   const organisationForm = useForm<OrganisationFormData>({
@@ -196,6 +208,30 @@ export default function Company() {
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * Handle logo upload for quotation settings
+   */
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogo(file);
+      showToast({
+        title: "Logo uploaded",
+        description: "Your logo has been uploaded successfully.",
+      });
+    }
+  };
+
+  /**
+   * Handle quotation settings save
+   */
+  const handleQuotationSettingsSave = () => {
+    showToast({
+      title: "Settings saved",
+      description: "Your quotation settings have been saved successfully.",
+    });
   };
 
   // ===== RENDER =====
@@ -430,6 +466,262 @@ export default function Company() {
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Quotation Settings Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Quotation Settings
+          </CardTitle>
+          <CardDescription>Customize your quotation PDF preview</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="templates" className="w-full">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="templates">Templates</TabsTrigger>
+              <TabsTrigger value="fonts">Fonts</TabsTrigger>
+              <TabsTrigger value="header">Header</TabsTrigger>
+              <TabsTrigger value="logo">Logo</TabsTrigger>
+              <TabsTrigger value="colors">Colors</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="templates" className="space-y-4">
+              <div className="space-y-4 pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card 
+                    className={`cursor-pointer transition-all ${selectedTemplate === "modern" ? "ring-2 ring-primary" : ""}`}
+                    onClick={() => setSelectedTemplate("modern")}
+                  >
+                    <CardContent className="p-6">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 to-primary/5 rounded-md mb-3 flex items-center justify-center">
+                        <span className="text-muted-foreground">Modern</span>
+                      </div>
+                      <h3 className="font-semibold">Modern Template</h3>
+                      <p className="text-sm text-muted-foreground">Clean and professional design</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card 
+                    className={`cursor-pointer transition-all ${selectedTemplate === "classic" ? "ring-2 ring-primary" : ""}`}
+                    onClick={() => setSelectedTemplate("classic")}
+                  >
+                    <CardContent className="p-6">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-md mb-3 flex items-center justify-center">
+                        <span className="text-muted-foreground">Classic</span>
+                      </div>
+                      <h3 className="font-semibold">Classic Template</h3>
+                      <p className="text-sm text-muted-foreground">Traditional business layout</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card 
+                    className={`cursor-pointer transition-all ${selectedTemplate === "minimal" ? "ring-2 ring-primary" : ""}`}
+                    onClick={() => setSelectedTemplate("minimal")}
+                  >
+                    <CardContent className="p-6">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-muted/50 to-muted/20 rounded-md mb-3 flex items-center justify-center">
+                        <span className="text-muted-foreground">Minimal</span>
+                      </div>
+                      <h3 className="font-semibold">Minimal Template</h3>
+                      <p className="text-sm text-muted-foreground">Simple and elegant style</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="fonts" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="heading-font">Heading Font</Label>
+                <Select value={selectedFont} onValueChange={setSelectedFont}>
+                  <SelectTrigger id="heading-font">
+                    <SelectValue placeholder="Select heading font" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inter">Inter</SelectItem>
+                    <SelectItem value="roboto">Roboto</SelectItem>
+                    <SelectItem value="opensans">Open Sans</SelectItem>
+                    <SelectItem value="lato">Lato</SelectItem>
+                    <SelectItem value="montserrat">Montserrat</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="body-font">Body Font</Label>
+                <Select defaultValue="inter">
+                  <SelectTrigger id="body-font">
+                    <SelectValue placeholder="Select body font" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inter">Inter</SelectItem>
+                    <SelectItem value="roboto">Roboto</SelectItem>
+                    <SelectItem value="opensans">Open Sans</SelectItem>
+                    <SelectItem value="lato">Lato</SelectItem>
+                    <SelectItem value="arial">Arial</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="header" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="company-name-header">Company Name</Label>
+                <Input 
+                  id="company-name-header" 
+                  placeholder="Enter company name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="header-text">Header Text</Label>
+                <Textarea 
+                  id="header-text"
+                  placeholder="Enter header text or tagline"
+                  value={headerText}
+                  onChange={(e) => setHeaderText(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="footer-text">Footer Text</Label>
+                <Textarea 
+                  id="footer-text"
+                  placeholder="Enter footer text"
+                  rows={2}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="logo" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="logo-upload">Company Logo</Label>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <Input 
+                      id="logo-upload" 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                  <Button variant="outline" className="shrink-0">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload
+                  </Button>
+                </div>
+                {logo && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected: {logo.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Logo Preview</Label>
+                <div className="border-2 border-dashed border-border rounded-lg p-8 flex items-center justify-center bg-muted/20">
+                  {logo ? (
+                    <img 
+                      src={URL.createObjectURL(logo)} 
+                      alt="Logo preview" 
+                      className="max-h-32 object-contain"
+                    />
+                  ) : (
+                    <p className="text-muted-foreground">No logo uploaded</p>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="colors" className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="primary-color">Primary Color</Label>
+                <div className="flex items-center gap-4">
+                  <Input 
+                    id="primary-color" 
+                    type="color"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="h-10 w-20 cursor-pointer"
+                  />
+                  <Input 
+                    type="text"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="flex-1"
+                    placeholder="#1D8FCC"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="secondary-color">Secondary Color</Label>
+                <div className="flex items-center gap-4">
+                  <Input 
+                    id="secondary-color" 
+                    type="color"
+                    value={secondaryColor}
+                    onChange={(e) => setSecondaryColor(e.target.value)}
+                    className="h-10 w-20 cursor-pointer"
+                  />
+                  <Input 
+                    type="text"
+                    value={secondaryColor}
+                    onChange={(e) => setSecondaryColor(e.target.value)}
+                    className="flex-1"
+                    placeholder="#0B1E3D"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="text-color">Text Color</Label>
+                <div className="flex items-center gap-4">
+                  <Input 
+                    id="text-color" 
+                    type="color"
+                    defaultValue="#000000"
+                    className="h-10 w-20 cursor-pointer"
+                  />
+                  <Input 
+                    type="text"
+                    defaultValue="#000000"
+                    className="flex-1"
+                    placeholder="#000000"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Label className="mb-2 block">Preview</Label>
+                <div className="border rounded-lg p-6 space-y-2">
+                  <div 
+                    className="h-12 rounded-md flex items-center justify-center text-white font-semibold"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Primary Color
+                  </div>
+                  <div 
+                    className="h-12 rounded-md flex items-center justify-center text-white font-semibold"
+                    style={{ backgroundColor: secondaryColor }}
+                  >
+                    Secondary Color
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end mt-6">
+            <Button onClick={handleQuotationSettingsSave} size="lg">
+              Save Quotation Settings
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

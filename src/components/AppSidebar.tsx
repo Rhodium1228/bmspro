@@ -94,15 +94,6 @@ const menuItems = [
     ],
   },
   {
-    title: "Company Accounts",
-    icon: Building,
-    items: [
-      { title: "Master", url: "/accounts/master", icon: Wallet },
-      { title: "Settings", url: "/accounts/settings", icon: Settings },
-      { title: "Quotation Setting", url: "/accounts/quotation-settings", icon: FileText },
-    ],
-  },
-  {
     title: "More",
     icon: MoreHorizontal,
     items: [
