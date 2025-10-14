@@ -1033,16 +1033,10 @@ export default function Quotation() {
                       </Button>
                     </div>
                     
+                    {/* Page 1 */}
                     <div 
                       ref={previewRef} 
-                      className={`overflow-hidden animate-fade-in ${
-                        quotationSettings?.template === 'classic' ? 'bg-white rounded-none shadow-2xl border-4 border-gray-800' :
-                        quotationSettings?.template === 'minimal' ? 'bg-white rounded-lg shadow-md border border-gray-200' :
-                        quotationSettings?.template === 'professional' ? 'bg-gradient-to-b from-gray-50 to-white rounded-xl shadow-xl border border-gray-200' :
-                        quotationSettings?.template === 'bold' ? 'rounded-2xl shadow-2xl border-4' :
-                        quotationSettings?.template === 'elegant' ? 'bg-gradient-to-br from-amber-50 via-white to-amber-50 rounded-lg shadow-xl border-2 border-amber-300' :
-                        'bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border border-gray-100'
-                      }`}
+                      className="bg-white shadow-lg overflow-hidden animate-fade-in"
                       style={{ 
                         fontFamily: quotationSettings?.font === 'inter' ? 'Inter' :
                                    quotationSettings?.font === 'roboto' ? 'Roboto' :
@@ -1054,505 +1048,199 @@ export default function Quotation() {
                                    quotationSettings?.font === 'playfair' ? 'Playfair Display' :
                                    quotationSettings?.font === 'merriweather' ? 'Merriweather' :
                                    quotationSettings?.font === 'sourcesans' ? 'Source Sans Pro' : 'Inter',
-                        ...(quotationSettings?.template === 'bold' ? {
-                          background: `linear-gradient(135deg, ${quotationSettings?.primary_color || '#1D8FCC'}, ${quotationSettings?.secondary_color || '#0B1E3D'})`,
-                          borderColor: quotationSettings?.primary_color || '#1D8FCC'
-                        } : {})
                       }}
                     >
-                      {/* Header Text */}
-                      {quotationSettings?.header_text && (
-                        <div 
-                          className={`px-10 py-4 text-center ${
-                            quotationSettings?.template === 'classic' ? 'border-b-4 border-gray-800' :
-                            quotationSettings?.template === 'minimal' ? 'border-b' :
-                            quotationSettings?.template === 'elegant' ? 'border-b-2 border-t-2 border-amber-400' :
-                            'border-b'
-                          }`}
-                          style={{ 
-                            backgroundColor: quotationSettings?.template === 'bold' ? 'rgba(255, 255, 255, 0.95)' :
-                                           quotationSettings?.template === 'elegant' ? 'transparent' :
-                                           quotationSettings?.primary_color || '#1D8FCC',
-                            color: quotationSettings?.template === 'bold' ? quotationSettings?.primary_color :
-                                   quotationSettings?.template === 'elegant' ? quotationSettings?.primary_color :
-                                   'white'
-                          }}
-                        >
-                          <p className={`text-sm font-medium ${quotationSettings?.template === 'elegant' ? 'italic' : ''}`}>
-                            {quotationSettings.header_text}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Header with Template-specific styling */}
-                      <div 
-                        className={`px-10 py-8 ${
-                          quotationSettings?.template === 'classic' ? 'border-b-4 border-gray-800 bg-white' :
-                          quotationSettings?.template === 'minimal' ? 'border-b border-gray-200' :
-                          quotationSettings?.template === 'professional' ? 'border-b-2 border-gray-300' :
-                          quotationSettings?.template === 'bold' ? 'border-b-4' :
-                          quotationSettings?.template === 'elegant' ? 'border-b-2 border-amber-300' :
-                          'border-b border-gray-200'
-                        }`}
-                        style={{
-                          background: quotationSettings?.template === 'classic' 
-                            ? 'white'
-                            : quotationSettings?.template === 'minimal'
-                            ? 'white'
-                            : quotationSettings?.template === 'professional'
-                            ? `linear-gradient(to right, ${quotationSettings?.primary_color || '#1D8FCC'}05, white, ${quotationSettings?.primary_color || '#1D8FCC'}05)`
-                            : quotationSettings?.template === 'bold'
-                            ? `linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9))`
-                            : quotationSettings?.template === 'elegant'
-                            ? 'transparent'
-                            : `linear-gradient(to right, ${quotationSettings?.primary_color || '#1D8FCC'}10, ${quotationSettings?.primary_color || '#1D8FCC'}05)`,
-                          borderColor: quotationSettings?.template === 'bold' ? 'rgba(255, 255, 255, 0.3)' : undefined
-                        }}
-                      >
+                      {/* Header Section */}
+                      <div className="px-10 py-8 border-b">
                         <div className="flex justify-between items-start">
-                          <div className="space-y-2">
+                          {/* Left Side - Logo */}
+                          <div className="flex-shrink-0">
                             {quotationSettings?.logo_url && (
                               <img 
                                 src={quotationSettings.logo_url} 
                                 alt="Company Logo" 
-                                className={`object-contain mb-4 ${
-                                  quotationSettings?.template === 'professional' ? 'h-20' :
-                                  quotationSettings?.template === 'elegant' ? 'h-16 mx-auto' :
-                                  quotationSettings?.template === 'bold' ? 'h-20 rounded-lg bg-white/90 p-2' :
-                                  'h-16'
-                                }`}
+                                className="h-24 w-auto object-contain"
                               />
                             )}
-                            <h1 
-                              className={`tracking-tight ${
-                                quotationSettings?.template === 'classic' ? 'text-4xl font-bold uppercase' :
-                                quotationSettings?.template === 'minimal' ? 'text-3xl font-light' :
-                                quotationSettings?.template === 'professional' ? 'text-5xl font-extrabold' :
-                                quotationSettings?.template === 'bold' ? 'text-6xl font-black' :
-                                quotationSettings?.template === 'elegant' ? 'text-4xl font-serif font-bold text-center' :
-                                'text-5xl font-black'
-                              }`}
-                              style={{ 
-                                color: quotationSettings?.template === 'bold' ? 'white' :
-                                       quotationSettings?.template === 'classic' ? quotationSettings?.secondary_color || '#0B1E3D' :
-                                       quotationSettings?.primary_color || '#1D8FCC'
-                              }}
-                            >
-                              QUOTATION
-                            </h1>
-                            <div className={`flex items-center gap-3 ${quotationSettings?.template === 'elegant' ? 'justify-center' : ''}`}>
-                              <span 
-                                className={`text-sm font-semibold px-3 py-1 ${
-                                  quotationSettings?.template === 'classic' ? 'rounded-none border-2' :
-                                  quotationSettings?.template === 'minimal' ? 'rounded border' :
-                                  quotationSettings?.template === 'bold' ? 'rounded-lg bg-white/90 text-base' :
-                                  quotationSettings?.template === 'elegant' ? 'rounded border-2 border-amber-400' :
-                                  'rounded-full'
-                                }`}
-                                style={{ 
-                                  backgroundColor: quotationSettings?.template === 'classic' ? 'white' :
-                                                 quotationSettings?.template === 'bold' ? 'white' :
-                                                 `${quotationSettings?.primary_color || '#1D8FCC'}20`,
-                                  color: quotationSettings?.template === 'bold' ? quotationSettings?.primary_color :
-                                        quotationSettings?.primary_color || '#1D8FCC',
-                                  borderColor: quotationSettings?.template === 'classic' ? quotationSettings?.secondary_color :
-                                             quotationSettings?.template === 'elegant' ? quotationSettings?.primary_color :
-                                             undefined
-                                }}
-                              >
-                                #{quotationNumber}
-                              </span>
-                              <span className={`text-sm ${quotationSettings?.template === 'bold' ? 'text-white font-medium' : 'text-gray-500'}`}>
-                                {new Date(quotationDate).toLocaleDateString('en-US', { 
-                                  month: 'long', 
-                                  day: 'numeric', 
-                                  year: 'numeric' 
-                                })}
-                              </span>
-                            </div>
                           </div>
-                          <div className={`space-y-1 ${
-                            quotationSettings?.template === 'elegant' ? 'text-center border-t-2 border-amber-300 pt-4 w-full' :
-                            'text-right'
-                          }`}>
+                          
+                          {/* Right Side - Company Info */}
+                          <div className="text-right space-y-1">
                             <p 
-                              className={`font-bold ${
-                                quotationSettings?.template === 'minimal' ? 'text-xl' :
-                                quotationSettings?.template === 'bold' ? 'text-3xl text-white' :
-                                quotationSettings?.template === 'elegant' ? 'text-2xl font-serif' :
-                                'text-2xl'
-                              }`}
-                              style={{ 
-                                color: quotationSettings?.template === 'bold' ? 'white' :
-                                       quotationSettings?.secondary_color || '#0B1E3D'
-                              }}
+                              className="text-2xl font-bold"
+                              style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}
                             >
-                              {customerCompany || "Your Company"}
+                              {customerCompany || "Your Company Name"}
                             </p>
-                            <p className={`text-sm ${quotationSettings?.template === 'bold' ? 'text-white/90' : 'text-gray-500'}`}>
-                              {address || "Company Address"}
-                            </p>
-                            <p className={`text-sm ${quotationSettings?.template === 'bold' ? 'text-white/90' : 'text-gray-500'}`}>
-                              {customerPhone || "Contact Number"}
-                            </p>
+                            <p className="text-sm text-gray-600">{address || "12 Stelvio Close"}</p>
+                            <p className="text-sm text-gray-600">{customerEmail || "info@yourcompany.com"}</p>
+                            <p className="text-sm text-gray-600">{customerPhone || "03 8787 8779"}</p>
+                            <p className="text-sm text-gray-600">ABN: 71 608 672 608</p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Content Area */}
-                      <div className={`px-10 py-8 space-y-8 ${quotationSettings?.template === 'bold' ? 'bg-white/95 backdrop-blur' : ''}`}>
-                        {/* Info Cards - Template specific styling */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div 
-                            className={`p-4 transition-shadow ${
-                              quotationSettings?.template === 'classic' ? 'bg-white border-2 border-gray-800 rounded-none shadow-md' :
-                              quotationSettings?.template === 'minimal' ? 'bg-gray-50 rounded border border-gray-200' :
-                              quotationSettings?.template === 'professional' ? 'bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow' :
-                              quotationSettings?.template === 'bold' ? 'bg-gradient-to-br rounded-xl shadow-lg' :
-                              quotationSettings?.template === 'elegant' ? 'bg-white border-2 border-amber-300 rounded shadow-sm' :
-                              'bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md'
-                            }`}
-                            style={quotationSettings?.template === 'bold' ? {
-                              backgroundImage: `linear-gradient(135deg, ${quotationSettings?.primary_color}15, ${quotationSettings?.secondary_color}15)`
-                            } : {}}
-                          >
-                            <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${
-                              quotationSettings?.template === 'classic' ? 'text-gray-700' :
-                              quotationSettings?.template === 'elegant' ? 'text-amber-700' :
-                              'text-gray-400'
-                            }`}>
-                              Payment Type
-                            </p>
-                            <p className={`text-lg font-bold capitalize ${
-                              quotationSettings?.template === 'minimal' ? 'text-gray-800' :
-                              'text-gray-900'
-                            }`}>
-                              {paymentType}
-                            </p>
-                          </div>
-                          {validUntil && (
-                            <div 
-                              className={`p-4 transition-shadow ${
-                                quotationSettings?.template === 'classic' ? 'bg-white border-2 border-gray-800 rounded-none shadow-md' :
-                                quotationSettings?.template === 'minimal' ? 'bg-gray-50 rounded border border-gray-200' :
-                                quotationSettings?.template === 'professional' ? 'bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow' :
-                                quotationSettings?.template === 'bold' ? 'bg-gradient-to-br rounded-xl shadow-lg' :
-                                quotationSettings?.template === 'elegant' ? 'bg-white border-2 border-amber-300 rounded shadow-sm' :
-                                'bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md'
-                              }`}
-                              style={quotationSettings?.template === 'bold' ? {
-                                backgroundImage: `linear-gradient(135deg, ${quotationSettings?.primary_color}15, ${quotationSettings?.secondary_color}15)`
-                              } : {}}
-                            >
-                              <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${
-                                quotationSettings?.template === 'classic' ? 'text-gray-700' :
-                                quotationSettings?.template === 'elegant' ? 'text-amber-700' :
-                                'text-gray-400'
-                              }`}>
-                                Valid Until
-                              </p>
-                              <p className="text-lg font-bold text-gray-900">
-                                {new Date(validUntil).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                              </p>
-                            </div>
-                          )}
-                          {acsuPoints > 0 && (
-                            <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 shadow-sm border border-amber-200 hover:shadow-md transition-shadow">
-                              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1 font-sans">Points</p>
-                              <p className="text-lg font-bold text-amber-900 font-heading">{acsuPoints}</p>
-                            </div>
-                          )}
-                          {taxRate > 0 && (
-                            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 font-sans">Tax Rate</p>
-                              <p className="text-lg font-bold text-gray-900 font-heading">{taxRate}%</p>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Customer Details Card */}
-                        {customerName && (
-                          <div 
-                            className={`p-6 ${
-                              quotationSettings?.template === 'classic' ? 'bg-white border-2 border-gray-800 rounded-none shadow-md' :
-                              quotationSettings?.template === 'minimal' ? 'bg-gray-50 rounded border border-gray-200' :
-                              quotationSettings?.template === 'professional' ? 'bg-white rounded-lg border border-gray-200 shadow' :
-                              quotationSettings?.template === 'bold' ? 'rounded-xl shadow-lg border-2' :
-                              quotationSettings?.template === 'elegant' ? 'bg-white border-2 border-amber-300 rounded shadow' :
-                              'bg-white rounded-xl shadow-sm border border-gray-100'
-                            }`}
-                            style={quotationSettings?.template === 'bold' ? {
-                              borderColor: quotationSettings?.primary_color,
-                              background: 'white'
-                            } : {}}
-                          >
-                            <div className="flex items-center gap-2 mb-4">
-                              <div 
-                                className="h-8 w-1 rounded-full"
-                                style={{ backgroundColor: quotationSettings?.primary_color || '#1D8FCC' }}
-                              ></div>
-                              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">Bill To</h3>
-                            </div>
-                            <div className="space-y-2 ml-3">
-                              <p className="text-2xl font-bold text-gray-900 font-heading">{customerName}</p>
-                              {customerCompany && (
-                                <p className="text-base text-gray-600 font-medium font-sans">{customerCompany}</p>
-                              )}
-                              <div className="flex flex-wrap gap-4 pt-2">
-                                {customerEmail && (
-                                  <p className="text-sm text-gray-500 flex items-center gap-1.5 font-sans">
-                                    <Mail className="h-3.5 w-3.5" />
-                                    {customerEmail}
-                                  </p>
-                                )}
-                                {customerPhone && (
-                                  <p className="text-sm text-gray-500 font-sans">{customerPhone}</p>
-                                )}
-                              </div>
-                              {address && (
-                                <p className="text-sm text-gray-500 pt-1 font-sans">{address}</p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Items Table - Template specific styling */}
-                        {items.length > 0 ? (
-                          <div 
-                            className={`overflow-hidden ${
-                              quotationSettings?.template === 'classic' ? 'bg-white border-2 border-gray-800 rounded-none shadow-md' :
-                              quotationSettings?.template === 'minimal' ? 'bg-white rounded border border-gray-200' :
-                              quotationSettings?.template === 'professional' ? 'bg-white rounded-lg border border-gray-200 shadow' :
-                              quotationSettings?.template === 'bold' ? 'rounded-xl shadow-lg border-2' :
-                              quotationSettings?.template === 'elegant' ? 'bg-white border-2 border-amber-300 rounded shadow' :
-                              'bg-white rounded-xl shadow-sm border border-gray-100'
-                            }`}
-                            style={quotationSettings?.template === 'bold' ? {
-                              borderColor: quotationSettings?.primary_color
-                            } : {}}
-                          >
-                            <div className="overflow-x-auto">
-                              <table className="w-full">
-                                <thead>
-                                  <tr 
-                                    className={
-                                      quotationSettings?.template === 'classic' ? 'bg-gray-800' :
-                                      quotationSettings?.template === 'minimal' ? 'bg-gray-50' :
-                                      quotationSettings?.template === 'professional' ? 'bg-gradient-to-r from-gray-100 to-gray-50' :
-                                      quotationSettings?.template === 'bold' ? '' :
-                                      quotationSettings?.template === 'elegant' ? 'bg-amber-50 border-t-2 border-b-2 border-amber-300' :
-                                      'bg-gradient-to-r from-gray-50 to-gray-100'
-                                    }
-                                    style={quotationSettings?.template === 'bold' ? {
-                                      background: `linear-gradient(to right, ${quotationSettings?.primary_color}, ${quotationSettings?.secondary_color})`
-                                    } : {}}
-                                  >
-                                    <th className={`text-left py-4 px-4 text-xs font-bold uppercase tracking-wider ${
-                                      quotationSettings?.template === 'classic' ? 'text-white' :
-                                      quotationSettings?.template === 'bold' ? 'text-white' :
-                                      quotationSettings?.template === 'elegant' ? 'text-amber-900' :
-                                      'text-gray-700'
-                                    }`}>
-                                      Description
-                                    </th>
-                                    <th className={`text-center py-4 px-4 text-xs font-bold uppercase tracking-wider ${
-                                      quotationSettings?.template === 'classic' ? 'text-white' :
-                                      quotationSettings?.template === 'bold' ? 'text-white' :
-                                      quotationSettings?.template === 'elegant' ? 'text-amber-900' :
-                                      'text-gray-700'
-                                    }`}>
-                                      Qty
-                                    </th>
-                                    <th className={`text-right py-4 px-4 text-xs font-bold uppercase tracking-wider ${
-                                      quotationSettings?.template === 'classic' ? 'text-white' :
-                                      quotationSettings?.template === 'bold' ? 'text-white' :
-                                      quotationSettings?.template === 'elegant' ? 'text-amber-900' :
-                                      'text-gray-700'
-                                    }`}>
-                                      Rate
-                                    </th>
-                                    <th className={`text-right py-4 px-4 text-xs font-bold uppercase tracking-wider ${
-                                      quotationSettings?.template === 'classic' ? 'text-white' :
-                                      quotationSettings?.template === 'bold' ? 'text-white' :
-                                      quotationSettings?.template === 'elegant' ? 'text-amber-900' :
-                                      'text-gray-700'
-                                    }`}>
-                                      GST
-                                    </th>
-                                    <th className={`text-right py-4 px-4 text-xs font-bold uppercase tracking-wider ${
-                                      quotationSettings?.template === 'classic' ? 'text-white' :
-                                      quotationSettings?.template === 'bold' ? 'text-white' :
-                                      quotationSettings?.template === 'elegant' ? 'text-amber-900' :
-                                      'text-gray-700'
-                                    }`}>
-                                      Disc
-                                    </th>
-                                    <th className={`text-right py-4 px-4 text-xs font-bold uppercase tracking-wider ${
-                                      quotationSettings?.template === 'classic' ? 'text-white' :
-                                      quotationSettings?.template === 'bold' ? 'text-white' :
-                                      quotationSettings?.template === 'elegant' ? 'text-amber-900' :
-                                      'text-gray-700'
-                                    }`}>
-                                      Amount
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                  {items.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                                      <td className="py-4 px-4">
-                                        <div className="font-semibold text-sm text-gray-900 font-heading">{item.itemName}</div>
-                                        <div className="text-xs text-gray-500 mt-0.5 font-sans">{item.description}</div>
-                                      </td>
-                                      <td className="py-4 px-4 text-center">
-                                        <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-sm font-medium text-gray-900 bg-gray-100 rounded-md font-heading">
-                                          {item.quantity}
-                                        </span>
-                                      </td>
-                                      <td className="py-4 px-4 text-right text-sm text-gray-900 font-medium font-heading">
-                                        ${item.rate.toFixed(2)}
-                                      </td>
-                                      <td className="py-4 px-4 text-right text-sm text-gray-600 font-sans">
-                                        {item.gst}%
-                                      </td>
-                                      <td className="py-4 px-4 text-right text-sm text-gray-600 font-sans">
-                                        {item.discount}%
-                                      </td>
-                                      <td className="py-4 px-4 text-right text-base font-bold text-gray-900 font-heading">
-                                        ${item.amount.toFixed(2)}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="bg-white rounded-xl shadow-sm border border-gray-100 py-16 text-center">
-                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                              <FileEdit className="h-8 w-8 text-gray-400" />
-                            </div>
-                            <p className="text-sm font-medium text-gray-500 font-sans">No items added yet</p>
-                            <p className="text-xs text-gray-400 mt-1 font-sans">Add items in the Create tab to see them here</p>
-                          </div>
-                        )}
-
-                        {/* Totals Card - Template specific styling */}
-                        <div className="flex justify-end">
-                          <div className="w-full max-w-md">
-                            <div 
-                              className={`overflow-hidden ${
-                                quotationSettings?.template === 'classic' ? 'bg-white border-2 border-gray-800 rounded-none shadow-md' :
-                                quotationSettings?.template === 'minimal' ? 'bg-gray-50 rounded border border-gray-200' :
-                                quotationSettings?.template === 'professional' ? 'bg-white rounded-lg border border-gray-200 shadow' :
-                                quotationSettings?.template === 'bold' ? 'rounded-xl shadow-xl border-2' :
-                                quotationSettings?.template === 'elegant' ? 'bg-white border-2 border-amber-300 rounded shadow' :
-                                'bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-sm border border-gray-100'
-                              }`}
-                              style={quotationSettings?.template === 'bold' ? {
-                                borderColor: quotationSettings?.primary_color
-                              } : {}}
-                            >
-                              <div className="p-6 space-y-3">
-                                <div className="flex justify-between items-center py-2">
-                                  <span className="text-sm font-medium text-gray-600 font-sans">Subtotal</span>
-                                  <span className="text-base font-semibold text-gray-900 font-heading">${subtotal.toFixed(2)}</span>
-                                </div>
-                                {taxRate > 0 && (
-                                  <div className="flex justify-between items-center py-2">
-                                    <span className="text-sm font-medium text-gray-600 font-sans">Tax ({taxRate}%)</span>
-                                    <span className="text-base font-semibold text-gray-900 font-heading">${taxAmount.toFixed(2)}</span>
-                                  </div>
-                                )}
-                                {discountRate > 0 && (
-                                  <div className="flex justify-between items-center py-2">
-                                    <span className="text-sm font-medium text-gray-600 font-sans">Discount ({discountRate}%)</span>
-                                    <span className="text-base font-semibold text-red-600 font-heading">-${discountAmount.toFixed(2)}</span>
-                                  </div>
-                                )}
-                              </div>
-                              <div 
-                                className={`px-6 py-5 ${
-                                  quotationSettings?.template === 'classic' ? 'bg-gray-800' :
-                                  quotationSettings?.template === 'minimal' ? 'bg-gray-800' :
-                                  quotationSettings?.template === 'bold' ? 'rounded-b-xl' :
-                                  quotationSettings?.template === 'elegant' ? 'bg-amber-50 border-t-2 border-amber-300' :
-                                  ''
-                                }`}
-                                style={quotationSettings?.template === 'elegant' ? {} : {
-                                  background: `linear-gradient(to right, ${quotationSettings?.primary_color || '#1D8FCC'}, ${quotationSettings?.secondary_color || '#0B1E3D'})`
-                                }}
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span className={`text-base font-bold uppercase tracking-wide ${
-                                    quotationSettings?.template === 'elegant' ? 'text-amber-900' : 'text-white'
-                                  }`}>
-                                    Total Amount
-                                  </span>
-                                  <span className={`text-3xl font-black ${
-                                    quotationSettings?.template === 'elegant' ? 'text-amber-900' : 'text-white'
-                                  }`}>
-                                    ${total.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Terms and Conditions */}
-                        {termsAndConditions && (
-                          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div 
-                                className="h-8 w-1 rounded-full"
-                                style={{ backgroundColor: quotationSettings?.primary_color || '#1D8FCC' }}
-                              ></div>
-                              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">Terms & Conditions</h3>
-                            </div>
-                            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap ml-3 font-sans">
-                              {termsAndConditions}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Footer - Template specific */}
-                        <div 
-                          className={`text-center pt-6 ${
-                            quotationSettings?.template === 'classic' ? 'border-t-4 border-gray-800' :
-                            quotationSettings?.template === 'minimal' ? 'border-t border-gray-200' :
-                            quotationSettings?.template === 'professional' ? 'border-t-2 border-gray-300' :
-                            quotationSettings?.template === 'bold' ? 'border-t-2' :
-                            quotationSettings?.template === 'elegant' ? 'border-t-2 border-amber-300' :
-                            'border-t border-gray-200'
-                          }`}
-                          style={quotationSettings?.template === 'bold' ? {
-                            borderColor: 'rgba(255, 255, 255, 0.3)'
-                          } : {}}
+                      {/* Tax Invoice Title */}
+                      <div className="px-10 py-6">
+                        <h1 
+                          className="text-4xl font-bold"
+                          style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}
                         >
-                          {quotationSettings?.footer_text ? (
-                            <p className={`text-sm whitespace-pre-wrap ${
-                              quotationSettings?.template === 'bold' ? 'text-gray-700' :
-                              quotationSettings?.template === 'elegant' ? 'text-amber-900 italic' :
-                              'text-gray-600'
-                            }`}>
-                              {quotationSettings.footer_text}
-                            </p>
-                          ) : (
-                            <>
-                              <p className={`text-xs ${
-                                quotationSettings?.template === 'bold' ? 'text-gray-700' : 'text-gray-500'
-                              }`}>
-                                Thank you for your business!
-                              </p>
-                              <p className={`text-xs mt-1 ${
-                                quotationSettings?.template === 'bold' ? 'text-gray-600' : 'text-gray-400'
-                              }`}>
-                                This is a computer-generated quotation and does not require a signature
-                              </p>
-                            </>
-                          )}
+                          Tax Invoice
+                        </h1>
+                      </div>
+
+                      {/* Bill To Section */}
+                      <div className="px-10 pb-6">
+                        <div className="grid grid-cols-2 gap-8">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-700 mb-2">Bill To: {customerName || "Customer Name"}</p>
+                            {customerEmail && <p className="text-sm text-gray-600">Email: {customerEmail}</p>}
+                            {address && <p className="text-sm text-gray-600">Address: {address}</p>}
+                            {customerPhone && <p className="text-sm text-gray-600">Phone: {customerPhone}</p>}
+                          </div>
+                          
+                          {/* Invoice Details Table */}
+                          <div>
+                            <table className="w-full border-collapse border border-gray-300">
+                              <tbody>
+                                <tr className="border-b border-gray-300">
+                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Invoice No:</td>
+                                  <td className="px-3 py-2 text-sm">{quotationNumber}</td>
+                                </tr>
+                                <tr className="border-b border-gray-300">
+                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Date:</td>
+                                  <td className="px-3 py-2 text-sm">{new Date(quotationDate).toLocaleDateString('en-GB')}</td>
+                                </tr>
+                                <tr className="border-b border-gray-300">
+                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Terms:</td>
+                                  <td className="px-3 py-2 text-sm">NET 0</td>
+                                </tr>
+                                <tr>
+                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Due Date:</td>
+                                  <td className="px-3 py-2 text-sm">{new Date(quotationDate).toLocaleDateString('en-GB')}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
+                      </div>
+
+                      {/* Items Table */}
+                      <div className="px-10 pb-6">
+                        <div className="overflow-hidden border border-gray-300">
+                          <table className="w-full">
+                            <thead>
+                              <tr className="bg-gray-100 border-b border-gray-300">
+                                <th className="text-left py-3 px-3 text-xs font-bold text-gray-700">Code</th>
+                                <th className="text-left py-3 px-3 text-xs font-bold text-gray-700">Description</th>
+                                <th className="text-center py-3 px-3 text-xs font-bold text-gray-700">Quantity</th>
+                                <th className="text-right py-3 px-3 text-xs font-bold text-gray-700">Rate</th>
+                                <th className="text-right py-3 px-3 text-xs font-bold text-gray-700">GST</th>
+                                <th className="text-right py-3 px-3 text-xs font-bold text-gray-700">Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {items.length > 0 ? (
+                                items.map((item) => (
+                                  <tr key={item.id} className="border-b border-gray-200">
+                                    <td className="py-3 px-3 text-sm text-gray-900 align-top">{item.itemName}</td>
+                                    <td className="py-3 px-3 text-sm text-gray-700 align-top">{item.description}</td>
+                                    <td className="py-3 px-3 text-sm text-gray-900 text-center align-top">{item.quantity}</td>
+                                    <td className="py-3 px-3 text-sm text-gray-900 text-right align-top">${item.rate.toFixed(2)}</td>
+                                    <td className="py-3 px-3 text-sm text-gray-900 text-right align-top">{item.gst}%</td>
+                                    <td className="py-3 px-3 text-sm font-semibold text-gray-900 text-right align-top">${item.amount.toFixed(2)}</td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={6} className="py-8 text-center text-sm text-gray-500">No items added yet</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                        
+                        {/* Parts Subtotal */}
+                        {items.length > 0 && (
+                          <div className="flex justify-end mt-4">
+                            <p className="text-sm font-semibold">Parts Subtotal: ${subtotal.toFixed(2)}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Page Break Indicator */}
+                      <div className="px-10 py-4 border-t border-gray-300 bg-gray-50">
+                        <p className="text-xs text-center text-gray-500">1 / 2</p>
+                      </div>
+
+                      {/* Page 2 - Payment Details */}
+                      <div className="px-10 py-8 border-t-4 border-gray-300">
+                        <h2 
+                          className="text-2xl font-bold mb-6"
+                          style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}
+                        >
+                          Payment Details
+                        </h2>
+                        
+                        <div className="space-y-4">
+                          {/* Payment Summary Table */}
+                          <table className="w-full max-w-md ml-auto">
+                            <tbody>
+                              <tr className="border-b border-gray-200">
+                                <td className="py-2 text-sm font-medium text-gray-700">Subtotal</td>
+                                <td className="py-2 text-sm text-right font-semibold">${subtotal.toFixed(2)}</td>
+                              </tr>
+                              <tr className="border-b border-gray-200">
+                                <td className="py-2 text-sm font-medium text-gray-700">Includes GST 10% (${(subtotal * 0.909).toFixed(2)})</td>
+                                <td className="py-2 text-sm text-right font-semibold">${(subtotal * 0.091).toFixed(2)}</td>
+                              </tr>
+                              <tr className="border-b-2 border-gray-400">
+                                <td className="py-2 text-base font-bold text-gray-900">Total</td>
+                                <td className="py-2 text-base text-right font-bold text-gray-900">${total.toFixed(2)}</td>
+                              </tr>
+                              <tr className="border-b border-gray-200">
+                                <td className="py-2 text-sm font-medium text-gray-700">PAID</td>
+                                <td className="py-2 text-sm text-right font-semibold">$0.00</td>
+                              </tr>
+                              <tr className="bg-gray-50">
+                                <td className="py-3 text-base font-bold text-gray-900">Balance Due</td>
+                                <td className="py-3 text-base text-right font-bold" style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}>
+                                  ${total.toFixed(2)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+
+                          {/* Payment Info */}
+                          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded">
+                            <p className="text-sm font-semibold text-gray-700 mb-2">Payment to {customerCompany || "Your Company"}</p>
+                            <p className="text-sm text-gray-600">BSB: 083-802</p>
+                            <p className="text-sm text-gray-600">Acc: 91-925-6458</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Notes Section */}
+                      <div className="px-10 pb-8">
+                        <h3 className="text-lg font-bold mb-3" style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}>
+                          Notes
+                        </h3>
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {termsAndConditions || "All installations carry 3-year warranty plus 7-year cabling and hardware warranty. All work done by licensed professionals with appropriate certifications."}
+                        </p>
+                      </div>
+
+                      {/* Footer Text */}
+                      {quotationSettings?.footer_text && (
+                        <div className="px-10 pb-6 text-center border-t border-gray-200 pt-4">
+                          <p className="text-sm text-gray-600">{quotationSettings.footer_text}</p>
+                        </div>
+                      )}
+
+                      {/* Page Number */}
+                      <div className="px-10 py-4 bg-gray-50">
+                        <p className="text-xs text-center text-gray-500">2 / 2</p>
                       </div>
                     </div>
                   </div>
