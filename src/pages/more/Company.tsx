@@ -622,15 +622,56 @@ export default function Company() {
                     onClick={() => setSelectedTemplate("modern")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg mb-3 overflow-hidden border border-blue-200">
-                        <div className="h-full p-3 space-y-2">
-                          <div className="h-6 bg-blue-500 rounded"></div>
-                          <div className="h-3 bg-blue-400/50 rounded w-3/4"></div>
-                          <div className="h-3 bg-blue-400/30 rounded w-1/2"></div>
-                          <div className="mt-4 space-y-1">
-                            <div className="h-2 bg-gray-300 rounded"></div>
-                            <div className="h-2 bg-gray-300 rounded"></div>
-                            <div className="h-2 bg-gray-300 rounded w-4/5"></div>
+                      <div className="aspect-[3/4] bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-lg mb-3 overflow-hidden border border-gray-200 text-[4px]">
+                        <div className="h-full p-2">
+                          {/* Header */}
+                          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1.5 rounded mb-1.5">
+                            <div className="flex justify-between items-start">
+                              <div className="w-1/2">
+                                <div className="h-1 bg-white/90 w-3/4 mb-0.5"></div>
+                                <div className="h-0.5 bg-white/70 w-1/2"></div>
+                              </div>
+                              <div className="w-4 h-4 bg-white/20 rounded"></div>
+                            </div>
+                          </div>
+                          {/* Tax Invoice Title */}
+                          <div className="bg-blue-500/10 py-0.5 mb-1">
+                            <div className="h-1 bg-blue-600 w-1/3 mx-auto"></div>
+                          </div>
+                          {/* Bill To Section */}
+                          <div className="mb-1">
+                            <div className="h-0.5 bg-gray-800 w-1/4 mb-0.5"></div>
+                            <div className="h-0.5 bg-gray-400 w-1/3"></div>
+                          </div>
+                          {/* Invoice Details Table */}
+                          <div className="border border-gray-300 mb-1">
+                            <div className="grid grid-cols-2 gap-0">
+                              <div className="border-r border-b border-gray-300 p-0.5">
+                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
+                              </div>
+                              <div className="border-b border-gray-300 p-0.5">
+                                <div className="h-0.5 bg-gray-400 w-3/4"></div>
+                              </div>
+                              <div className="border-r border-gray-300 p-0.5">
+                                <div className="h-0.5 bg-gray-600 w-1/2"></div>
+                              </div>
+                              <div className="p-0.5">
+                                <div className="h-0.5 bg-gray-400 w-2/3"></div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Items Table */}
+                          <div className="border border-gray-300">
+                            <div className="bg-blue-500 p-0.5 grid grid-cols-4 gap-0.5">
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                            </div>
+                            <div className="p-0.5 space-y-0.5">
+                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -645,17 +686,56 @@ export default function Company() {
                     onClick={() => setSelectedTemplate("classic")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-2 border-gray-800">
-                        <div className="h-full p-3 space-y-2">
-                          <div className="h-8 bg-gray-800 rounded-none"></div>
-                          <div className="space-y-1 mt-3">
-                            <div className="h-2 bg-gray-800 rounded-none w-2/3"></div>
-                            <div className="h-2 bg-gray-600 rounded-none w-1/2"></div>
+                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-2 border-gray-800 text-[4px]">
+                        <div className="h-full p-2">
+                          {/* Header */}
+                          <div className="bg-gray-800 text-white p-1.5 mb-1.5">
+                            <div className="flex justify-between items-start">
+                              <div className="w-1/2">
+                                <div className="h-1 bg-white w-3/4 mb-0.5"></div>
+                                <div className="h-0.5 bg-white/80 w-1/2"></div>
+                              </div>
+                              <div className="w-4 h-4 bg-white/20"></div>
+                            </div>
                           </div>
-                          <div className="mt-4 space-y-1">
-                            <div className="h-2 bg-gray-400 rounded-none"></div>
-                            <div className="h-2 bg-gray-400 rounded-none"></div>
-                            <div className="h-2 bg-gray-400 rounded-none w-3/4"></div>
+                          {/* Tax Invoice Title */}
+                          <div className="border-t-2 border-b-2 border-gray-800 py-0.5 mb-1">
+                            <div className="h-1 bg-gray-800 w-1/3 mx-auto"></div>
+                          </div>
+                          {/* Bill To Section */}
+                          <div className="mb-1">
+                            <div className="h-0.5 bg-gray-800 w-1/4 mb-0.5"></div>
+                            <div className="h-0.5 bg-gray-600 w-1/3"></div>
+                          </div>
+                          {/* Invoice Details Table */}
+                          <div className="border-2 border-gray-800 mb-1">
+                            <div className="grid grid-cols-2 gap-0">
+                              <div className="border-r-2 border-b-2 border-gray-800 p-0.5">
+                                <div className="h-0.5 bg-gray-700 w-2/3"></div>
+                              </div>
+                              <div className="border-b-2 border-gray-800 p-0.5">
+                                <div className="h-0.5 bg-gray-500 w-3/4"></div>
+                              </div>
+                              <div className="border-r-2 border-gray-800 p-0.5">
+                                <div className="h-0.5 bg-gray-700 w-1/2"></div>
+                              </div>
+                              <div className="p-0.5">
+                                <div className="h-0.5 bg-gray-500 w-2/3"></div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Items Table */}
+                          <div className="border-2 border-gray-800">
+                            <div className="bg-gray-800 p-0.5 grid grid-cols-4 gap-0.5">
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                            </div>
+                            <div className="p-0.5 space-y-0.5">
+                              <div className="h-0.5 bg-gray-400 w-full"></div>
+                              <div className="h-0.5 bg-gray-400 w-full"></div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -670,14 +750,56 @@ export default function Company() {
                     onClick={() => setSelectedTemplate("minimal")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border border-gray-200">
-                        <div className="h-full p-4 space-y-3">
-                          <div className="h-4 bg-gray-900 rounded-full w-1/3"></div>
-                          <div className="h-2 bg-gray-300 rounded w-1/2"></div>
-                          <div className="mt-6 space-y-2">
-                            <div className="h-1.5 bg-gray-200 rounded"></div>
-                            <div className="h-1.5 bg-gray-200 rounded w-5/6"></div>
-                            <div className="h-1.5 bg-gray-200 rounded w-4/5"></div>
+                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border border-gray-200 text-[4px]">
+                        <div className="h-full p-2">
+                          {/* Header */}
+                          <div className="border-b border-gray-200 p-1.5 mb-1.5">
+                            <div className="flex justify-between items-start">
+                              <div className="w-1/2">
+                                <div className="h-1 bg-gray-900 w-3/4 mb-0.5"></div>
+                                <div className="h-0.5 bg-gray-500 w-1/2"></div>
+                              </div>
+                              <div className="w-4 h-4 border border-gray-300 rounded-full"></div>
+                            </div>
+                          </div>
+                          {/* Tax Invoice Title */}
+                          <div className="py-0.5 mb-1">
+                            <div className="h-1 bg-gray-800 w-1/3 mx-auto rounded-full"></div>
+                          </div>
+                          {/* Bill To Section */}
+                          <div className="mb-1">
+                            <div className="h-0.5 bg-gray-700 w-1/4 mb-0.5"></div>
+                            <div className="h-0.5 bg-gray-400 w-1/3"></div>
+                          </div>
+                          {/* Invoice Details Table */}
+                          <div className="border border-gray-200 rounded mb-1">
+                            <div className="grid grid-cols-2 gap-0">
+                              <div className="border-r border-b border-gray-200 p-0.5">
+                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
+                              </div>
+                              <div className="border-b border-gray-200 p-0.5">
+                                <div className="h-0.5 bg-gray-400 w-3/4"></div>
+                              </div>
+                              <div className="border-r border-gray-200 p-0.5">
+                                <div className="h-0.5 bg-gray-600 w-1/2"></div>
+                              </div>
+                              <div className="p-0.5">
+                                <div className="h-0.5 bg-gray-400 w-2/3"></div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Items Table */}
+                          <div className="border border-gray-200 rounded">
+                            <div className="bg-gray-100 p-0.5 grid grid-cols-4 gap-0.5">
+                              <div className="h-0.5 bg-gray-700 w-full"></div>
+                              <div className="h-0.5 bg-gray-700 w-full"></div>
+                              <div className="h-0.5 bg-gray-700 w-full"></div>
+                              <div className="h-0.5 bg-gray-700 w-full"></div>
+                            </div>
+                            <div className="p-0.5 space-y-0.5">
+                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -692,17 +814,56 @@ export default function Company() {
                     onClick={() => setSelectedTemplate("professional")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-b from-indigo-50 to-white rounded-lg mb-3 overflow-hidden border border-indigo-200">
-                        <div className="h-full p-3 space-y-2">
-                          <div className="flex justify-between items-center mb-3">
-                            <div className="h-4 w-4 bg-indigo-600 rounded-full"></div>
-                            <div className="h-3 bg-indigo-600/30 rounded w-1/3"></div>
+                      <div className="aspect-[3/4] bg-gradient-to-b from-indigo-50 to-white rounded-lg mb-3 overflow-hidden border border-indigo-200 text-[4px]">
+                        <div className="h-full p-2">
+                          {/* Header */}
+                          <div className="bg-white p-1.5 rounded shadow-sm mb-1.5">
+                            <div className="flex justify-between items-start">
+                              <div className="w-1/2">
+                                <div className="h-1 bg-indigo-600 w-3/4 mb-0.5"></div>
+                                <div className="h-0.5 bg-indigo-400 w-1/2"></div>
+                              </div>
+                              <div className="w-4 h-4 bg-indigo-600 rounded-full"></div>
+                            </div>
                           </div>
-                          <div className="h-5 bg-indigo-600 rounded w-2/3"></div>
-                          <div className="mt-4 space-y-1.5">
-                            <div className="h-2 bg-gray-300 rounded"></div>
-                            <div className="h-2 bg-gray-300 rounded"></div>
-                            <div className="h-2 bg-gray-300 rounded w-3/4"></div>
+                          {/* Tax Invoice Title */}
+                          <div className="bg-indigo-600/10 py-0.5 mb-1 rounded">
+                            <div className="h-1 bg-indigo-600 w-1/3 mx-auto"></div>
+                          </div>
+                          {/* Bill To Section */}
+                          <div className="mb-1 bg-white p-1 rounded shadow-sm">
+                            <div className="h-0.5 bg-indigo-800 w-1/4 mb-0.5"></div>
+                            <div className="h-0.5 bg-gray-500 w-1/3"></div>
+                          </div>
+                          {/* Invoice Details Table */}
+                          <div className="border border-indigo-200 rounded mb-1 bg-white">
+                            <div className="grid grid-cols-2 gap-0">
+                              <div className="border-r border-b border-indigo-200 p-0.5">
+                                <div className="h-0.5 bg-indigo-600 w-2/3"></div>
+                              </div>
+                              <div className="border-b border-indigo-200 p-0.5">
+                                <div className="h-0.5 bg-gray-500 w-3/4"></div>
+                              </div>
+                              <div className="border-r border-indigo-200 p-0.5">
+                                <div className="h-0.5 bg-indigo-600 w-1/2"></div>
+                              </div>
+                              <div className="p-0.5">
+                                <div className="h-0.5 bg-gray-500 w-2/3"></div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Items Table */}
+                          <div className="border border-indigo-200 rounded bg-white shadow-sm">
+                            <div className="bg-indigo-600 p-0.5 grid grid-cols-4 gap-0.5 rounded-t">
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                            </div>
+                            <div className="p-0.5 space-y-0.5">
+                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -717,14 +878,56 @@ export default function Company() {
                     onClick={() => setSelectedTemplate("bold")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 rounded-lg mb-3 overflow-hidden">
-                        <div className="h-full p-3 space-y-2">
-                          <div className="h-8 bg-white rounded-lg shadow-lg"></div>
-                          <div className="h-3 bg-white/80 rounded w-2/3"></div>
-                          <div className="mt-4 space-y-1">
-                            <div className="h-2 bg-white/60 rounded"></div>
-                            <div className="h-2 bg-white/60 rounded"></div>
-                            <div className="h-2 bg-white/60 rounded w-4/5"></div>
+                      <div className="aspect-[3/4] bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 rounded-lg mb-3 overflow-hidden text-[4px]">
+                        <div className="h-full p-2">
+                          {/* Header */}
+                          <div className="bg-white/95 p-1.5 rounded-lg shadow-lg mb-1.5">
+                            <div className="flex justify-between items-start">
+                              <div className="w-1/2">
+                                <div className="h-1 bg-purple-600 w-3/4 mb-0.5"></div>
+                                <div className="h-0.5 bg-purple-400 w-1/2"></div>
+                              </div>
+                              <div className="w-4 h-4 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg"></div>
+                            </div>
+                          </div>
+                          {/* Tax Invoice Title */}
+                          <div className="bg-white/90 py-0.5 mb-1 rounded shadow">
+                            <div className="h-1 bg-purple-600 w-1/3 mx-auto"></div>
+                          </div>
+                          {/* Bill To Section */}
+                          <div className="mb-1 bg-white/90 p-1 rounded shadow">
+                            <div className="h-0.5 bg-purple-700 w-1/4 mb-0.5"></div>
+                            <div className="h-0.5 bg-gray-600 w-1/3"></div>
+                          </div>
+                          {/* Invoice Details Table */}
+                          <div className="border-2 border-white/80 rounded mb-1 bg-white/90">
+                            <div className="grid grid-cols-2 gap-0">
+                              <div className="border-r-2 border-b-2 border-white/80 p-0.5">
+                                <div className="h-0.5 bg-purple-600 w-2/3"></div>
+                              </div>
+                              <div className="border-b-2 border-white/80 p-0.5">
+                                <div className="h-0.5 bg-gray-600 w-3/4"></div>
+                              </div>
+                              <div className="border-r-2 border-white/80 p-0.5">
+                                <div className="h-0.5 bg-purple-600 w-1/2"></div>
+                              </div>
+                              <div className="p-0.5">
+                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Items Table */}
+                          <div className="border-2 border-white/80 rounded bg-white/90 shadow-lg">
+                            <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-0.5 grid grid-cols-4 gap-0.5 rounded-t">
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                            </div>
+                            <div className="p-0.5 space-y-0.5">
+                              <div className="h-0.5 bg-gray-400 w-full"></div>
+                              <div className="h-0.5 bg-gray-400 w-full"></div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -739,18 +942,56 @@ export default function Company() {
                     onClick={() => setSelectedTemplate("elegant")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-amber-50 via-white to-amber-50 rounded-lg mb-3 overflow-hidden border-2 border-amber-200">
-                        <div className="h-full p-3 space-y-2">
-                          <div className="text-center mb-2">
-                            <div className="h-5 bg-amber-600 rounded-sm w-1/2 mx-auto"></div>
+                      <div className="aspect-[3/4] bg-gradient-to-br from-amber-50 via-white to-amber-50 rounded-lg mb-3 overflow-hidden border-2 border-amber-300 text-[4px]">
+                        <div className="h-full p-2">
+                          {/* Header */}
+                          <div className="border-2 border-amber-400 p-1.5 mb-1.5 rounded">
+                            <div className="flex justify-between items-start border-b border-amber-300 pb-1">
+                              <div className="w-1/2">
+                                <div className="h-1 bg-amber-700 w-3/4 mb-0.5"></div>
+                                <div className="h-0.5 bg-amber-500 w-1/2"></div>
+                              </div>
+                              <div className="w-4 h-4 border-2 border-amber-500 rounded-full"></div>
+                            </div>
                           </div>
-                          <div className="border-t-2 border-b-2 border-amber-300 py-2 my-2">
-                            <div className="h-2 bg-amber-600/50 rounded w-3/4 mx-auto"></div>
+                          {/* Tax Invoice Title */}
+                          <div className="border-t-2 border-b-2 border-amber-400 py-0.5 mb-1">
+                            <div className="h-1 bg-amber-700 w-1/3 mx-auto"></div>
                           </div>
-                          <div className="mt-4 space-y-1">
-                            <div className="h-2 bg-gray-300 rounded"></div>
-                            <div className="h-2 bg-gray-300 rounded w-5/6"></div>
-                            <div className="h-2 bg-gray-300 rounded w-4/5"></div>
+                          {/* Bill To Section */}
+                          <div className="mb-1 border border-amber-300 p-1 rounded">
+                            <div className="h-0.5 bg-amber-800 w-1/4 mb-0.5"></div>
+                            <div className="h-0.5 bg-gray-600 w-1/3"></div>
+                          </div>
+                          {/* Invoice Details Table */}
+                          <div className="border-2 border-amber-400 rounded mb-1">
+                            <div className="grid grid-cols-2 gap-0">
+                              <div className="border-r-2 border-b-2 border-amber-300 p-0.5 bg-amber-50/50">
+                                <div className="h-0.5 bg-amber-700 w-2/3"></div>
+                              </div>
+                              <div className="border-b-2 border-amber-300 p-0.5">
+                                <div className="h-0.5 bg-gray-600 w-3/4"></div>
+                              </div>
+                              <div className="border-r-2 border-amber-300 p-0.5 bg-amber-50/50">
+                                <div className="h-0.5 bg-amber-700 w-1/2"></div>
+                              </div>
+                              <div className="p-0.5">
+                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Items Table */}
+                          <div className="border-2 border-amber-400 rounded">
+                            <div className="bg-amber-600 p-0.5 grid grid-cols-4 gap-0.5 rounded-t">
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                              <div className="h-0.5 bg-white w-full"></div>
+                            </div>
+                            <div className="p-0.5 space-y-0.5 bg-amber-50/30">
+                              <div className="h-0.5 bg-gray-400 w-full"></div>
+                              <div className="h-0.5 bg-gray-400 w-full"></div>
+                            </div>
                           </div>
                         </div>
                       </div>
