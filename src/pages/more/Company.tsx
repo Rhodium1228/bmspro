@@ -623,73 +623,84 @@ export default function Company() {
                   >
                     <CardContent className="p-4">
                       <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-2 border-blue-100 shadow-md">
-                        <div className="h-full flex flex-col text-[6px] leading-tight">
+                        <div className="h-full flex flex-col text-[5px] leading-tight">
                           {/* Header with gradient */}
-                          <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-3 py-2">
+                          <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-2 py-1.5">
                             <div className="flex justify-between items-start">
                               <div>
-                                <div className="font-bold text-[8px] mb-0.5">ACME CORPORATION</div>
-                                <div className="text-[5px] opacity-90">123 Business St, City</div>
+                                <div className="font-bold text-[7px] mb-0.5">ACME CORP</div>
+                                <div className="text-[4px] opacity-90">123 Business St</div>
                               </div>
-                              <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center text-[6px]">LOGO</div>
+                              <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center text-[5px]">LOGO</div>
                             </div>
                           </div>
                           
                           {/* QUOTATION Title */}
-                          <div className="bg-blue-50 py-2 text-center">
-                            <div className="font-bold text-blue-700 text-[10px]">QUOTATION</div>
+                          <div className="bg-blue-50 py-1 text-center">
+                            <div className="font-bold text-blue-700 text-[8px]">QUOTATION</div>
                           </div>
                           
-                          <div className="flex-1 px-3 py-2 space-y-2">
-                            {/* Bill To */}
-                            <div className="text-[6px]">
-                              <div className="font-semibold text-gray-700">Bill To:</div>
-                              <div className="text-gray-600">John Smith</div>
-                              <div className="text-gray-500 text-[5px]">456 Client Ave</div>
-                            </div>
-                            
-                            {/* Details */}
-                            <div className="grid grid-cols-2 gap-1 text-[5px] border border-gray-200 rounded">
-                              <div className="border-r border-b border-gray-200 px-1 py-0.5 bg-gray-50">
-                                <div className="font-semibold">Quote #:</div>
+                          <div className="flex-1 px-2 py-1.5 space-y-1.5">
+                            {/* Bill To & Details Grid */}
+                            <div className="grid grid-cols-2 gap-1">
+                              <div className="text-[5px]">
+                                <div className="font-semibold text-gray-700">Bill To:</div>
+                                <div className="text-gray-600">John Smith</div>
+                                <div className="text-gray-500 text-[4px]">456 Client Ave</div>
                               </div>
-                              <div className="border-b border-gray-200 px-1 py-0.5">
-                                <div>QT-2025-001</div>
-                              </div>
-                              <div className="border-r border-gray-200 px-1 py-0.5 bg-gray-50">
-                                <div className="font-semibold">Date:</div>
-                              </div>
-                              <div className="px-1 py-0.5">
-                                <div>15 Oct 2025</div>
+                              <div className="text-[4px] border border-gray-200 rounded p-0.5">
+                                <div className="flex justify-between border-b border-gray-200 py-0.5">
+                                  <span className="font-semibold">Quote #:</span>
+                                  <span>QT-001</span>
+                                </div>
+                                <div className="flex justify-between py-0.5">
+                                  <span className="font-semibold">Date:</span>
+                                  <span>15 Oct</span>
+                                </div>
                               </div>
                             </div>
                             
                             {/* Items Table */}
                             <div className="border border-gray-300 rounded overflow-hidden">
-                              <div className="bg-blue-600 text-white px-1 py-0.5 grid grid-cols-4 gap-1 font-semibold text-[5px]">
-                                <div className="col-span-2">Item</div>
+                              <div className="bg-blue-600 text-white px-1 py-0.5 grid grid-cols-6 gap-0.5 font-semibold text-[4px]">
+                                <div>Item</div>
                                 <div className="text-right">Qty</div>
-                                <div className="text-right">Price</div>
+                                <div className="text-right">Rate</div>
+                                <div className="text-right">GST</div>
+                                <div className="text-right">Disc</div>
+                                <div className="text-right">Amt</div>
                               </div>
-                              <div className="px-1 py-0.5 text-[5px] bg-gray-50">
-                                <div className="grid grid-cols-4 gap-1 border-b border-gray-200 pb-0.5">
-                                  <div className="col-span-2">Product Name</div>
+                              <div className="px-1 py-0.5 text-[4px] bg-gray-50">
+                                <div className="grid grid-cols-6 gap-0.5">
+                                  <div>Product A</div>
                                   <div className="text-right">2</div>
-                                  <div className="text-right">$100</div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-1 pt-0.5">
-                                  <div className="col-span-2">Service Item</div>
-                                  <div className="text-right">1</div>
-                                  <div className="text-right">$200</div>
+                                  <div className="text-right">$50</div>
+                                  <div className="text-right">10%</div>
+                                  <div className="text-right">5%</div>
+                                  <div className="text-right">$104.5</div>
                                 </div>
                               </div>
                             </div>
                             
+                            {/* Datasheet Link */}
+                            <div className="text-[4px] bg-blue-50 px-1 py-0.5 rounded flex items-center gap-0.5">
+                              <span className="text-blue-600">📎 Datasheet</span>
+                            </div>
+                            
+                            {/* Quotation Details */}
+                            <div className="grid grid-cols-2 gap-0.5 text-[4px] border border-gray-200 rounded p-0.5">
+                              <div><span className="font-semibold">Payment:</span> Cash</div>
+                              <div><span className="font-semibold">ACSU:</span> 100pts</div>
+                              <div><span className="font-semibold">Status:</span> Active</div>
+                            </div>
+                            
                             {/* Total */}
-                            <div className="flex justify-end">
-                              <div className="bg-blue-100 px-2 py-1 rounded text-[6px]">
-                                <span className="font-semibold text-blue-700">Total: </span>
-                                <span className="font-bold text-blue-900">$300.00</span>
+                            <div className="text-[5px] border-t border-gray-300 pt-1">
+                              <div className="flex justify-between"><span>Subtotal:</span><span>$100.00</span></div>
+                              <div className="flex justify-between text-[4px]"><span>GST Incl:</span><span>$10.00</span></div>
+                              <div className="flex justify-between font-bold bg-blue-100 px-1 py-0.5 rounded mt-0.5">
+                                <span className="text-blue-700">Total:</span>
+                                <span className="text-blue-900">$110.00</span>
                               </div>
                             </div>
                           </div>
@@ -707,72 +718,84 @@ export default function Company() {
                   >
                     <CardContent className="p-4">
                       <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-4 border-gray-900 shadow-md">
-                        <div className="h-full flex flex-col text-[6px] leading-tight">
+                        <div className="h-full flex flex-col text-[5px] leading-tight">
                           {/* Header */}
-                          <div className="bg-gray-900 text-white px-3 py-2">
+                          <div className="bg-gray-900 text-white px-2 py-1.5">
                             <div className="flex justify-between items-start">
                               <div>
-                                <div className="font-bold text-[8px] mb-0.5">CLASSIC BUSINESS</div>
-                                <div className="text-[5px]">Traditional Excellence Since 1990</div>
+                                <div className="font-bold text-[7px] mb-0.5">CLASSIC BUSINESS</div>
+                                <div className="text-[4px]">Traditional Excellence</div>
                               </div>
-                              <div className="w-8 h-8 bg-white/20 flex items-center justify-center text-[6px]">LOGO</div>
+                              <div className="w-6 h-6 bg-white/20 flex items-center justify-center text-[5px]">LOGO</div>
                             </div>
                           </div>
                           
                           {/* QUOTATION Title */}
-                          <div className="border-y-2 border-gray-900 py-2 text-center">
-                            <div className="font-bold text-gray-900 text-[10px]">QUOTATION</div>
+                          <div className="border-y-2 border-gray-900 py-1 text-center">
+                            <div className="font-bold text-gray-900 text-[8px]">QUOTATION</div>
                           </div>
                           
-                          <div className="flex-1 px-3 py-2 space-y-2">
-                            {/* Bill To */}
-                            <div className="text-[6px]">
-                              <div className="font-bold text-gray-900">Bill To:</div>
-                              <div className="text-gray-700">John Smith</div>
-                              <div className="text-gray-600 text-[5px]">456 Client Ave</div>
-                            </div>
-                            
-                            {/* Details */}
-                            <div className="grid grid-cols-2 gap-1 text-[5px] border-2 border-gray-900">
-                              <div className="border-r-2 border-b-2 border-gray-900 px-1 py-0.5 bg-gray-100">
-                                <div className="font-bold">Quote #:</div>
+                          <div className="flex-1 px-2 py-1.5 space-y-1.5">
+                            {/* Bill To & Details Grid */}
+                            <div className="grid grid-cols-2 gap-1">
+                              <div className="text-[5px]">
+                                <div className="font-bold text-gray-900">Bill To:</div>
+                                <div className="text-gray-700">John Smith</div>
+                                <div className="text-gray-600 text-[4px]">456 Client Ave</div>
                               </div>
-                              <div className="border-b-2 border-gray-900 px-1 py-0.5">
-                                <div>QT-2025-001</div>
-                              </div>
-                              <div className="border-r-2 border-gray-900 px-1 py-0.5 bg-gray-100">
-                                <div className="font-bold">Date:</div>
-                              </div>
-                              <div className="px-1 py-0.5">
-                                <div>15 Oct 2025</div>
+                              <div className="text-[4px] border-2 border-gray-900 p-0.5">
+                                <div className="flex justify-between border-b-2 border-gray-900 py-0.5 bg-gray-100">
+                                  <span className="font-bold">Quote #:</span>
+                                  <span>QT-001</span>
+                                </div>
+                                <div className="flex justify-between py-0.5">
+                                  <span className="font-bold">Date:</span>
+                                  <span>15 Oct</span>
+                                </div>
                               </div>
                             </div>
                             
                             {/* Items Table */}
                             <div className="border-2 border-gray-900">
-                              <div className="bg-gray-900 text-white px-1 py-0.5 grid grid-cols-4 gap-1 font-bold text-[5px]">
-                                <div className="col-span-2">Item</div>
+                              <div className="bg-gray-900 text-white px-1 py-0.5 grid grid-cols-6 gap-0.5 font-bold text-[4px]">
+                                <div>Item</div>
                                 <div className="text-right">Qty</div>
-                                <div className="text-right">Price</div>
+                                <div className="text-right">Rate</div>
+                                <div className="text-right">GST</div>
+                                <div className="text-right">Disc</div>
+                                <div className="text-right">Amt</div>
                               </div>
-                              <div className="px-1 py-0.5 text-[5px]">
-                                <div className="grid grid-cols-4 gap-1 border-b border-gray-400 pb-0.5">
-                                  <div className="col-span-2">Product Name</div>
+                              <div className="px-1 py-0.5 text-[4px]">
+                                <div className="grid grid-cols-6 gap-0.5">
+                                  <div>Product A</div>
                                   <div className="text-right">2</div>
-                                  <div className="text-right">$100</div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-1 pt-0.5">
-                                  <div className="col-span-2">Service Item</div>
-                                  <div className="text-right">1</div>
-                                  <div className="text-right">$200</div>
+                                  <div className="text-right">$50</div>
+                                  <div className="text-right">10%</div>
+                                  <div className="text-right">5%</div>
+                                  <div className="text-right">$104.5</div>
                                 </div>
                               </div>
                             </div>
                             
+                            {/* Datasheet Link */}
+                            <div className="text-[4px] border border-gray-400 px-1 py-0.5 flex items-center gap-0.5">
+                              <span>📎 Datasheet Available</span>
+                            </div>
+                            
+                            {/* Quotation Details */}
+                            <div className="grid grid-cols-2 gap-0.5 text-[4px] border-2 border-gray-900 p-0.5">
+                              <div className="bg-gray-100"><span className="font-bold">Payment:</span> Online</div>
+                              <div className="bg-gray-100"><span className="font-bold">ACSU:</span> 100pts</div>
+                              <div><span className="font-bold">Status:</span> Active</div>
+                            </div>
+                            
                             {/* Total */}
-                            <div className="flex justify-end">
-                              <div className="bg-gray-900 text-white px-2 py-1 text-[6px]">
-                                <span className="font-bold">Total: $300.00</span>
+                            <div className="text-[5px] border-t-2 border-gray-900 pt-1">
+                              <div className="flex justify-between"><span>Subtotal:</span><span>$100.00</span></div>
+                              <div className="flex justify-between text-[4px]"><span>GST Incl:</span><span>$10.00</span></div>
+                              <div className="flex justify-between font-bold bg-gray-900 text-white px-1 py-0.5 mt-0.5">
+                                <span>Total:</span>
+                                <span>$110.00</span>
                               </div>
                             </div>
                           </div>
@@ -790,73 +813,84 @@ export default function Company() {
                   >
                     <CardContent className="p-4">
                       <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border border-gray-200 shadow-md">
-                        <div className="h-full flex flex-col text-[6px] leading-tight">
+                        <div className="h-full flex flex-col text-[5px] leading-tight">
                           {/* Header */}
-                          <div className="border-b border-gray-200 px-3 py-2">
+                          <div className="border-b border-gray-200 px-2 py-1.5">
                             <div className="flex justify-between items-start">
                               <div>
-                                <div className="font-bold text-gray-900 text-[8px] mb-0.5">Minimal Design Co.</div>
-                                <div className="text-gray-500 text-[5px]">Less is More</div>
+                                <div className="font-bold text-gray-900 text-[7px] mb-0.5">Minimal Design Co.</div>
+                                <div className="text-gray-500 text-[4px]">Less is More</div>
                               </div>
-                              <div className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-[5px] text-gray-400">Logo</div>
+                              <div className="w-6 h-6 border border-gray-300 rounded-full flex items-center justify-center text-[5px] text-gray-400">Logo</div>
                             </div>
                           </div>
                           
                           {/* QUOTATION Title */}
-                          <div className="py-2 text-center">
-                            <div className="inline-block font-bold text-gray-800 text-[10px] border-b-2 border-gray-800">QUOTATION</div>
+                          <div className="py-1 text-center">
+                            <div className="inline-block font-bold text-gray-800 text-[8px] border-b-2 border-gray-800">QUOTATION</div>
                           </div>
                           
-                          <div className="flex-1 px-3 py-2 space-y-2">
-                            {/* Bill To */}
-                            <div className="text-[6px]">
-                              <div className="font-semibold text-gray-700 mb-0.5">Bill To:</div>
-                              <div className="text-gray-600">John Smith</div>
-                              <div className="text-gray-500 text-[5px]">456 Client Ave</div>
-                            </div>
-                            
-                            {/* Details */}
-                            <div className="grid grid-cols-2 gap-1 text-[5px] border border-gray-200 rounded">
-                              <div className="border-r border-b border-gray-200 px-1 py-0.5">
-                                <div className="font-semibold text-gray-600">Quote #:</div>
+                          <div className="flex-1 px-2 py-1.5 space-y-1.5">
+                            {/* Bill To & Details Grid */}
+                            <div className="grid grid-cols-2 gap-1">
+                              <div className="text-[5px]">
+                                <div className="font-semibold text-gray-700 mb-0.5">Bill To:</div>
+                                <div className="text-gray-600">John Smith</div>
+                                <div className="text-gray-500 text-[4px]">456 Client Ave</div>
                               </div>
-                              <div className="border-b border-gray-200 px-1 py-0.5">
-                                <div className="text-gray-700">QT-2025-001</div>
-                              </div>
-                              <div className="border-r border-gray-200 px-1 py-0.5">
-                                <div className="font-semibold text-gray-600">Date:</div>
-                              </div>
-                              <div className="px-1 py-0.5">
-                                <div className="text-gray-700">15 Oct 2025</div>
+                              <div className="text-[4px] border border-gray-200 rounded p-0.5">
+                                <div className="flex justify-between border-b border-gray-200 py-0.5">
+                                  <span className="font-semibold">Quote #:</span>
+                                  <span>QT-001</span>
+                                </div>
+                                <div className="flex justify-between py-0.5">
+                                  <span className="font-semibold">Date:</span>
+                                  <span>15 Oct</span>
+                                </div>
                               </div>
                             </div>
                             
                             {/* Items Table */}
                             <div className="border border-gray-200 rounded overflow-hidden">
-                              <div className="bg-gray-100 px-1 py-0.5 grid grid-cols-4 gap-1 font-semibold text-gray-700 text-[5px]">
-                                <div className="col-span-2">Item</div>
+                              <div className="bg-gray-100 px-1 py-0.5 grid grid-cols-6 gap-0.5 font-semibold text-gray-700 text-[4px]">
+                                <div>Item</div>
                                 <div className="text-right">Qty</div>
-                                <div className="text-right">Price</div>
+                                <div className="text-right">Rate</div>
+                                <div className="text-right">GST</div>
+                                <div className="text-right">Disc</div>
+                                <div className="text-right">Amt</div>
                               </div>
-                              <div className="px-1 py-0.5 text-[5px]">
-                                <div className="grid grid-cols-4 gap-1 border-b border-gray-100 pb-0.5 text-gray-600">
-                                  <div className="col-span-2">Product Name</div>
+                              <div className="px-1 py-0.5 text-[4px]">
+                                <div className="grid grid-cols-6 gap-0.5 text-gray-600">
+                                  <div>Product A</div>
                                   <div className="text-right">2</div>
-                                  <div className="text-right">$100</div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-1 pt-0.5 text-gray-600">
-                                  <div className="col-span-2">Service Item</div>
-                                  <div className="text-right">1</div>
-                                  <div className="text-right">$200</div>
+                                  <div className="text-right">$50</div>
+                                  <div className="text-right">10%</div>
+                                  <div className="text-right">5%</div>
+                                  <div className="text-right">$104.5</div>
                                 </div>
                               </div>
                             </div>
                             
+                            {/* Datasheet Link */}
+                            <div className="text-[4px] border border-gray-200 px-1 py-0.5 rounded flex items-center gap-0.5">
+                              <span className="text-gray-600">📎 Datasheet</span>
+                            </div>
+                            
+                            {/* Quotation Details */}
+                            <div className="grid grid-cols-2 gap-0.5 text-[4px] border border-gray-200 rounded p-0.5">
+                              <div><span className="font-semibold">Payment:</span> Cash</div>
+                              <div><span className="font-semibold">ACSU:</span> 100pts</div>
+                              <div><span className="font-semibold">Status:</span> Active</div>
+                            </div>
+                            
                             {/* Total */}
-                            <div className="flex justify-end">
-                              <div className="border-t-2 border-gray-800 pt-1 text-[6px]">
-                                <span className="text-gray-600">Total: </span>
-                                <span className="font-bold text-gray-900">$300.00</span>
+                            <div className="text-[5px] border-t-2 border-gray-300 pt-1">
+                              <div className="flex justify-between"><span>Subtotal:</span><span>$100.00</span></div>
+                              <div className="flex justify-between text-[4px]"><span>GST Incl:</span><span>$10.00</span></div>
+                              <div className="flex justify-between font-bold border-t-2 border-gray-800 pt-0.5 mt-0.5">
+                                <span className="text-gray-900">Total:</span>
+                                <span className="text-gray-900">$110.00</span>
                               </div>
                             </div>
                           </div>
@@ -874,74 +908,84 @@ export default function Company() {
                   >
                     <CardContent className="p-4">
                       <div className="aspect-[3/4] bg-gradient-to-b from-indigo-50 to-white rounded-lg mb-3 overflow-hidden border border-indigo-200 shadow-md">
-                        <div className="h-full flex flex-col text-[6px] leading-tight">
+                        <div className="h-full flex flex-col text-[5px] leading-tight">
                           {/* Header */}
-                          <div className="bg-white mx-2 mt-2 rounded-lg shadow-sm px-3 py-2 border border-indigo-100">
+                          <div className="bg-white mx-1.5 mt-1.5 rounded-lg shadow-sm px-2 py-1.5 border border-indigo-100">
                             <div className="flex justify-between items-start">
                               <div>
-                                <div className="font-bold text-indigo-700 text-[8px] mb-0.5">PROFESSIONAL CORP</div>
-                                <div className="text-indigo-500 text-[5px]">Excellence in Every Detail</div>
+                                <div className="font-bold text-indigo-700 text-[7px] mb-0.5">PROFESSIONAL CORP</div>
+                                <div className="text-indigo-500 text-[4px]">Excellence in Every Detail</div>
                               </div>
-                              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-[5px]">LOGO</div>
+                              <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-white text-[4px]">LOGO</div>
                             </div>
                           </div>
                           
                           {/* QUOTATION Title */}
-                          <div className="bg-indigo-100 mx-2 mt-2 py-2 text-center rounded">
-                            <div className="font-bold text-indigo-700 text-[10px]">QUOTATION</div>
+                          <div className="bg-indigo-100 mx-1.5 mt-1 py-1 text-center rounded">
+                            <div className="font-bold text-indigo-700 text-[8px]">QUOTATION</div>
                           </div>
                           
-                          <div className="flex-1 px-3 py-2 space-y-2">
-                            {/* Bill To */}
-                            <div className="bg-white rounded shadow-sm px-2 py-1 border border-indigo-100">
-                              <div className="text-[6px]">
+                          <div className="flex-1 px-2 py-1.5 space-y-1.5">
+                            {/* Bill To & Details Grid */}
+                            <div className="grid grid-cols-2 gap-1">
+                              <div className="bg-white rounded shadow-sm px-1 py-0.5 border border-indigo-100 text-[5px]">
                                 <div className="font-semibold text-indigo-700">Bill To:</div>
                                 <div className="text-gray-700">John Smith</div>
-                                <div className="text-gray-500 text-[5px]">456 Client Ave</div>
+                                <div className="text-gray-500 text-[4px]">456 Client Ave</div>
                               </div>
-                            </div>
-                            
-                            {/* Details */}
-                            <div className="grid grid-cols-2 gap-1 text-[5px] border border-indigo-200 rounded overflow-hidden bg-white">
-                              <div className="border-r border-b border-indigo-200 px-1 py-0.5 bg-indigo-50">
-                                <div className="font-semibold text-indigo-700">Quote #:</div>
-                              </div>
-                              <div className="border-b border-indigo-200 px-1 py-0.5">
-                                <div className="text-gray-700">QT-2025-001</div>
-                              </div>
-                              <div className="border-r border-indigo-200 px-1 py-0.5 bg-indigo-50">
-                                <div className="font-semibold text-indigo-700">Date:</div>
-                              </div>
-                              <div className="px-1 py-0.5">
-                                <div className="text-gray-700">15 Oct 2025</div>
+                              <div className="text-[4px] border border-indigo-200 rounded overflow-hidden bg-white">
+                                <div className="flex justify-between border-b border-indigo-200 px-1 py-0.5 bg-indigo-50">
+                                  <span className="font-semibold text-indigo-700">Quote #:</span>
+                                  <span className="text-gray-700">QT-001</span>
+                                </div>
+                                <div className="flex justify-between px-1 py-0.5">
+                                  <span className="font-semibold text-indigo-700">Date:</span>
+                                  <span className="text-gray-700">15 Oct</span>
+                                </div>
                               </div>
                             </div>
                             
                             {/* Items Table */}
                             <div className="border border-indigo-200 rounded overflow-hidden bg-white shadow-sm">
-                              <div className="bg-indigo-600 text-white px-1 py-0.5 grid grid-cols-4 gap-1 font-semibold text-[5px]">
-                                <div className="col-span-2">Item</div>
+                              <div className="bg-indigo-600 text-white px-1 py-0.5 grid grid-cols-6 gap-0.5 font-semibold text-[4px]">
+                                <div>Item</div>
                                 <div className="text-right">Qty</div>
-                                <div className="text-right">Price</div>
+                                <div className="text-right">Rate</div>
+                                <div className="text-right">GST</div>
+                                <div className="text-right">Disc</div>
+                                <div className="text-right">Amt</div>
                               </div>
-                              <div className="px-1 py-0.5 text-[5px]">
-                                <div className="grid grid-cols-4 gap-1 border-b border-gray-100 pb-0.5 text-gray-600">
-                                  <div className="col-span-2">Product Name</div>
+                              <div className="px-1 py-0.5 text-[4px]">
+                                <div className="grid grid-cols-6 gap-0.5 text-gray-600">
+                                  <div>Product A</div>
                                   <div className="text-right">2</div>
-                                  <div className="text-right">$100</div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-1 pt-0.5 text-gray-600">
-                                  <div className="col-span-2">Service Item</div>
-                                  <div className="text-right">1</div>
-                                  <div className="text-right">$200</div>
+                                  <div className="text-right">$50</div>
+                                  <div className="text-right">10%</div>
+                                  <div className="text-right">5%</div>
+                                  <div className="text-right">$104.5</div>
                                 </div>
                               </div>
                             </div>
                             
+                            {/* Datasheet Link */}
+                            <div className="text-[4px] bg-indigo-50 px-1 py-0.5 rounded flex items-center gap-0.5 border border-indigo-200">
+                              <span className="text-indigo-600">📎 Datasheet</span>
+                            </div>
+                            
+                            {/* Quotation Details */}
+                            <div className="grid grid-cols-2 gap-0.5 text-[4px] border border-indigo-200 rounded p-0.5 bg-white">
+                              <div className="bg-indigo-50"><span className="font-semibold">Payment:</span> Online</div>
+                              <div className="bg-indigo-50"><span className="font-semibold">ACSU:</span> 100pts</div>
+                              <div><span className="font-semibold">Status:</span> Active</div>
+                            </div>
+                            
                             {/* Total */}
-                            <div className="flex justify-end">
-                              <div className="bg-indigo-600 text-white px-2 py-1 rounded shadow text-[6px]">
-                                <span className="font-bold">Total: $300.00</span>
+                            <div className="text-[5px]">
+                              <div className="flex justify-between"><span>Subtotal:</span><span>$100.00</span></div>
+                              <div className="flex justify-between text-[4px]"><span>GST Incl:</span><span>$10.00</span></div>
+                              <div className="flex justify-between font-bold bg-indigo-600 text-white px-1 py-0.5 rounded shadow mt-0.5">
+                                <span>Total:</span>
+                                <span>$110.00</span>
                               </div>
                             </div>
                           </div>
@@ -959,72 +1003,84 @@ export default function Company() {
                   >
                     <CardContent className="p-4">
                       <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-t-4 border-blue-700 shadow-md">
-                        <div className="h-full flex flex-col text-[6px] leading-tight">
+                        <div className="h-full flex flex-col text-[5px] leading-tight">
                           {/* Header */}
-                          <div className="border-b-2 border-blue-700 px-3 py-2">
+                          <div className="border-b-2 border-blue-700 px-2 py-1.5">
                             <div className="flex justify-between items-start">
                               <div>
-                                <div className="font-bold text-blue-800 text-[8px] mb-0.5">BLUE CORPORATE</div>
-                                <div className="text-blue-600 text-[5px]">Trusted Business Partner</div>
+                                <div className="font-bold text-blue-800 text-[7px] mb-0.5">BLUE CORPORATE</div>
+                                <div className="text-blue-600 text-[4px]">Trusted Business Partner</div>
                               </div>
-                              <div className="w-8 h-8 border-2 border-blue-700 flex items-center justify-center text-[5px] text-blue-700">LOGO</div>
+                              <div className="w-6 h-6 border-2 border-blue-700 flex items-center justify-center text-[4px] text-blue-700">LOGO</div>
                             </div>
                           </div>
                           
                           {/* QUOTATION Title */}
-                          <div className="bg-blue-50 py-2 text-center">
-                            <div className="font-bold text-blue-800 text-[10px]">QUOTATION</div>
+                          <div className="bg-blue-50 py-1 text-center">
+                            <div className="font-bold text-blue-800 text-[8px]">QUOTATION</div>
                           </div>
                           
-                          <div className="flex-1 px-3 py-2 space-y-2">
-                            {/* Bill To */}
-                            <div className="text-[6px]">
-                              <div className="font-bold text-blue-800">Bill To:</div>
-                              <div className="text-gray-700">John Smith</div>
-                              <div className="text-gray-600 text-[5px]">456 Client Ave</div>
-                            </div>
-                            
-                            {/* Details */}
-                            <div className="grid grid-cols-2 gap-1 text-[5px] border-2 border-blue-200">
-                              <div className="border-r-2 border-b-2 border-blue-200 px-1 py-0.5 bg-blue-50">
-                                <div className="font-bold text-blue-700">Quote #:</div>
+                          <div className="flex-1 px-2 py-1.5 space-y-1.5">
+                            {/* Bill To & Details Grid */}
+                            <div className="grid grid-cols-2 gap-1">
+                              <div className="text-[5px]">
+                                <div className="font-bold text-blue-800">Bill To:</div>
+                                <div className="text-gray-700">John Smith</div>
+                                <div className="text-gray-600 text-[4px]">456 Client Ave</div>
                               </div>
-                              <div className="border-b-2 border-blue-200 px-1 py-0.5">
-                                <div className="text-gray-700">QT-2025-001</div>
-                              </div>
-                              <div className="border-r-2 border-blue-200 px-1 py-0.5 bg-blue-50">
-                                <div className="font-bold text-blue-700">Date:</div>
-                              </div>
-                              <div className="px-1 py-0.5">
-                                <div className="text-gray-700">15 Oct 2025</div>
+                              <div className="text-[4px] border-2 border-blue-200">
+                                <div className="flex justify-between border-b-2 border-blue-200 px-1 py-0.5 bg-blue-50">
+                                  <span className="font-bold text-blue-700">Quote #:</span>
+                                  <span className="text-gray-700">QT-001</span>
+                                </div>
+                                <div className="flex justify-between px-1 py-0.5">
+                                  <span className="font-bold text-blue-700">Date:</span>
+                                  <span className="text-gray-700">15 Oct</span>
+                                </div>
                               </div>
                             </div>
                             
                             {/* Items Table */}
                             <div className="border-2 border-blue-200">
-                              <div className="bg-blue-700 text-white px-1 py-0.5 grid grid-cols-4 gap-1 font-bold text-[5px]">
-                                <div className="col-span-2">Item</div>
+                              <div className="bg-blue-700 text-white px-1 py-0.5 grid grid-cols-6 gap-0.5 font-bold text-[4px]">
+                                <div>Item</div>
                                 <div className="text-right">Qty</div>
-                                <div className="text-right">Price</div>
+                                <div className="text-right">Rate</div>
+                                <div className="text-right">GST</div>
+                                <div className="text-right">Disc</div>
+                                <div className="text-right">Amt</div>
                               </div>
-                              <div className="px-1 py-0.5 text-[5px]">
-                                <div className="grid grid-cols-4 gap-1 border-b border-gray-200 pb-0.5 text-gray-600">
-                                  <div className="col-span-2">Product Name</div>
+                              <div className="px-1 py-0.5 text-[4px]">
+                                <div className="grid grid-cols-6 gap-0.5 text-gray-600">
+                                  <div>Product A</div>
                                   <div className="text-right">2</div>
-                                  <div className="text-right">$100</div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-1 pt-0.5 text-gray-600">
-                                  <div className="col-span-2">Service Item</div>
-                                  <div className="text-right">1</div>
-                                  <div className="text-right">$200</div>
+                                  <div className="text-right">$50</div>
+                                  <div className="text-right">10%</div>
+                                  <div className="text-right">5%</div>
+                                  <div className="text-right">$104.5</div>
                                 </div>
                               </div>
                             </div>
                             
+                            {/* Datasheet Link */}
+                            <div className="text-[4px] bg-blue-50 px-1 py-0.5 flex items-center gap-0.5 border border-blue-200">
+                              <span className="text-blue-700">📎 Datasheet</span>
+                            </div>
+                            
+                            {/* Quotation Details */}
+                            <div className="grid grid-cols-2 gap-0.5 text-[4px] border-2 border-blue-200 p-0.5">
+                              <div className="bg-blue-50"><span className="font-bold">Payment:</span> Online</div>
+                              <div className="bg-blue-50"><span className="font-bold">ACSU:</span> 100pts</div>
+                              <div><span className="font-bold">Status:</span> Active</div>
+                            </div>
+                            
                             {/* Total */}
-                            <div className="flex justify-end">
-                              <div className="bg-blue-100 border-2 border-blue-700 px-2 py-1 text-[6px]">
-                                <span className="font-bold text-blue-800">Total: $300.00</span>
+                            <div className="text-[5px]">
+                              <div className="flex justify-between"><span>Subtotal:</span><span>$100.00</span></div>
+                              <div className="flex justify-between text-[4px]"><span>GST Incl:</span><span>$10.00</span></div>
+                              <div className="flex justify-between font-bold bg-blue-100 border-2 border-blue-700 px-1 py-0.5 mt-0.5">
+                                <span className="text-blue-800">Total:</span>
+                                <span className="text-blue-800">$110.00</span>
                               </div>
                             </div>
                           </div>
@@ -1085,30 +1141,46 @@ export default function Company() {
                             
                             {/* Items Table */}
                             <div className="border-2 border-amber-200 rounded bg-white">
-                              <div className="bg-gradient-to-r from-amber-100 to-amber-50 px-1 py-0.5 grid grid-cols-4 gap-1 font-semibold text-amber-800 text-[5px] border-b-2 border-amber-300">
-                                <div className="col-span-2">Item</div>
+                              <div className="bg-gradient-to-r from-amber-100 to-amber-50 px-1 py-0.5 grid grid-cols-6 gap-0.5 font-semibold text-amber-800 text-[4px] border-b-2 border-amber-300">
+                                <div>Item</div>
                                 <div className="text-right">Qty</div>
-                                <div className="text-right">Price</div>
+                                <div className="text-right">Rate</div>
+                                <div className="text-right">GST</div>
+                                <div className="text-right">Disc</div>
+                                <div className="text-right">Amt</div>
                               </div>
-                              <div className="px-1 py-0.5 text-[5px]">
-                                <div className="grid grid-cols-4 gap-1 border-b border-amber-100 pb-0.5 text-gray-600">
-                                  <div className="col-span-2">Product Name</div>
+                              <div className="px-1 py-0.5 text-[4px]">
+                                <div className="grid grid-cols-6 gap-0.5 text-gray-600">
+                                  <div>Product A</div>
                                   <div className="text-right">2</div>
-                                  <div className="text-right">$100</div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-1 pt-0.5 text-gray-600">
-                                  <div className="col-span-2">Service Item</div>
-                                  <div className="text-right">1</div>
-                                  <div className="text-right">$200</div>
+                                  <div className="text-right">$50</div>
+                                  <div className="text-right">10%</div>
+                                  <div className="text-right">5%</div>
+                                  <div className="text-right">$104.5</div>
                                 </div>
                               </div>
                             </div>
                             
+                            {/* Datasheet */}
+                            <div className="text-[4px] bg-amber-50 px-1 py-0.5 border border-amber-300">
+                              <span className="text-amber-700">📎 Datasheet</span>
+                            </div>
+                            
+                            {/* Details */}
+                            <div className="grid grid-cols-2 gap-0.5 text-[4px] border-2 border-amber-200 p-0.5">
+                              <div className="bg-amber-50"><span className="font-semibold">Payment:</span> Cash</div>
+                              <div className="bg-amber-50"><span className="font-semibold">ACSU:</span> 100pts</div>
+                              <div><span className="font-semibold">Status:</span> Active</div>
+                            </div>
+                            
                             {/* Total */}
-                            <div className="flex justify-end">
-                              <div className="bg-amber-100 border-l-4 border-amber-500 px-2 py-1 text-[6px]">
-                                <span className="text-amber-700">Total: </span>
-                                <span className="font-bold text-amber-900">$300.00</span>
+                            <div className="text-[5px]">
+                              <div className="flex justify-between"><span>Subtotal:</span><span>$100.00</span></div>
+                              <div className="flex justify-between text-[4px]"><span>GST Incl:</span><span>$10.00</span></div>
+                              <div className="flex justify-end">
+                                <div className="bg-amber-100 border-l-4 border-amber-500 px-1 py-0.5 font-bold text-amber-900">
+                                  <span>Total: $110.00</span>
+                                </div>
                               </div>
                             </div>
                           </div>

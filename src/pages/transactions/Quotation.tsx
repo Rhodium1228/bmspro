@@ -1310,12 +1310,12 @@ export default function Quotation() {
                             {customerPhone && <p className="text-sm text-gray-600">Phone: {customerPhone}</p>}
                           </div>
                           
-                          {/* Invoice Details Table */}
+                          {/* Quotation Details Table */}
                           <div>
                             <table className="w-full border-collapse border border-gray-300">
                               <tbody>
                                 <tr className="border-b border-gray-300">
-                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Invoice No:</td>
+                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Quotation No:</td>
                                   <td className="px-3 py-2 text-sm">{quotationNumber}</td>
                                 </tr>
                                 <tr className="border-b border-gray-300">
@@ -1323,12 +1323,20 @@ export default function Quotation() {
                                   <td className="px-3 py-2 text-sm">{new Date(quotationDate).toLocaleDateString('en-GB')}</td>
                                 </tr>
                                 <tr className="border-b border-gray-300">
-                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Terms:</td>
-                                  <td className="px-3 py-2 text-sm">NET 0</td>
+                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Payment Type:</td>
+                                  <td className="px-3 py-2 text-sm capitalize">{paymentType}</td>
+                                </tr>
+                                <tr className="border-b border-gray-300">
+                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">ACSU Points:</td>
+                                  <td className="px-3 py-2 text-sm">{acsuPoints} pts</td>
                                 </tr>
                                 <tr>
-                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Due Date:</td>
-                                  <td className="px-3 py-2 text-sm">{new Date(quotationDate).toLocaleDateString('en-GB')}</td>
+                                  <td className="px-3 py-2 text-sm font-semibold bg-gray-50">Status:</td>
+                                  <td className="px-3 py-2 text-sm">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                      Active
+                                    </span>
+                                  </td>
                                 </tr>
                               </tbody>
                             </table>
@@ -1353,12 +1361,14 @@ export default function Quotation() {
                                   (!quotationSettings?.template || quotationSettings?.template === 'modern') && "bg-gray-100"
                                 )}
                               >
-                                <th className="text-left py-3 px-3 text-xs font-bold">Code</th>
+                                <th className="text-left py-3 px-3 text-xs font-bold">Item Name</th>
                                 <th className="text-left py-3 px-3 text-xs font-bold">Description</th>
                                 <th className="text-center py-3 px-3 text-xs font-bold">Quantity</th>
                                 <th className="text-right py-3 px-3 text-xs font-bold">Rate</th>
-                                <th className="text-right py-3 px-3 text-xs font-bold">GST</th>
+                                <th className="text-right py-3 px-3 text-xs font-bold">GST (%)</th>
+                                <th className="text-right py-3 px-3 text-xs font-bold">Discount (%)</th>
                                 <th className="text-right py-3 px-3 text-xs font-bold">Amount</th>
+                                <th className="text-center py-3 px-3 text-xs font-bold">Datasheet</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1370,44 +1380,56 @@ export default function Quotation() {
                                     <td className="py-3 px-3 text-sm text-gray-900 text-center align-top">{item.quantity}</td>
                                     <td className="py-3 px-3 text-sm text-gray-900 text-right align-top">${item.rate.toFixed(2)}</td>
                                     <td className="py-3 px-3 text-sm text-gray-900 text-right align-top">{item.gst}%</td>
+                                    <td className="py-3 px-3 text-sm text-gray-900 text-right align-top">{item.discount}%</td>
                                     <td className="py-3 px-3 text-sm font-semibold text-gray-900 text-right align-top">${item.amount.toFixed(2)}</td>
+                                    <td className="py-3 px-3 text-center align-top">
+                                      {item.datasheetUrl ? (
+                                        <a 
+                                          href={item.datasheetUrl} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center text-blue-600 hover:text-blue-800"
+                                        >
+                                          <Paperclip className="h-4 w-4" />
+                                        </a>
+                                      ) : (
+                                        <span className="text-gray-400">-</span>
+                                      )}
+                                    </td>
                                   </tr>
                                 ))
                                ) : (
                                 <tr>
-                                  <td colSpan={6} className="py-8 text-center text-sm text-gray-500">No items added yet</td>
+                                  <td colSpan={8} className="py-8 text-center text-sm text-gray-500">No items added yet</td>
                                 </tr>
                               )}
                             </tbody>
                           </table>
                         </div>
                         
-                        {/* Parts Subtotal */}
+                        {/* Subtotal and GST Summary */}
                         {items.length > 0 && (
-                          <div className="flex justify-end mt-4">
-                            <p className="text-sm font-semibold">Parts Subtotal: ${subtotal.toFixed(2)}</p>
-                          </div>
-                        )}
-
-                        {/* Datasheets Section */}
-                        {items.some(item => item.datasheetUrl) && (
-                          <div className="mt-6">
-                            <h4 className="text-sm font-semibold mb-3 text-gray-700">Attached Datasheets:</h4>
-                            <div className="space-y-2">
-                              {items.filter(item => item.datasheetUrl).map((item) => (
-                                <div key={item.id} className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-200">
-                                  <FileText className="h-4 w-4 text-gray-500" />
-                                  <span className="font-medium">{item.itemName}:</span>
-                                  <a 
-                                    href={item.datasheetUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    View Datasheet
-                                  </a>
+                          <div className="mt-4 border-t border-gray-300 pt-4">
+                            <div className="flex justify-end">
+                              <div className="w-80 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-700">Subtotal:</span>
+                                  <span className="font-semibold text-gray-900">${subtotal.toFixed(2)}</span>
                                 </div>
-                              ))}
+                                <div className="flex justify-between text-sm border-t border-gray-200 pt-2">
+                                  <span className="text-gray-700">GST Included:</span>
+                                  <span className="font-semibold text-gray-900">${(subtotal * 0.091).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-base font-bold bg-gray-100 px-3 py-2 rounded">
+                                  <span className="text-gray-900">Total Amount:</span>
+                                  <span 
+                                    className="text-gray-900"
+                                    style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}
+                                  >
+                                    ${total.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
