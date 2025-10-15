@@ -613,646 +613,509 @@ export default function Company() {
 
             <TabsContent value="templates" className="space-y-4">
               <div className="space-y-4 pt-4">
-                <p className="text-sm text-muted-foreground">Choose a template style for your quotations</p>
+                <p className="text-sm text-muted-foreground">Choose a template style for your quotations. Click to see a detailed preview.</p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Modern Template */}
                   <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "modern" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-xl ${selectedTemplate === "modern" ? "ring-2 ring-primary shadow-xl" : ""}`}
                     onClick={() => setSelectedTemplate("modern")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-lg mb-3 overflow-hidden border border-gray-200 text-[4px]">
-                        <div className="h-full p-2">
-                          {/* Header */}
-                          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1.5 rounded mb-1.5">
+                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-2 border-blue-100 shadow-md">
+                        <div className="h-full flex flex-col text-[6px] leading-tight">
+                          {/* Header with gradient */}
+                          <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-3 py-2">
                             <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-white/90 w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-white/70 w-1/2"></div>
+                              <div>
+                                <div className="font-bold text-[8px] mb-0.5">ACME CORPORATION</div>
+                                <div className="text-[5px] opacity-90">123 Business St, City</div>
                               </div>
-                              <div className="w-4 h-4 bg-white/20 rounded"></div>
+                              <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center text-[6px]">LOGO</div>
                             </div>
                           </div>
-                          {/* Tax Invoice Title */}
-                          <div className="bg-blue-500/10 py-0.5 mb-1">
-                            <div className="h-1 bg-blue-600 w-1/3 mx-auto"></div>
+                          
+                          {/* QUOTATION Title */}
+                          <div className="bg-blue-50 py-2 text-center">
+                            <div className="font-bold text-blue-700 text-[10px]">QUOTATION</div>
                           </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1">
-                            <div className="h-0.5 bg-gray-800 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-gray-400 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border border-gray-300 mb-1">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r border-b border-gray-300 p-0.5">
-                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
+                          
+                          <div className="flex-1 px-3 py-2 space-y-2">
+                            {/* Bill To */}
+                            <div className="text-[6px]">
+                              <div className="font-semibold text-gray-700">Bill To:</div>
+                              <div className="text-gray-600">John Smith</div>
+                              <div className="text-gray-500 text-[5px]">456 Client Ave</div>
+                            </div>
+                            
+                            {/* Details */}
+                            <div className="grid grid-cols-2 gap-1 text-[5px] border border-gray-200 rounded">
+                              <div className="border-r border-b border-gray-200 px-1 py-0.5 bg-gray-50">
+                                <div className="font-semibold">Quote #:</div>
                               </div>
-                              <div className="border-b border-gray-300 p-0.5">
-                                <div className="h-0.5 bg-gray-400 w-3/4"></div>
+                              <div className="border-b border-gray-200 px-1 py-0.5">
+                                <div>QT-2025-001</div>
                               </div>
-                              <div className="border-r border-gray-300 p-0.5">
-                                <div className="h-0.5 bg-gray-600 w-1/2"></div>
+                              <div className="border-r border-gray-200 px-1 py-0.5 bg-gray-50">
+                                <div className="font-semibold">Date:</div>
                               </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-gray-400 w-2/3"></div>
+                              <div className="px-1 py-0.5">
+                                <div>15 Oct 2025</div>
                               </div>
                             </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border border-gray-300">
-                            <div className="bg-blue-500 p-0.5 grid grid-cols-4 gap-0.5">
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
+                            
+                            {/* Items Table */}
+                            <div className="border border-gray-300 rounded overflow-hidden">
+                              <div className="bg-blue-600 text-white px-1 py-0.5 grid grid-cols-4 gap-1 font-semibold text-[5px]">
+                                <div className="col-span-2">Item</div>
+                                <div className="text-right">Qty</div>
+                                <div className="text-right">Price</div>
+                              </div>
+                              <div className="px-1 py-0.5 text-[5px] bg-gray-50">
+                                <div className="grid grid-cols-4 gap-1 border-b border-gray-200 pb-0.5">
+                                  <div className="col-span-2">Product Name</div>
+                                  <div className="text-right">2</div>
+                                  <div className="text-right">$100</div>
+                                </div>
+                                <div className="grid grid-cols-4 gap-1 pt-0.5">
+                                  <div className="col-span-2">Service Item</div>
+                                  <div className="text-right">1</div>
+                                  <div className="text-right">$200</div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                            
+                            {/* Total */}
+                            <div className="flex justify-end">
+                              <div className="bg-blue-100 px-2 py-1 rounded text-[6px]">
+                                <span className="font-semibold text-blue-700">Total: </span>
+                                <span className="font-bold text-blue-900">$300.00</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-base">Modern</h3>
-                      <p className="text-xs text-muted-foreground">Clean gradients with bold headers</p>
+                      <h3 className="font-semibold text-base mb-1">Modern</h3>
+                      <p className="text-xs text-muted-foreground">Clean blue gradient with professional layout</p>
                     </CardContent>
                   </Card>
 
                   {/* Classic Template */}
                   <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "classic" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-xl ${selectedTemplate === "classic" ? "ring-2 ring-primary shadow-xl" : ""}`}
                     onClick={() => setSelectedTemplate("classic")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-2 border-gray-800 text-[4px]">
-                        <div className="h-full p-2">
+                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-4 border-gray-900 shadow-md">
+                        <div className="h-full flex flex-col text-[6px] leading-tight">
                           {/* Header */}
-                          <div className="bg-gray-800 text-white p-1.5 mb-1.5">
+                          <div className="bg-gray-900 text-white px-3 py-2">
                             <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-white w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-white/80 w-1/2"></div>
+                              <div>
+                                <div className="font-bold text-[8px] mb-0.5">CLASSIC BUSINESS</div>
+                                <div className="text-[5px]">Traditional Excellence Since 1990</div>
                               </div>
-                              <div className="w-4 h-4 bg-white/20"></div>
+                              <div className="w-8 h-8 bg-white/20 flex items-center justify-center text-[6px]">LOGO</div>
                             </div>
                           </div>
-                          {/* Tax Invoice Title */}
-                          <div className="border-t-2 border-b-2 border-gray-800 py-0.5 mb-1">
-                            <div className="h-1 bg-gray-800 w-1/3 mx-auto"></div>
+                          
+                          {/* QUOTATION Title */}
+                          <div className="border-y-2 border-gray-900 py-2 text-center">
+                            <div className="font-bold text-gray-900 text-[10px]">QUOTATION</div>
                           </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1">
-                            <div className="h-0.5 bg-gray-800 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-gray-600 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border-2 border-gray-800 mb-1">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r-2 border-b-2 border-gray-800 p-0.5">
-                                <div className="h-0.5 bg-gray-700 w-2/3"></div>
+                          
+                          <div className="flex-1 px-3 py-2 space-y-2">
+                            {/* Bill To */}
+                            <div className="text-[6px]">
+                              <div className="font-bold text-gray-900">Bill To:</div>
+                              <div className="text-gray-700">John Smith</div>
+                              <div className="text-gray-600 text-[5px]">456 Client Ave</div>
+                            </div>
+                            
+                            {/* Details */}
+                            <div className="grid grid-cols-2 gap-1 text-[5px] border-2 border-gray-900">
+                              <div className="border-r-2 border-b-2 border-gray-900 px-1 py-0.5 bg-gray-100">
+                                <div className="font-bold">Quote #:</div>
                               </div>
-                              <div className="border-b-2 border-gray-800 p-0.5">
-                                <div className="h-0.5 bg-gray-500 w-3/4"></div>
+                              <div className="border-b-2 border-gray-900 px-1 py-0.5">
+                                <div>QT-2025-001</div>
                               </div>
-                              <div className="border-r-2 border-gray-800 p-0.5">
-                                <div className="h-0.5 bg-gray-700 w-1/2"></div>
+                              <div className="border-r-2 border-gray-900 px-1 py-0.5 bg-gray-100">
+                                <div className="font-bold">Date:</div>
                               </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-gray-500 w-2/3"></div>
+                              <div className="px-1 py-0.5">
+                                <div>15 Oct 2025</div>
                               </div>
                             </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border-2 border-gray-800">
-                            <div className="bg-gray-800 p-0.5 grid grid-cols-4 gap-0.5">
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
+                            
+                            {/* Items Table */}
+                            <div className="border-2 border-gray-900">
+                              <div className="bg-gray-900 text-white px-1 py-0.5 grid grid-cols-4 gap-1 font-bold text-[5px]">
+                                <div className="col-span-2">Item</div>
+                                <div className="text-right">Qty</div>
+                                <div className="text-right">Price</div>
+                              </div>
+                              <div className="px-1 py-0.5 text-[5px]">
+                                <div className="grid grid-cols-4 gap-1 border-b border-gray-400 pb-0.5">
+                                  <div className="col-span-2">Product Name</div>
+                                  <div className="text-right">2</div>
+                                  <div className="text-right">$100</div>
+                                </div>
+                                <div className="grid grid-cols-4 gap-1 pt-0.5">
+                                  <div className="col-span-2">Service Item</div>
+                                  <div className="text-right">1</div>
+                                  <div className="text-right">$200</div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-gray-400 w-full"></div>
-                              <div className="h-0.5 bg-gray-400 w-full"></div>
+                            
+                            {/* Total */}
+                            <div className="flex justify-end">
+                              <div className="bg-gray-900 text-white px-2 py-1 text-[6px]">
+                                <span className="font-bold">Total: $300.00</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-base">Classic</h3>
-                      <p className="text-xs text-muted-foreground">Traditional business layout</p>
+                      <h3 className="font-semibold text-base mb-1">Classic</h3>
+                      <p className="text-xs text-muted-foreground">Traditional black & white business style</p>
                     </CardContent>
                   </Card>
 
                   {/* Minimal Template */}
                   <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "minimal" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-xl ${selectedTemplate === "minimal" ? "ring-2 ring-primary shadow-xl" : ""}`}
                     onClick={() => setSelectedTemplate("minimal")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border border-gray-200 text-[4px]">
-                        <div className="h-full p-2">
+                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border border-gray-200 shadow-md">
+                        <div className="h-full flex flex-col text-[6px] leading-tight">
                           {/* Header */}
-                          <div className="border-b border-gray-200 p-1.5 mb-1.5">
+                          <div className="border-b border-gray-200 px-3 py-2">
                             <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-gray-900 w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-gray-500 w-1/2"></div>
+                              <div>
+                                <div className="font-bold text-gray-900 text-[8px] mb-0.5">Minimal Design Co.</div>
+                                <div className="text-gray-500 text-[5px]">Less is More</div>
                               </div>
-                              <div className="w-4 h-4 border border-gray-300 rounded-full"></div>
+                              <div className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-[5px] text-gray-400">Logo</div>
                             </div>
                           </div>
-                          {/* Tax Invoice Title */}
-                          <div className="py-0.5 mb-1">
-                            <div className="h-1 bg-gray-800 w-1/3 mx-auto rounded-full"></div>
+                          
+                          {/* QUOTATION Title */}
+                          <div className="py-2 text-center">
+                            <div className="inline-block font-bold text-gray-800 text-[10px] border-b-2 border-gray-800">QUOTATION</div>
                           </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1">
-                            <div className="h-0.5 bg-gray-700 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-gray-400 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border border-gray-200 rounded mb-1">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r border-b border-gray-200 p-0.5">
-                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
+                          
+                          <div className="flex-1 px-3 py-2 space-y-2">
+                            {/* Bill To */}
+                            <div className="text-[6px]">
+                              <div className="font-semibold text-gray-700 mb-0.5">Bill To:</div>
+                              <div className="text-gray-600">John Smith</div>
+                              <div className="text-gray-500 text-[5px]">456 Client Ave</div>
+                            </div>
+                            
+                            {/* Details */}
+                            <div className="grid grid-cols-2 gap-1 text-[5px] border border-gray-200 rounded">
+                              <div className="border-r border-b border-gray-200 px-1 py-0.5">
+                                <div className="font-semibold text-gray-600">Quote #:</div>
                               </div>
-                              <div className="border-b border-gray-200 p-0.5">
-                                <div className="h-0.5 bg-gray-400 w-3/4"></div>
+                              <div className="border-b border-gray-200 px-1 py-0.5">
+                                <div className="text-gray-700">QT-2025-001</div>
                               </div>
-                              <div className="border-r border-gray-200 p-0.5">
-                                <div className="h-0.5 bg-gray-600 w-1/2"></div>
+                              <div className="border-r border-gray-200 px-1 py-0.5">
+                                <div className="font-semibold text-gray-600">Date:</div>
                               </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-gray-400 w-2/3"></div>
+                              <div className="px-1 py-0.5">
+                                <div className="text-gray-700">15 Oct 2025</div>
                               </div>
                             </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border border-gray-200 rounded">
-                            <div className="bg-gray-100 p-0.5 grid grid-cols-4 gap-0.5">
-                              <div className="h-0.5 bg-gray-700 w-full"></div>
-                              <div className="h-0.5 bg-gray-700 w-full"></div>
-                              <div className="h-0.5 bg-gray-700 w-full"></div>
-                              <div className="h-0.5 bg-gray-700 w-full"></div>
+                            
+                            {/* Items Table */}
+                            <div className="border border-gray-200 rounded overflow-hidden">
+                              <div className="bg-gray-100 px-1 py-0.5 grid grid-cols-4 gap-1 font-semibold text-gray-700 text-[5px]">
+                                <div className="col-span-2">Item</div>
+                                <div className="text-right">Qty</div>
+                                <div className="text-right">Price</div>
+                              </div>
+                              <div className="px-1 py-0.5 text-[5px]">
+                                <div className="grid grid-cols-4 gap-1 border-b border-gray-100 pb-0.5 text-gray-600">
+                                  <div className="col-span-2">Product Name</div>
+                                  <div className="text-right">2</div>
+                                  <div className="text-right">$100</div>
+                                </div>
+                                <div className="grid grid-cols-4 gap-1 pt-0.5 text-gray-600">
+                                  <div className="col-span-2">Service Item</div>
+                                  <div className="text-right">1</div>
+                                  <div className="text-right">$200</div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                            
+                            {/* Total */}
+                            <div className="flex justify-end">
+                              <div className="border-t-2 border-gray-800 pt-1 text-[6px]">
+                                <span className="text-gray-600">Total: </span>
+                                <span className="font-bold text-gray-900">$300.00</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-base">Minimal</h3>
-                      <p className="text-xs text-muted-foreground">Simple and elegant design</p>
+                      <h3 className="font-semibold text-base mb-1">Minimal</h3>
+                      <p className="text-xs text-muted-foreground">Clean and simple with subtle borders</p>
                     </CardContent>
                   </Card>
 
                   {/* Professional Template */}
                   <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "professional" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-xl ${selectedTemplate === "professional" ? "ring-2 ring-primary shadow-xl" : ""}`}
                     onClick={() => setSelectedTemplate("professional")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-b from-indigo-50 to-white rounded-lg mb-3 overflow-hidden border border-indigo-200 text-[4px]">
-                        <div className="h-full p-2">
+                      <div className="aspect-[3/4] bg-gradient-to-b from-indigo-50 to-white rounded-lg mb-3 overflow-hidden border border-indigo-200 shadow-md">
+                        <div className="h-full flex flex-col text-[6px] leading-tight">
                           {/* Header */}
-                          <div className="bg-white p-1.5 rounded shadow-sm mb-1.5">
+                          <div className="bg-white mx-2 mt-2 rounded-lg shadow-sm px-3 py-2 border border-indigo-100">
                             <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-indigo-600 w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-indigo-400 w-1/2"></div>
+                              <div>
+                                <div className="font-bold text-indigo-700 text-[8px] mb-0.5">PROFESSIONAL CORP</div>
+                                <div className="text-indigo-500 text-[5px]">Excellence in Every Detail</div>
                               </div>
-                              <div className="w-4 h-4 bg-indigo-600 rounded-full"></div>
+                              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-[5px]">LOGO</div>
                             </div>
                           </div>
-                          {/* Tax Invoice Title */}
-                          <div className="bg-indigo-600/10 py-0.5 mb-1 rounded">
-                            <div className="h-1 bg-indigo-600 w-1/3 mx-auto"></div>
+                          
+                          {/* QUOTATION Title */}
+                          <div className="bg-indigo-100 mx-2 mt-2 py-2 text-center rounded">
+                            <div className="font-bold text-indigo-700 text-[10px]">QUOTATION</div>
                           </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1 bg-white p-1 rounded shadow-sm">
-                            <div className="h-0.5 bg-indigo-800 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-gray-500 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border border-indigo-200 rounded mb-1 bg-white">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r border-b border-indigo-200 p-0.5">
-                                <div className="h-0.5 bg-indigo-600 w-2/3"></div>
-                              </div>
-                              <div className="border-b border-indigo-200 p-0.5">
-                                <div className="h-0.5 bg-gray-500 w-3/4"></div>
-                              </div>
-                              <div className="border-r border-indigo-200 p-0.5">
-                                <div className="h-0.5 bg-indigo-600 w-1/2"></div>
-                              </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-gray-500 w-2/3"></div>
+                          
+                          <div className="flex-1 px-3 py-2 space-y-2">
+                            {/* Bill To */}
+                            <div className="bg-white rounded shadow-sm px-2 py-1 border border-indigo-100">
+                              <div className="text-[6px]">
+                                <div className="font-semibold text-indigo-700">Bill To:</div>
+                                <div className="text-gray-700">John Smith</div>
+                                <div className="text-gray-500 text-[5px]">456 Client Ave</div>
                               </div>
                             </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border border-indigo-200 rounded bg-white shadow-sm">
-                            <div className="bg-indigo-600 p-0.5 grid grid-cols-4 gap-0.5 rounded-t">
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
+                            
+                            {/* Details */}
+                            <div className="grid grid-cols-2 gap-1 text-[5px] border border-indigo-200 rounded overflow-hidden bg-white">
+                              <div className="border-r border-b border-indigo-200 px-1 py-0.5 bg-indigo-50">
+                                <div className="font-semibold text-indigo-700">Quote #:</div>
+                              </div>
+                              <div className="border-b border-indigo-200 px-1 py-0.5">
+                                <div className="text-gray-700">QT-2025-001</div>
+                              </div>
+                              <div className="border-r border-indigo-200 px-1 py-0.5 bg-indigo-50">
+                                <div className="font-semibold text-indigo-700">Date:</div>
+                              </div>
+                              <div className="px-1 py-0.5">
+                                <div className="text-gray-700">15 Oct 2025</div>
+                              </div>
                             </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                            
+                            {/* Items Table */}
+                            <div className="border border-indigo-200 rounded overflow-hidden bg-white shadow-sm">
+                              <div className="bg-indigo-600 text-white px-1 py-0.5 grid grid-cols-4 gap-1 font-semibold text-[5px]">
+                                <div className="col-span-2">Item</div>
+                                <div className="text-right">Qty</div>
+                                <div className="text-right">Price</div>
+                              </div>
+                              <div className="px-1 py-0.5 text-[5px]">
+                                <div className="grid grid-cols-4 gap-1 border-b border-gray-100 pb-0.5 text-gray-600">
+                                  <div className="col-span-2">Product Name</div>
+                                  <div className="text-right">2</div>
+                                  <div className="text-right">$100</div>
+                                </div>
+                                <div className="grid grid-cols-4 gap-1 pt-0.5 text-gray-600">
+                                  <div className="col-span-2">Service Item</div>
+                                  <div className="text-right">1</div>
+                                  <div className="text-right">$200</div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Total */}
+                            <div className="flex justify-end">
+                              <div className="bg-indigo-600 text-white px-2 py-1 rounded shadow text-[6px]">
+                                <span className="font-bold">Total: $300.00</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-base">Professional</h3>
-                      <p className="text-xs text-muted-foreground">Corporate style with logo prominence</p>
-                    </CardContent>
-                  </Card>
-
-                  {/* Bold Template */}
-                  <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "bold" ? "ring-2 ring-primary shadow-lg" : ""}`}
-                    onClick={() => setSelectedTemplate("bold")}
-                  >
-                    <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 rounded-lg mb-3 overflow-hidden text-[4px]">
-                        <div className="h-full p-2">
-                          {/* Header */}
-                          <div className="bg-white/95 p-1.5 rounded-lg shadow-lg mb-1.5">
-                            <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-purple-600 w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-purple-400 w-1/2"></div>
-                              </div>
-                              <div className="w-4 h-4 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg"></div>
-                            </div>
-                          </div>
-                          {/* Tax Invoice Title */}
-                          <div className="bg-white/90 py-0.5 mb-1 rounded shadow">
-                            <div className="h-1 bg-purple-600 w-1/3 mx-auto"></div>
-                          </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1 bg-white/90 p-1 rounded shadow">
-                            <div className="h-0.5 bg-purple-700 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-gray-600 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border border-white/50 rounded mb-1 bg-white/90">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r border-b border-purple-200 p-0.5">
-                                <div className="h-0.5 bg-purple-600 w-2/3"></div>
-                              </div>
-                              <div className="border-b border-purple-200 p-0.5">
-                                <div className="h-0.5 bg-gray-500 w-3/4"></div>
-                              </div>
-                              <div className="border-r border-purple-200 p-0.5">
-                                <div className="h-0.5 bg-purple-600 w-1/2"></div>
-                              </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-gray-500 w-2/3"></div>
-                              </div>
-                            </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border border-white/50 rounded bg-white/90 shadow">
-                            <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-0.5 grid grid-cols-4 gap-0.5 rounded-t">
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                            </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <h3 className="font-semibold text-base">Bold</h3>
-                      <p className="text-xs text-muted-foreground">Vibrant gradient for creative businesses</p>
+                      <h3 className="font-semibold text-base mb-1">Professional</h3>
+                      <p className="text-xs text-muted-foreground">Corporate indigo theme with cards</p>
                     </CardContent>
                   </Card>
 
                   {/* Corporate Blue Template */}
                   <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "corporate-blue" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-xl ${selectedTemplate === "corporate-blue" ? "ring-2 ring-primary shadow-xl" : ""}`}
                     onClick={() => setSelectedTemplate("corporate-blue")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-t-4 border-blue-700 shadow text-[4px]">
-                        <div className="h-full p-2">
+                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-t-4 border-blue-700 shadow-md">
+                        <div className="h-full flex flex-col text-[6px] leading-tight">
                           {/* Header */}
-                          <div className="border-b-2 border-blue-700 p-1.5 mb-1.5">
+                          <div className="border-b-2 border-blue-700 px-3 py-2">
                             <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-blue-700 w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-blue-500 w-1/2"></div>
+                              <div>
+                                <div className="font-bold text-blue-800 text-[8px] mb-0.5">BLUE CORPORATE</div>
+                                <div className="text-blue-600 text-[5px]">Trusted Business Partner</div>
                               </div>
-                              <div className="w-4 h-4 border-2 border-blue-700"></div>
+                              <div className="w-8 h-8 border-2 border-blue-700 flex items-center justify-center text-[5px] text-blue-700">LOGO</div>
                             </div>
                           </div>
-                          {/* Tax Invoice Title */}
-                          <div className="bg-blue-50 py-0.5 mb-1">
-                            <div className="h-1 bg-blue-700 w-1/3 mx-auto"></div>
+                          
+                          {/* QUOTATION Title */}
+                          <div className="bg-blue-50 py-2 text-center">
+                            <div className="font-bold text-blue-800 text-[10px]">QUOTATION</div>
                           </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1">
-                            <div className="h-0.5 bg-blue-800 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-gray-600 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border-2 border-blue-200 mb-1">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r-2 border-b-2 border-blue-200 p-0.5 bg-blue-50">
-                                <div className="h-0.5 bg-blue-700 w-2/3"></div>
+                          
+                          <div className="flex-1 px-3 py-2 space-y-2">
+                            {/* Bill To */}
+                            <div className="text-[6px]">
+                              <div className="font-bold text-blue-800">Bill To:</div>
+                              <div className="text-gray-700">John Smith</div>
+                              <div className="text-gray-600 text-[5px]">456 Client Ave</div>
+                            </div>
+                            
+                            {/* Details */}
+                            <div className="grid grid-cols-2 gap-1 text-[5px] border-2 border-blue-200">
+                              <div className="border-r-2 border-b-2 border-blue-200 px-1 py-0.5 bg-blue-50">
+                                <div className="font-bold text-blue-700">Quote #:</div>
                               </div>
-                              <div className="border-b-2 border-blue-200 p-0.5">
-                                <div className="h-0.5 bg-gray-600 w-3/4"></div>
+                              <div className="border-b-2 border-blue-200 px-1 py-0.5">
+                                <div className="text-gray-700">QT-2025-001</div>
                               </div>
-                              <div className="border-r-2 border-blue-200 p-0.5 bg-blue-50">
-                                <div className="h-0.5 bg-blue-700 w-1/2"></div>
+                              <div className="border-r-2 border-blue-200 px-1 py-0.5 bg-blue-50">
+                                <div className="font-bold text-blue-700">Date:</div>
                               </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
+                              <div className="px-1 py-0.5">
+                                <div className="text-gray-700">15 Oct 2025</div>
                               </div>
                             </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border-2 border-blue-200">
-                            <div className="bg-blue-700 p-0.5 grid grid-cols-4 gap-0.5">
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
+                            
+                            {/* Items Table */}
+                            <div className="border-2 border-blue-200">
+                              <div className="bg-blue-700 text-white px-1 py-0.5 grid grid-cols-4 gap-1 font-bold text-[5px]">
+                                <div className="col-span-2">Item</div>
+                                <div className="text-right">Qty</div>
+                                <div className="text-right">Price</div>
+                              </div>
+                              <div className="px-1 py-0.5 text-[5px]">
+                                <div className="grid grid-cols-4 gap-1 border-b border-gray-200 pb-0.5 text-gray-600">
+                                  <div className="col-span-2">Product Name</div>
+                                  <div className="text-right">2</div>
+                                  <div className="text-right">$100</div>
+                                </div>
+                                <div className="grid grid-cols-4 gap-1 pt-0.5 text-gray-600">
+                                  <div className="col-span-2">Service Item</div>
+                                  <div className="text-right">1</div>
+                                  <div className="text-right">$200</div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                            
+                            {/* Total */}
+                            <div className="flex justify-end">
+                              <div className="bg-blue-100 border-2 border-blue-700 px-2 py-1 text-[6px]">
+                                <span className="font-bold text-blue-800">Total: $300.00</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-base">Corporate Blue</h3>
-                      <p className="text-xs text-muted-foreground">Professional blue theme for corporate</p>
-                    </CardContent>
-                  </Card>
-
-                  {/* Tech Startup Template */}
-                  <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "tech-startup" ? "ring-2 ring-primary shadow-lg" : ""}`}
-                    onClick={() => setSelectedTemplate("tech-startup")}
-                  >
-                    <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-lg mb-3 overflow-hidden text-[4px]">
-                        <div className="h-full p-2">
-                          {/* Header */}
-                          <div className="border-b border-emerald-500/50 p-1.5 mb-1.5">
-                            <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-emerald-400 w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-emerald-300 w-1/2"></div>
-                              </div>
-                              <div className="w-4 h-4 bg-emerald-500 rounded"></div>
-                            </div>
-                          </div>
-                          {/* Tax Invoice Title */}
-                          <div className="bg-emerald-500/10 border border-emerald-500/30 py-0.5 mb-1 rounded">
-                            <div className="h-1 bg-emerald-400 w-1/3 mx-auto"></div>
-                          </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1 border-l-2 border-emerald-500 pl-1">
-                            <div className="h-0.5 bg-emerald-300 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-slate-400 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border border-slate-700 rounded mb-1 bg-slate-800/50">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r border-b border-slate-700 p-0.5">
-                                <div className="h-0.5 bg-emerald-400 w-2/3"></div>
-                              </div>
-                              <div className="border-b border-slate-700 p-0.5">
-                                <div className="h-0.5 bg-slate-300 w-3/4"></div>
-                              </div>
-                              <div className="border-r border-slate-700 p-0.5">
-                                <div className="h-0.5 bg-emerald-400 w-1/2"></div>
-                              </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-slate-300 w-2/3"></div>
-                              </div>
-                            </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border border-emerald-500/30 rounded bg-slate-800/50">
-                            <div className="bg-emerald-500 p-0.5 grid grid-cols-4 gap-0.5 rounded-t">
-                              <div className="h-0.5 bg-slate-900 w-full"></div>
-                              <div className="h-0.5 bg-slate-900 w-full"></div>
-                              <div className="h-0.5 bg-slate-900 w-full"></div>
-                              <div className="h-0.5 bg-slate-900 w-full"></div>
-                            </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-slate-600 w-full"></div>
-                              <div className="h-0.5 bg-slate-600 w-full"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <h3 className="font-semibold text-base">Tech Startup</h3>
-                      <p className="text-xs text-muted-foreground">Modern dark theme with accent colors</p>
+                      <h3 className="font-semibold text-base mb-1">Corporate Blue</h3>
+                      <p className="text-xs text-muted-foreground">Professional blue with top border accent</p>
                     </CardContent>
                   </Card>
 
                   {/* Elegant Template */}
                   <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "elegant" ? "ring-2 ring-primary shadow-lg" : ""}`}
+                    className={`cursor-pointer transition-all hover:shadow-xl ${selectedTemplate === "elegant" ? "ring-2 ring-primary shadow-xl" : ""}`}
                     onClick={() => setSelectedTemplate("elegant")}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-b from-amber-50 to-white rounded-lg mb-3 overflow-hidden border border-amber-200 text-[4px]">
-                        <div className="h-full p-2">
+                      <div className="aspect-[3/4] bg-gradient-to-b from-amber-50 to-white rounded-lg mb-3 overflow-hidden border border-amber-200 shadow-md">
+                        <div className="h-full flex flex-col text-[6px] leading-tight">
                           {/* Header */}
-                          <div className="border-b-2 border-amber-300 p-1.5 mb-1.5">
+                          <div className="border-b-2 border-amber-300 px-3 py-2">
                             <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-amber-700 w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-amber-500 w-1/2"></div>
+                              <div>
+                                <div className="font-bold text-amber-800 text-[8px] mb-0.5">ELEGANT SOLUTIONS</div>
+                                <div className="text-amber-600 text-[5px]">Refined Excellence</div>
                               </div>
-                              <div className="w-4 h-4 border-2 border-amber-400 rounded-full bg-amber-50"></div>
+                              <div className="w-8 h-8 border-2 border-amber-400 rounded-full flex items-center justify-center text-amber-600 text-[5px] bg-amber-50">LOGO</div>
                             </div>
                           </div>
-                          {/* Tax Invoice Title */}
-                          <div className="py-0.5 mb-1">
-                            <div className="h-1 bg-amber-700 w-1/3 mx-auto border-b-2 border-amber-300"></div>
+                          
+                          {/* QUOTATION Title */}
+                          <div className="py-2 text-center">
+                            <div className="inline-block font-bold text-amber-800 text-[10px] border-b-2 border-amber-400 pb-0.5">QUOTATION</div>
                           </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1 bg-white border-l-4 border-amber-400 pl-1 py-0.5">
-                            <div className="h-0.5 bg-amber-800 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-gray-600 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border-2 border-amber-200 rounded mb-1 bg-white">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r-2 border-b-2 border-amber-200 p-0.5">
-                                <div className="h-0.5 bg-amber-700 w-2/3"></div>
+                          
+                          <div className="flex-1 px-3 py-2 space-y-2">
+                            {/* Bill To */}
+                            <div className="bg-white border-l-4 border-amber-400 pl-2 py-1 text-[6px]">
+                              <div className="font-semibold text-amber-800">Bill To:</div>
+                              <div className="text-gray-700">John Smith</div>
+                              <div className="text-gray-600 text-[5px]">456 Client Ave</div>
+                            </div>
+                            
+                            {/* Details */}
+                            <div className="grid grid-cols-2 gap-1 text-[5px] border-2 border-amber-200 rounded bg-white">
+                              <div className="border-r-2 border-b-2 border-amber-200 px-1 py-0.5">
+                                <div className="font-semibold text-amber-700">Quote #:</div>
                               </div>
-                              <div className="border-b-2 border-amber-200 p-0.5">
-                                <div className="h-0.5 bg-gray-600 w-3/4"></div>
+                              <div className="border-b-2 border-amber-200 px-1 py-0.5">
+                                <div className="text-gray-700">QT-2025-001</div>
                               </div>
-                              <div className="border-r-2 border-amber-200 p-0.5">
-                                <div className="h-0.5 bg-amber-700 w-1/2"></div>
+                              <div className="border-r-2 border-amber-200 px-1 py-0.5">
+                                <div className="font-semibold text-amber-700">Date:</div>
                               </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
+                              <div className="px-1 py-0.5">
+                                <div className="text-gray-700">15 Oct 2025</div>
                               </div>
                             </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border-2 border-amber-200 rounded bg-white">
-                            <div className="bg-gradient-to-r from-amber-100 to-amber-50 p-0.5 grid grid-cols-4 gap-0.5 rounded-t border-b-2 border-amber-300">
-                              <div className="h-0.5 bg-amber-800 w-full"></div>
-                              <div className="h-0.5 bg-amber-800 w-full"></div>
-                              <div className="h-0.5 bg-amber-800 w-full"></div>
-                              <div className="h-0.5 bg-amber-800 w-full"></div>
+                            
+                            {/* Items Table */}
+                            <div className="border-2 border-amber-200 rounded bg-white">
+                              <div className="bg-gradient-to-r from-amber-100 to-amber-50 px-1 py-0.5 grid grid-cols-4 gap-1 font-semibold text-amber-800 text-[5px] border-b-2 border-amber-300">
+                                <div className="col-span-2">Item</div>
+                                <div className="text-right">Qty</div>
+                                <div className="text-right">Price</div>
+                              </div>
+                              <div className="px-1 py-0.5 text-[5px]">
+                                <div className="grid grid-cols-4 gap-1 border-b border-amber-100 pb-0.5 text-gray-600">
+                                  <div className="col-span-2">Product Name</div>
+                                  <div className="text-right">2</div>
+                                  <div className="text-right">$100</div>
+                                </div>
+                                <div className="grid grid-cols-4 gap-1 pt-0.5 text-gray-600">
+                                  <div className="col-span-2">Service Item</div>
+                                  <div className="text-right">1</div>
+                                  <div className="text-right">$200</div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
-                              <div className="h-0.5 bg-gray-300 w-full"></div>
+                            
+                            {/* Total */}
+                            <div className="flex justify-end">
+                              <div className="bg-amber-100 border-l-4 border-amber-500 px-2 py-1 text-[6px]">
+                                <span className="text-amber-700">Total: </span>
+                                <span className="font-bold text-amber-900">$300.00</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-base">Elegant</h3>
-                      <p className="text-xs text-muted-foreground">Sophisticated gold accents</p>
-                    </CardContent>
-                  </Card>
-
-                  {/* Creative Template */}
-                  <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "creative" ? "ring-2 ring-primary shadow-lg" : ""}`}
-                    onClick={() => setSelectedTemplate("creative")}
-                  >
-                    <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-white rounded-lg mb-3 overflow-hidden border-4 border-double border-orange-400 text-[4px]">
-                        <div className="h-full p-2">
-                          {/* Header */}
-                          <div className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 p-1.5 rounded-lg mb-1.5">
-                            <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-white w-3/4 mb-0.5"></div>
-                                <div className="h-0.5 bg-white/80 w-1/2"></div>
-                              </div>
-                              <div className="w-4 h-4 bg-white rounded-full"></div>
-                            </div>
-                          </div>
-                          {/* Tax Invoice Title */}
-                          <div className="border-2 border-orange-400 rounded-full py-0.5 mb-1 bg-orange-50">
-                            <div className="h-1 bg-orange-600 w-1/3 mx-auto rounded-full"></div>
-                          </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1 bg-gradient-to-r from-orange-50 to-pink-50 p-1 rounded-lg">
-                            <div className="h-0.5 bg-orange-700 w-1/4 mb-0.5"></div>
-                            <div className="h-0.5 bg-gray-600 w-1/3"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border-2 border-orange-300 rounded-lg mb-1 overflow-hidden">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r-2 border-b-2 border-orange-300 p-0.5 bg-orange-50">
-                                <div className="h-0.5 bg-orange-600 w-2/3"></div>
-                              </div>
-                              <div className="border-b-2 border-orange-300 p-0.5 bg-pink-50">
-                                <div className="h-0.5 bg-gray-600 w-3/4"></div>
-                              </div>
-                              <div className="border-r-2 border-orange-300 p-0.5 bg-pink-50">
-                                <div className="h-0.5 bg-orange-600 w-1/2"></div>
-                              </div>
-                              <div className="p-0.5 bg-orange-50">
-                                <div className="h-0.5 bg-gray-600 w-2/3"></div>
-                              </div>
-                            </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border-2 border-orange-300 rounded-lg overflow-hidden">
-                            <div className="bg-gradient-to-r from-orange-500 to-pink-500 p-0.5 grid grid-cols-4 gap-0.5">
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                              <div className="h-0.5 bg-white w-full"></div>
-                            </div>
-                            <div className="p-0.5 space-y-0.5 bg-gradient-to-br from-orange-50 to-pink-50">
-                              <div className="h-0.5 bg-gray-400 w-full"></div>
-                              <div className="h-0.5 bg-gray-400 w-full"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <h3 className="font-semibold text-base">Creative</h3>
-                      <p className="text-xs text-muted-foreground">Artistic with warm gradient colors</p>
-                    </CardContent>
-                  </Card>
-
-                  {/* Warm Friendly Template */}
-                  <Card 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedTemplate === "warm-friendly" ? "ring-2 ring-primary shadow-lg" : ""}`}
-                    onClick={() => setSelectedTemplate("warm-friendly")}
-                  >
-                    <CardContent className="p-4">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-rose-50 via-orange-50 to-amber-50 rounded-2xl mb-3 overflow-hidden border-2 border-rose-200 text-[4px]">
-                        <div className="h-full p-2">
-                          {/* Header */}
-                          <div className="bg-white/80 backdrop-blur p-1.5 rounded-xl shadow-sm mb-1.5">
-                            <div className="flex justify-between items-start">
-                              <div className="w-1/2">
-                                <div className="h-1 bg-rose-600 w-3/4 mb-0.5 rounded-full"></div>
-                                <div className="h-0.5 bg-orange-500 w-1/2 rounded-full"></div>
-                              </div>
-                              <div className="w-4 h-4 bg-gradient-to-br from-rose-400 to-orange-400 rounded-full"></div>
-                            </div>
-                          </div>
-                          {/* Tax Invoice Title */}
-                          <div className="bg-white/60 py-0.5 mb-1 rounded-full">
-                            <div className="h-1 bg-gradient-to-r from-rose-500 to-orange-500 w-1/3 mx-auto rounded-full"></div>
-                          </div>
-                          {/* Bill To Section */}
-                          <div className="mb-1 bg-white/60 p-1 rounded-xl">
-                            <div className="h-0.5 bg-rose-700 w-1/4 mb-0.5 rounded-full"></div>
-                            <div className="h-0.5 bg-gray-600 w-1/3 rounded-full"></div>
-                          </div>
-                          {/* Invoice Details Table */}
-                          <div className="border border-rose-200 rounded-xl mb-1 bg-white/60 overflow-hidden">
-                            <div className="grid grid-cols-2 gap-0">
-                              <div className="border-r border-b border-rose-200 p-0.5">
-                                <div className="h-0.5 bg-rose-600 w-2/3 rounded-full"></div>
-                              </div>
-                              <div className="border-b border-rose-200 p-0.5">
-                                <div className="h-0.5 bg-gray-500 w-3/4 rounded-full"></div>
-                              </div>
-                              <div className="border-r border-rose-200 p-0.5">
-                                <div className="h-0.5 bg-rose-600 w-1/2 rounded-full"></div>
-                              </div>
-                              <div className="p-0.5">
-                                <div className="h-0.5 bg-gray-500 w-2/3 rounded-full"></div>
-                              </div>
-                            </div>
-                          </div>
-                          {/* Items Table */}
-                          <div className="border border-rose-200 rounded-xl bg-white/60 overflow-hidden">
-                            <div className="bg-gradient-to-r from-rose-400 via-orange-400 to-amber-400 p-0.5 grid grid-cols-4 gap-0.5">
-                              <div className="h-0.5 bg-white w-full rounded-full"></div>
-                              <div className="h-0.5 bg-white w-full rounded-full"></div>
-                              <div className="h-0.5 bg-white w-full rounded-full"></div>
-                              <div className="h-0.5 bg-white w-full rounded-full"></div>
-                            </div>
-                            <div className="p-0.5 space-y-0.5">
-                              <div className="h-0.5 bg-gray-300 w-full rounded-full"></div>
-                              <div className="h-0.5 bg-gray-300 w-full rounded-full"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <h3 className="font-semibold text-base">Warm & Friendly</h3>
-                      <p className="text-xs text-muted-foreground">Approachable design with soft colors</p>
+                      <h3 className="font-semibold text-base mb-1">Elegant</h3>
+                      <p className="text-xs text-muted-foreground">Sophisticated gold accents and borders</p>
                     </CardContent>
                   </Card>
                 </div>
