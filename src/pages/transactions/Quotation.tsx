@@ -367,10 +367,117 @@ export default function Quotation() {
   };
 
   const downloadPDF = async () => {
-    toast({
-      title: "Download PDF",
-      description: "PDF download functionality will be implemented with jsPDF",
-    });
+    if (!previewRef.current) return;
+
+    try {
+      toast({
+        title: "Generating PDF",
+        description: "Please wait while we prepare your document...",
+      });
+
+      // Import required libraries
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+      const { PDFDocument } = await import('pdf-lib');
+
+      // Capture the preview as canvas
+      const canvas = await html2canvas(previewRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      // Create initial PDF from canvas
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      // Add additional pages if content is longer than one page
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      // Get the quotation PDF as ArrayBuffer
+      const quotationPdfBytes = pdf.output('arraybuffer');
+
+      // Create PDFDocument from the quotation
+      const mergedPdf = await PDFDocument.load(quotationPdfBytes);
+
+      // Get items with datasheets
+      const itemsWithDatasheets = items.filter(item => item.datasheetUrl);
+
+      if (itemsWithDatasheets.length > 0) {
+        toast({
+          title: "Merging Datasheets",
+          description: `Adding ${itemsWithDatasheets.length} datasheet(s)...`,
+        });
+
+        // Fetch and merge each datasheet
+        for (const item of itemsWithDatasheets) {
+          if (!item.datasheetUrl) continue;
+
+          try {
+            const response = await fetch(item.datasheetUrl);
+            if (!response.ok) continue;
+
+            const datasheetBytes = await response.arrayBuffer();
+            const datasheetPdf = await PDFDocument.load(datasheetBytes);
+
+            // Copy all pages from datasheet to merged PDF
+            const copiedPages = await mergedPdf.copyPages(
+              datasheetPdf,
+              datasheetPdf.getPageIndices()
+            );
+
+            copiedPages.forEach((page) => {
+              mergedPdf.addPage(page);
+            });
+          } catch (error) {
+            console.error(`Error loading datasheet for ${item.itemName}:`, error);
+          }
+        }
+      }
+
+      // Save the merged PDF
+      const mergedPdfBytes = await mergedPdf.save();
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `quotation-${quotationNumber || 'draft'}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Success",
+        description: "PDF downloaded successfully with datasheets!",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const sendEmail = async () => {
