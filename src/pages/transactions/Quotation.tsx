@@ -1307,11 +1307,11 @@ export default function Quotation() {
                       {/* Quotation Title */}
                       <div className={cn(
                         "px-10 py-6",
-                        quotationSettings?.template === 'modern' && "bg-blue-50",
+                        quotationSettings?.template === 'modern' && "bg-blue-50 text-center",
                         quotationSettings?.template === 'classic' && "border-y-4 border-gray-900 text-center",
                         quotationSettings?.template === 'minimal' && "text-center",
-                        quotationSettings?.template === 'professional' && "bg-indigo-100 mx-4 rounded",
-                        quotationSettings?.template === 'corporate-blue' && "bg-blue-50",
+                        quotationSettings?.template === 'professional' && "bg-indigo-100 mx-10 rounded text-center",
+                        quotationSettings?.template === 'corporate-blue' && "bg-blue-50 text-center",
                         quotationSettings?.template === 'elegant' && "text-center"
                       )}>
                         <h1 
@@ -1319,10 +1319,10 @@ export default function Quotation() {
                             "text-4xl font-bold",
                             quotationSettings?.template === 'modern' && "text-blue-700",
                             quotationSettings?.template === 'classic' && "text-gray-900",
-                            quotationSettings?.template === 'minimal' && "inline-block border-b-4 border-gray-800 text-gray-800",
+                            quotationSettings?.template === 'minimal' && "inline-block border-b-4 border-gray-800 text-gray-800 pb-2",
                             quotationSettings?.template === 'professional' && "text-indigo-700",
                             quotationSettings?.template === 'corporate-blue' && "text-blue-800",
-                            quotationSettings?.template === 'elegant' && "inline-block border-b-4 border-amber-400 text-amber-800"
+                            quotationSettings?.template === 'elegant' && "inline-block border-b-4 border-amber-400 text-amber-800 pb-2"
                           )}
                         >
                           QUOTATION
@@ -1339,7 +1339,7 @@ export default function Quotation() {
                           )}>
                             <p 
                               className={cn(
-                                "text-base font-bold mb-2",
+                                "text-base font-bold mb-3",
                                 quotationSettings?.template === 'modern' && "text-blue-700",
                                 quotationSettings?.template === 'classic' && "text-gray-900",
                                 quotationSettings?.template === 'minimal' && "text-gray-700",
@@ -1350,21 +1350,21 @@ export default function Quotation() {
                             >
                               Bill To:
                             </p>
-                            <p className="text-sm font-semibold text-gray-900">{customerName || "Customer Name"}</p>
-                            {customerEmail && <p className="text-sm text-gray-600">{customerEmail}</p>}
-                            {address && <p className="text-sm text-gray-600">{address}</p>}
+                            <p className="text-sm font-semibold text-gray-900 mb-1">{customerName || "Customer Name"}</p>
+                            {customerEmail && <p className="text-sm text-gray-600 mb-1">{customerEmail}</p>}
+                            {address && <p className="text-sm text-gray-600 mb-1">{address}</p>}
                             {customerPhone && <p className="text-sm text-gray-600">{customerPhone}</p>}
                           </div>
                           
                           {/* Quotation Details */}
                           <div className={cn(
-                            "border rounded overflow-hidden",
-                            quotationSettings?.template === 'modern' && "border-gray-200",
+                            "border overflow-hidden",
+                            quotationSettings?.template === 'modern' && "border-gray-200 rounded",
                             quotationSettings?.template === 'classic' && "border-4 border-gray-900",
-                            quotationSettings?.template === 'minimal' && "border border-gray-200",
-                            quotationSettings?.template === 'professional' && "border-2 border-indigo-200 bg-white",
+                            quotationSettings?.template === 'minimal' && "border border-gray-200 rounded",
+                            quotationSettings?.template === 'professional' && "border-2 border-indigo-200 bg-white rounded",
                             quotationSettings?.template === 'corporate-blue' && "border-2 border-blue-200",
-                            quotationSettings?.template === 'elegant' && "border-2 border-amber-200"
+                            quotationSettings?.template === 'elegant' && "border-2 border-amber-200 rounded bg-white"
                           )}>
                             <table className="w-full">
                               <tbody>
@@ -1372,39 +1372,33 @@ export default function Quotation() {
                                   "border-b",
                                   quotationSettings?.template === 'modern' && "border-gray-200 bg-gray-50",
                                   quotationSettings?.template === 'classic' && "border-b-4 border-gray-900 bg-gray-100",
-                                  quotationSettings?.template === 'minimal' && "border-gray-200 bg-gray-50",
+                                  quotationSettings?.template === 'minimal' && "border-gray-200 bg-white",
                                   quotationSettings?.template === 'professional' && "border-indigo-200 bg-indigo-50",
                                   quotationSettings?.template === 'corporate-blue' && "border-b-2 border-blue-200 bg-blue-50",
-                                  quotationSettings?.template === 'elegant' && "border-b-2 border-amber-200 bg-white"
+                                  quotationSettings?.template === 'elegant' && "border-b-2 border-amber-200"
                                 )}>
                                   <td className={cn(
-                                    "px-3 py-2 text-sm font-bold",
+                                    "px-4 py-2.5 text-sm font-bold",
                                     quotationSettings?.template === 'modern' && "text-gray-700",
                                     quotationSettings?.template === 'classic' && "text-gray-900",
+                                    quotationSettings?.template === 'minimal' && "text-gray-700",
                                     quotationSettings?.template === 'professional' && "text-indigo-700",
                                     quotationSettings?.template === 'corporate-blue' && "text-blue-700",
                                     quotationSettings?.template === 'elegant' && "text-amber-700 border-r-2 border-amber-200"
                                   )}>Quote #:</td>
-                                  <td className="px-3 py-2 text-sm text-gray-700">{quotationNumber}</td>
+                                  <td className="px-4 py-2.5 text-sm text-gray-700">{quotationNumber}</td>
                                 </tr>
-                                <tr className={cn(
-                                  quotationSettings?.template === 'modern' && "border-b border-gray-200",
-                                  quotationSettings?.template === 'classic' && "border-b border-gray-300",
-                                  quotationSettings?.template === 'minimal' && "border-b border-gray-200",
-                                  quotationSettings?.template === 'professional' && "border-b border-indigo-200",
-                                  quotationSettings?.template === 'corporate-blue' && "border-b border-blue-200",
-                                  quotationSettings?.template === 'elegant' && "border-b-2 border-amber-200"
-                                )}>
+                                <tr>
                                   <td className={cn(
-                                    "px-3 py-2 text-sm font-bold",
-                                    quotationSettings?.template === 'modern' && "text-gray-700 bg-gray-50",
+                                    "px-4 py-2.5 text-sm font-bold",
+                                    quotationSettings?.template === 'modern' && "text-gray-700",
                                     quotationSettings?.template === 'classic' && "text-gray-900",
-                                    quotationSettings?.template === 'minimal' && "text-gray-700 bg-gray-50",
+                                    quotationSettings?.template === 'minimal' && "text-gray-700",
                                     quotationSettings?.template === 'professional' && "text-indigo-700",
                                     quotationSettings?.template === 'corporate-blue' && "text-blue-700",
                                     quotationSettings?.template === 'elegant' && "text-amber-700 border-r-2 border-amber-200"
                                   )}>Date:</td>
-                                  <td className="px-3 py-2 text-sm text-gray-700">{new Date(quotationDate).toLocaleDateString('en-GB')}</td>
+                                  <td className="px-4 py-2.5 text-sm text-gray-700">{new Date(quotationDate).toLocaleDateString('en-GB')}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -1414,16 +1408,17 @@ export default function Quotation() {
                         {/* Payment Details and Status */}
                         <div className="mt-6">
                           <div className={cn(
-                            "grid grid-cols-3 gap-2 border rounded p-3",
-                            quotationSettings?.template === 'modern' && "border-gray-200",
+                            "grid grid-cols-3 gap-3 border p-4",
+                            quotationSettings?.template === 'modern' && "border-gray-200 rounded",
                             quotationSettings?.template === 'classic' && "border-4 border-gray-900",
-                            quotationSettings?.template === 'minimal' && "border border-gray-200",
-                            quotationSettings?.template === 'professional' && "border-2 border-indigo-200 bg-white",
+                            quotationSettings?.template === 'minimal' && "border border-gray-200 rounded",
+                            quotationSettings?.template === 'professional' && "border-2 border-indigo-200 bg-white rounded",
                             quotationSettings?.template === 'corporate-blue' && "border-2 border-blue-200",
-                            quotationSettings?.template === 'elegant' && "border-2 border-amber-200"
+                            quotationSettings?.template === 'elegant' && "border-2 border-amber-200 rounded"
                           )}>
                             <div className={cn(
-                              "text-sm p-2 rounded",
+                              "text-sm px-3 py-2 rounded",
+                              quotationSettings?.template === 'modern' && "bg-gray-50",
                               quotationSettings?.template === 'professional' && "bg-indigo-50",
                               quotationSettings?.template === 'corporate-blue' && "bg-blue-50",
                               quotationSettings?.template === 'elegant' && "bg-amber-50",
@@ -1432,7 +1427,8 @@ export default function Quotation() {
                               <span className="font-bold">Payment:</span> <span className="capitalize">{paymentType}</span>
                             </div>
                             <div className={cn(
-                              "text-sm p-2 rounded",
+                              "text-sm px-3 py-2 rounded",
+                              quotationSettings?.template === 'modern' && "bg-gray-50",
                               quotationSettings?.template === 'professional' && "bg-indigo-50",
                               quotationSettings?.template === 'corporate-blue' && "bg-blue-50",
                               quotationSettings?.template === 'elegant' && "bg-amber-50",
@@ -1440,8 +1436,8 @@ export default function Quotation() {
                             )}>
                               <span className="font-bold">ACSU:</span> {acsuPoints} pts
                             </div>
-                            <div className="text-sm p-2">
-                              <span className="font-bold">Status:</span> <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>
+                            <div className="text-sm px-3 py-2">
+                              <span className="font-bold">Status:</span> <span className="ml-2 capitalize">Active</span>
                             </div>
                           </div>
                         </div>
@@ -1456,37 +1452,37 @@ export default function Quotation() {
                           quotationSettings?.template === 'minimal' && "border border-gray-200 rounded",
                           quotationSettings?.template === 'professional' && "border-2 border-indigo-200 rounded bg-white shadow-sm",
                           quotationSettings?.template === 'corporate-blue' && "border-2 border-blue-200",
-                          quotationSettings?.template === 'elegant' && "border-2 border-amber-200 rounded",
+                          quotationSettings?.template === 'elegant' && "border-2 border-amber-200 rounded bg-white",
                           (!quotationSettings?.template) && "border border-gray-300"
                         )}>
                           <table className="w-full">
                             <thead>
                               <tr 
                                 className={cn(
-                                  quotationSettings?.template === 'modern' && "bg-blue-600 text-white border-b border-blue-700",
-                                  quotationSettings?.template === 'classic' && "bg-gray-900 text-white border-b-2 border-gray-900",
-                                  quotationSettings?.template === 'minimal' && "bg-gray-100 text-gray-700",
+                                  quotationSettings?.template === 'modern' && "bg-blue-600 text-white",
+                                  quotationSettings?.template === 'classic' && "bg-gray-900 text-white",
+                                  quotationSettings?.template === 'minimal' && "bg-gray-100 text-gray-700 border-b border-gray-200",
                                   quotationSettings?.template === 'professional' && "bg-indigo-600 text-white",
-                                  quotationSettings?.template === 'corporate-blue' && "bg-blue-700 text-white border-b-2 border-blue-700",
+                                  quotationSettings?.template === 'corporate-blue' && "bg-blue-700 text-white",
                                   quotationSettings?.template === 'elegant' && "bg-gradient-to-r from-amber-100 to-amber-50 text-amber-800 border-b-2 border-amber-300",
                                   (!quotationSettings?.template) && "bg-gray-100"
                                 )}
                               >
-                                <th className="text-left py-3 px-3 text-xs font-bold">Item</th>
-                                <th className="text-left py-3 px-3 text-xs font-bold">Description</th>
-                                <th className="text-center py-3 px-3 text-xs font-bold">Qty</th>
-                                <th className="text-right py-3 px-3 text-xs font-bold">Rate</th>
-                                <th className="text-right py-3 px-3 text-xs font-bold">GST</th>
-                                <th className="text-right py-3 px-3 text-xs font-bold">Disc</th>
-                                <th className="text-right py-3 px-3 text-xs font-bold">Amount</th>
-                                <th className="text-center py-3 px-3 text-xs font-bold">Sheet</th>
+                                <th className="text-left py-3.5 px-4 text-xs font-bold">Item</th>
+                                <th className="text-left py-3.5 px-4 text-xs font-bold">Description</th>
+                                <th className="text-center py-3.5 px-4 text-xs font-bold">Qty</th>
+                                <th className="text-right py-3.5 px-4 text-xs font-bold">Rate</th>
+                                <th className="text-right py-3.5 px-4 text-xs font-bold">GST</th>
+                                <th className="text-right py-3.5 px-4 text-xs font-bold">Disc</th>
+                                <th className="text-right py-3.5 px-4 text-xs font-bold">Amount</th>
+                                <th className="text-center py-3.5 px-4 text-xs font-bold">Sheet</th>
                               </tr>
                             </thead>
                             <tbody>
                               {items.length > 0 ? (
                                 items.map((item, idx) => (
                                   <tr key={item.id} className={cn(
-                                    "border-b",
+                                    "border-b last:border-b-0",
                                     quotationSettings?.template === 'modern' && "border-gray-200",
                                     quotationSettings?.template === 'classic' && "border-gray-300",
                                     quotationSettings?.template === 'minimal' && "border-gray-200",
@@ -1494,21 +1490,19 @@ export default function Quotation() {
                                     quotationSettings?.template === 'corporate-blue' && "border-blue-200",
                                     quotationSettings?.template === 'elegant' && "border-amber-200",
                                     (!quotationSettings?.template) && "border-gray-200",
-                                    idx % 2 === 0 && (quotationSettings?.template === 'modern' ? "bg-gray-50" : 
-                                                      quotationSettings?.template === 'classic' ? "bg-white" :
-                                                      quotationSettings?.template === 'professional' ? "bg-white" : "bg-white")
+                                    idx % 2 === 0 && quotationSettings?.template === 'modern' && "bg-gray-50"
                                   )}>
-                                    <td className="py-3 px-3 text-sm text-gray-900 align-top">{item.itemName}</td>
-                                    <td className="py-3 px-3 text-sm text-gray-700 align-top">{item.description}</td>
-                                    <td className="py-3 px-3 text-sm text-gray-900 text-center align-top">{item.quantity}</td>
-                                    <td className="py-3 px-3 text-sm text-gray-900 text-right align-top">${item.rate.toFixed(2)}</td>
-                                    <td className="py-3 px-3 text-sm text-gray-900 text-right align-top">{item.gst}%</td>
-                                    <td className="py-3 px-3 text-sm text-gray-900 text-right align-top">{item.discount}%</td>
-                                    <td className="py-3 px-3 text-sm font-semibold text-gray-900 text-right align-top">${item.amount.toFixed(2)}</td>
-                                    <td className="py-3 px-3 text-center align-top">
+                                    <td className="py-3.5 px-4 text-sm text-gray-900 align-top">{item.itemName}</td>
+                                    <td className="py-3.5 px-4 text-sm text-gray-700 align-top">{item.description}</td>
+                                    <td className="py-3.5 px-4 text-sm text-gray-900 text-center align-top">{item.quantity}</td>
+                                    <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">${item.rate.toFixed(2)}</td>
+                                    <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">{item.gst}%</td>
+                                    <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">{item.discount}%</td>
+                                    <td className="py-3.5 px-4 text-sm font-semibold text-gray-900 text-right align-top">${item.amount.toFixed(2)}</td>
+                                    <td className="py-3.5 px-4 text-center align-top">
                                       {item.datasheetUrl ? (
                                         <div className={cn(
-                                          "inline-flex items-center gap-1 text-xs px-2 py-1 rounded",
+                                          "inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded",
                                           quotationSettings?.template === 'modern' && "bg-blue-50 text-blue-600",
                                           quotationSettings?.template === 'classic' && "border border-gray-400 text-gray-700",
                                           quotationSettings?.template === 'minimal' && "border border-gray-200 text-gray-600",
@@ -1517,6 +1511,7 @@ export default function Quotation() {
                                           quotationSettings?.template === 'elegant' && "bg-amber-50 text-amber-700 border border-amber-300"
                                         )}>
                                           <Paperclip className="h-3 w-3" />
+                                          Link
                                         </div>
                                       ) : (
                                         <span className="text-gray-400">-</span>
@@ -1537,20 +1532,20 @@ export default function Quotation() {
                         {items.length > 0 && (
                           <div className="mt-6">
                             <div className="flex justify-end">
-                              <div className="w-80 space-y-2">
-                                <div className="flex justify-between text-sm text-gray-700">
+                              <div className="w-96 space-y-3">
+                                <div className="flex justify-between text-base text-gray-700">
                                   <span>Subtotal:</span>
                                   <span className="font-semibold">${subtotal.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between text-sm text-gray-700 border-t border-gray-300 pt-2">
+                                <div className="flex justify-between text-sm text-gray-600">
                                   <span>GST Included:</span>
                                   <span className="font-semibold">${(subtotal * 0.091).toFixed(2)}</span>
                                 </div>
                                 <div className={cn(
-                                  "flex justify-between text-base font-bold px-4 py-3 rounded mt-2",
-                                  quotationSettings?.template === 'modern' && "bg-blue-100 text-blue-900",
+                                  "flex justify-between text-lg font-bold px-5 py-4 mt-3",
+                                  quotationSettings?.template === 'modern' && "bg-blue-100 text-blue-900 rounded",
                                   quotationSettings?.template === 'classic' && "bg-gray-900 text-white",
-                                  quotationSettings?.template === 'minimal' && "border-t-4 border-gray-800 pt-3 bg-white",
+                                  quotationSettings?.template === 'minimal' && "border-t-4 border-gray-800 pt-4 bg-white",
                                   quotationSettings?.template === 'professional' && "bg-indigo-600 text-white rounded shadow",
                                   quotationSettings?.template === 'corporate-blue' && "bg-blue-100 border-2 border-blue-700 text-blue-800",
                                   quotationSettings?.template === 'elegant' && "bg-amber-100 border-l-4 border-amber-500 text-amber-900"
