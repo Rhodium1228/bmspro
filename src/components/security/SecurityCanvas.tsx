@@ -1,3 +1,4 @@
+// using react-konva v18.x compatible with React 18
 import { forwardRef, useState, useRef, useEffect } from "react";
 import { Stage, Layer, Image as KonvaImage, Circle, Rect, Line } from "react-konva";
 import useImage from "use-image";
