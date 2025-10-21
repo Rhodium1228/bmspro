@@ -1,4 +1,1 @@
 project_id = "vyuohgwqausybsqeejhm"
-
-[functions.security-ai-assistant]
-verify_jwt = false

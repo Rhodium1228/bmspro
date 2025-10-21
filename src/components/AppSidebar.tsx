@@ -20,7 +20,6 @@ import {
   Briefcase,
   ShoppingCart,
   ShoppingBag,
-  Shield,
 } from "lucide-react";
 
 // Sidebar UI components
@@ -100,7 +99,6 @@ const menuItems = [
     items: [
       { title: "Company", url: "/more/company", icon: Building },
       { title: "Other Options", url: "/more/options", icon: Settings },
-      { title: "Security Design", url: "/security-design", icon: Shield },
     ],
   },
 ];

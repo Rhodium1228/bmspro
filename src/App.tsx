@@ -28,7 +28,6 @@ import PurchaseOrder from "./pages/transactions/PurchaseOrder";
 import JobCard from "./pages/transactions/JobCard";
 import Company from "./pages/more/Company";
 import Options from "./pages/more/Options";
-import SecurityDesign from "./pages/SecurityDesign";
 import NotFound from "./pages/NotFound";
 
 // ===== QUERY CLIENT CONFIGURATION =====
@@ -189,26 +188,16 @@ const App = () => {
               }
             />
             
-          <Route
-            path="/more/options"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Options />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/security-design"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <SecurityDesign />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/more/options"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Options />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
             
             <Route path="*" element={<NotFound />} />
             </Routes>
