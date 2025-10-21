@@ -20,6 +20,7 @@ import {
   Briefcase,
   ShoppingCart,
   ShoppingBag,
+  Shield,
 } from "lucide-react";
 
 // Sidebar UI components
