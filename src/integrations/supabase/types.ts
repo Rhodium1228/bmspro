@@ -107,6 +107,33 @@ export type Database = {
         }
         Relationships: []
       }
+      floor_plan_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          dimensions: Json | null
+          id: string
+          image_url: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          dimensions?: Json | null
+          id?: string
+          image_url: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          dimensions?: Json | null
+          id?: string
+          image_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
       items: {
         Row: {
           brand_details: string | null
@@ -307,6 +334,7 @@ export type Database = {
           payment_type: string | null
           quotation_date: string
           quotation_number: string
+          security_layout_id: string | null
           shipping_address: string | null
           status: string
           subtotal: number
@@ -331,6 +359,7 @@ export type Database = {
           payment_type?: string | null
           quotation_date: string
           quotation_number: string
+          security_layout_id?: string | null
           shipping_address?: string | null
           status?: string
           subtotal?: number
@@ -355,6 +384,7 @@ export type Database = {
           payment_type?: string | null
           quotation_date?: string
           quotation_number?: string
+          security_layout_id?: string | null
           shipping_address?: string | null
           status?: string
           subtotal?: number
@@ -365,7 +395,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quotations_security_layout_id_fkey"
+            columns: ["security_layout_id"]
+            isOneToOne: false
+            referencedRelation: "security_layouts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sale_orders: {
         Row: {
@@ -428,6 +466,125 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_devices: {
+        Row: {
+          created_at: string
+          device_type: string
+          icon_data: string | null
+          id: string
+          name: string
+          properties: Json | null
+        }
+        Insert: {
+          created_at?: string
+          device_type: string
+          icon_data?: string | null
+          id?: string
+          name: string
+          properties?: Json | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string
+          icon_data?: string | null
+          id?: string
+          name?: string
+          properties?: Json | null
+        }
+        Relationships: []
+      }
+      security_layouts: {
+        Row: {
+          canvas_data: Json | null
+          created_at: string
+          description: string | null
+          export_image_url: string | null
+          floor_plan_type: string | null
+          floor_plan_url: string | null
+          id: string
+          name: string
+          quotation_id: string | null
+          template_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canvas_data?: Json | null
+          created_at?: string
+          description?: string | null
+          export_image_url?: string | null
+          floor_plan_type?: string | null
+          floor_plan_url?: string | null
+          id?: string
+          name: string
+          quotation_id?: string | null
+          template_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canvas_data?: Json | null
+          created_at?: string
+          description?: string | null
+          export_image_url?: string | null
+          floor_plan_type?: string | null
+          floor_plan_url?: string | null
+          id?: string
+          name?: string
+          quotation_id?: string | null
+          template_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_layouts_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_projects: {
+        Row: {
+          canvas_data: Json | null
+          created_at: string
+          description: string | null
+          floor_plan_type: string | null
+          floor_plan_url: string | null
+          id: string
+          name: string
+          template_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canvas_data?: Json | null
+          created_at?: string
+          description?: string | null
+          floor_plan_type?: string | null
+          floor_plan_url?: string | null
+          id?: string
+          name: string
+          template_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canvas_data?: Json | null
+          created_at?: string
+          description?: string | null
+          floor_plan_type?: string | null
+          floor_plan_url?: string | null
+          id?: string
+          name?: string
+          template_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

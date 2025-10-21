@@ -20,6 +20,8 @@ import {
   Briefcase,
   ShoppingCart,
   ShoppingBag,
+  Wrench,
+  Camera,
 } from "lucide-react";
 
 // Sidebar UI components
@@ -91,6 +93,13 @@ const menuItems = [
       { title: "Sale Order", url: "/transactions/sale-order", icon: ShoppingCart },
       { title: "Purchase Order", url: "/transactions/purchase-order", icon: ShoppingBag },
       { title: "Job Card", url: "/transactions/jobcard", icon: Briefcase },
+    ],
+  },
+  {
+    title: "Tools",
+    icon: Wrench,
+    items: [
+      { title: "Security Layout", url: "/tools/security-layout", icon: Camera },
     ],
   },
   {
