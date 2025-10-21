@@ -107,6 +107,33 @@ export type Database = {
         }
         Relationships: []
       }
+      floor_plan_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          dimensions: Json | null
+          id: string
+          image_url: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          dimensions?: Json | null
+          id?: string
+          image_url: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          dimensions?: Json | null
+          id?: string
+          image_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
       items: {
         Row: {
           brand_details: string | null
@@ -428,6 +455,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_devices: {
+        Row: {
+          created_at: string
+          device_type: string
+          icon_data: string | null
+          id: string
+          name: string
+          properties: Json | null
+        }
+        Insert: {
+          created_at?: string
+          device_type: string
+          icon_data?: string | null
+          id?: string
+          name: string
+          properties?: Json | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string
+          icon_data?: string | null
+          id?: string
+          name?: string
+          properties?: Json | null
+        }
+        Relationships: []
+      }
+      security_projects: {
+        Row: {
+          canvas_data: Json | null
+          created_at: string
+          description: string | null
+          floor_plan_type: string | null
+          floor_plan_url: string | null
+          id: string
+          name: string
+          template_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canvas_data?: Json | null
+          created_at?: string
+          description?: string | null
+          floor_plan_type?: string | null
+          floor_plan_url?: string | null
+          id?: string
+          name: string
+          template_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canvas_data?: Json | null
+          created_at?: string
+          description?: string | null
+          floor_plan_type?: string | null
+          floor_plan_url?: string | null
+          id?: string
+          name?: string
+          template_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
