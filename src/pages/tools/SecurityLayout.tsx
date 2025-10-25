@@ -22,13 +22,30 @@ import {
 } from "@/lib/securityTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save, FileText, ExternalLink } from "lucide-react";
+import { Save, FileText, ExternalLink, FileDown, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/integrations/supabase/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function SecurityLayout() {
   const { toast } = useToast();
@@ -41,6 +58,9 @@ export default function SecurityLayout() {
   const [savedLayoutId, setSavedLayoutId] = useState<string | null>(null);
   const [isLoadingLayout, setIsLoadingLayout] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [saveAsTemplateOpen, setSaveAsTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateCategory, setTemplateCategory] = useState("residential");
 
   const [projectData, setProjectData] = useState<ProjectData>({
     cameras: [],
@@ -401,6 +421,163 @@ export default function SecurityLayout() {
     navigate("/tools/security-layout", { replace: true });
   };
 
+  const handleTemplateSelect = async (template: any) => {
+    try {
+      // Fetch template image
+      const { data: publicUrlData } = supabase.storage
+        .from('templates')
+        .getPublicUrl(template.image_url.replace('/templates/', ''));
+      
+      const templateImageUrl = publicUrlData.publicUrl;
+
+      // Set floor plan
+      setProjectData(prev => ({
+        ...prev,
+        floorPlan: {
+          url: templateImageUrl,
+          x: 50,
+          y: 50,
+          scale: 1,
+          width: template.dimensions.width,
+          height: template.dimensions.height,
+          locked: false,
+          pixelsPerMeter: 10,
+        }
+      }));
+      
+      setProjectName(`${template.name} - Security Layout`);
+      
+      toast({
+        title: "Template loaded",
+        description: `Using ${template.name} template`,
+      });
+    } catch (error) {
+      console.error('Error loading template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load template",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      toast({
+        title: "Generating PDF...",
+        description: "Please wait while we create your PDF",
+      });
+
+      const { default: jsPDF } = await import('jspdf');
+      const pdf = new jsPDF('landscape', 'mm', 'a4');
+
+      // Add header
+      pdf.setFontSize(20);
+      pdf.text(projectName, 20, 20);
+
+      // Add metadata
+      pdf.setFontSize(10);
+      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 28);
+
+      // Generate and add canvas image
+      const imageUrl = await generateLayoutImage();
+      if (imageUrl) {
+        const img = new Image();
+        img.src = imageUrl;
+        await new Promise((resolve) => {
+          img.onload = resolve;
+        });
+        
+        pdf.addImage(img, 'PNG', 20, 35, 237, 133);
+      }
+
+      // Add device summary
+      pdf.setFontSize(12);
+      pdf.text('Device Summary:', 20, 175);
+      pdf.setFontSize(10);
+      pdf.text(`Cameras: ${projectData.cameras.length}`, 25, 182);
+      pdf.text(`PIR Sensors: ${projectData.pirs.length}`, 25, 188);
+      pdf.text(`Fans: ${projectData.fans.length}`, 25, 194);
+      
+      // Save PDF
+      pdf.save(`${projectName}-layout.pdf`);
+
+      toast({
+        title: "PDF exported",
+        description: "Your layout has been exported successfully",
+      });
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to export PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveAsTemplate = async () => {
+    if (!user || !templateName) {
+      toast({
+        title: "Error",
+        description: "Please enter a template name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Generate preview image
+      const imageUrl = await generateLayoutImage();
+      if (!imageUrl) throw new Error("Failed to generate image");
+
+      // Upload to templates bucket
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+
+      const fileName = `custom-${Date.now()}.png`;
+      const { error: uploadError } = await supabase.storage
+        .from('templates')
+        .upload(fileName, blob, {
+          contentType: 'image/png',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Save template to database
+      const { error: dbError } = await supabase
+        .from('floor_plan_templates')
+        .insert({
+          name: templateName,
+          category: templateCategory,
+          image_url: `/templates/${fileName}`,
+          dimensions: {
+            width: projectData.floorPlan?.width || 800,
+            height: projectData.floorPlan?.height || 600,
+          },
+        });
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Template saved",
+        description: `"${templateName}" is now available as a template`,
+      });
+
+      setSaveAsTemplateOpen(false);
+      setTemplateName("");
+      setTemplateCategory("residential");
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save template",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleGenerateQuotation = async () => {
     if (!user) {
       toast({
@@ -547,8 +724,60 @@ export default function SecurityLayout() {
             <Button onClick={handleNewProject} variant="outline" size="sm">
               New Project
             </Button>
-            <FloorPlanTemplates onSelectTemplate={() => {}} />
+            <FloorPlanTemplates onSelectTemplate={handleTemplateSelect} />
             <AiPlanner />
+            <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2">
+              <FileDown className="h-4 w-4" />
+              Export PDF
+            </Button>
+            <Dialog open={saveAsTemplateOpen} onOpenChange={setSaveAsTemplateOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Save as Template
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Save as Template</DialogTitle>
+                  <DialogDescription>
+                    Save this layout as a reusable template for future projects
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="template-name">Template Name</Label>
+                    <Input
+                      id="template-name"
+                      value={templateName}
+                      onChange={(e) => setTemplateName(e.target.value)}
+                      placeholder="e.g., Small Office Layout"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="template-category">Category</Label>
+                    <Select value={templateCategory} onValueChange={setTemplateCategory}>
+                      <SelectTrigger id="template-category">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="residential">Residential</SelectItem>
+                        <SelectItem value="office">Office</SelectItem>
+                        <SelectItem value="retail">Retail</SelectItem>
+                        <SelectItem value="industrial">Industrial</SelectItem>
+                        <SelectItem value="institutional">Institutional</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setSaveAsTemplateOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveAsTemplate}>Save Template</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             {savedLayoutId ? (
               <>
                 <Button onClick={handleUpdate} variant="outline" className="gap-2">
