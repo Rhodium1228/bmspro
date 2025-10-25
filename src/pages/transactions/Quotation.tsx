@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download, List, CheckCircle2, XCircle, FileText, Paperclip } from "lucide-react";
+import { Plus, FileEdit, Wrench, Eye, Mail, Calculator, Trash2, Send, Search, UserPlus, Check, Download, List, CheckCircle2, XCircle, FileText, Paperclip, ExternalLink, RefreshCw, Unlink } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -33,11 +34,13 @@ interface QuotationItem {
 export default function Quotation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [items, setItems] = useState<QuotationItem[]>([]);
   const previewRef = useRef<HTMLDivElement>(null);
   const [currentQuotationId, setCurrentQuotationId] = useState<string | null>(null);
   const [linkedLayoutId, setLinkedLayoutId] = useState<string | null>(null);
+  const [showLayoutPicker, setShowLayoutPicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "done">("all");
@@ -185,13 +188,102 @@ export default function Quotation() {
     },
   });
 
-  // Handle layout ID from URL params
+  // Fetch linked layout details
+  const { data: linkedLayout } = useQuery({
+    queryKey: ["linked-layout", linkedLayoutId],
+    queryFn: async () => {
+      if (!linkedLayoutId) return null;
+      const { data, error } = await supabase
+        .from("security_layouts")
+        .select("id, name, export_image_url, created_at")
+        .eq("id", linkedLayoutId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!linkedLayoutId,
+  });
+
+  // Fetch user's layouts for picker
+  const { data: userLayouts = [] } = useQuery({
+    queryKey: ["user-layouts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("security_layouts")
+        .select("id, name, created_at")
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Handle layout ID and quotation ID from URL params
   useEffect(() => {
     const layoutId = searchParams.get('layoutId');
+    const quotationId = searchParams.get('quotationId');
+    
     if (layoutId) {
       loadLayoutAndGenerateItems(layoutId);
+    } else if (quotationId) {
+      loadQuotationById(quotationId);
     }
   }, [searchParams]);
+
+  const loadQuotationById = async (quotationId: string) => {
+    const quotation = quotations?.find(q => q.id === quotationId);
+    if (quotation) {
+      loadQuotation(quotation);
+      setActiveTab("create");
+    }
+  };
+
+  const regenerateItemsFromLayout = async () => {
+    if (!linkedLayoutId) return;
+    
+    try {
+      const { data: layout, error } = await supabase
+        .from("security_layouts")
+        .select("canvas_data")
+        .eq("id", linkedLayoutId)
+        .single();
+
+      if (error) throw error;
+
+      const projectData = layout.canvas_data as unknown as ProjectData;
+      const pixelsPerMeter = 10;
+      const generatedItems = generateItemsFromLayout(projectData, pixelsPerMeter);
+      
+      setItems(generatedItems);
+      toast({
+        title: "Items regenerated",
+        description: "Quotation items have been updated from the layout",
+      });
+    } catch (error: any) {
+      console.error("Error regenerating items:", error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate items from layout",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const detachLayout = () => {
+    setLinkedLayoutId(null);
+    setShowLayoutPicker(false);
+    toast({
+      title: "Layout detached",
+      description: "Security layout has been removed from this quotation",
+    });
+  };
+
+  const attachLayout = (layoutId: string) => {
+    setLinkedLayoutId(layoutId);
+    setShowLayoutPicker(false);
+    loadLayoutAndGenerateItems(layoutId);
+  };
 
   const loadLayoutAndGenerateItems = async (layoutId: string) => {
     try {
@@ -986,6 +1078,113 @@ export default function Quotation() {
                           <UserPlus className="h-3.5 w-3.5 mr-2" />
                           Save Customer
                         </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Security Layout Section */}
+                  <div className="border rounded-lg p-4 bg-card animate-fade-in">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-primary">Security Layout</h3>
+                      {linkedLayoutId && linkedLayout && (
+                        <Badge variant="secondary" className="text-xs">Linked</Badge>
+                      )}
+                    </div>
+
+                    {linkedLayout ? (
+                      <div className="space-y-3">
+                        <div className="rounded-lg border p-3 space-y-2 bg-muted/30">
+                          <div>
+                            <p className="font-medium text-sm">{linkedLayout.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Created: {new Date(linkedLayout.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+
+                          {linkedLayout.export_image_url && (
+                            <div className="rounded border overflow-hidden">
+                              <img 
+                                src={linkedLayout.export_image_url} 
+                                alt="Layout preview"
+                                className="w-full h-32 object-cover"
+                              />
+                            </div>
+                          )}
+
+                          <div className="flex gap-2 flex-wrap">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`/tools/security-layout?layoutId=${linkedLayoutId}`)}
+                            >
+                              <ExternalLink className="w-3 h-3 mr-1" />
+                              View Layout
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={regenerateItemsFromLayout}
+                            >
+                              <RefreshCw className="w-3 h-3 mr-1" />
+                              Regenerate
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={detachLayout}
+                            >
+                              <Unlink className="w-3 h-3 mr-1" />
+                              Detach
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {!showLayoutPicker ? (
+                          <div className="text-center py-4 border rounded-lg bg-muted/20">
+                            <p className="text-xs text-muted-foreground mb-3">
+                              No security layout linked to this quotation
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowLayoutPicker(true)}
+                            >
+                              Attach Layout
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Select Layout</Label>
+                              <Select onValueChange={attachLayout}>
+                                <SelectTrigger className="h-9">
+                                  <SelectValue placeholder="Choose a layout..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {userLayouts.map((layout) => (
+                                    <SelectItem key={layout.id} value={layout.id}>
+                                      {layout.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowLayoutPicker(false)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

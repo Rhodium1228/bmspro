@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { SecurityToolbar } from "@/components/security/SecurityToolbar";
 import { CanvasArea } from "@/components/security/CanvasArea";
 import { PropertiesSidebar } from "@/components/security/PropertiesSidebar";
@@ -22,20 +22,24 @@ import {
 } from "@/lib/securityTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save, FileText } from "lucide-react";
+import { Save, FileText, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/integrations/supabase/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 
 export default function SecurityLayout() {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [projectName, setProjectName] = useState("Untitled Security Layout");
   const [activeTool, setActiveTool] = useState<ToolType>('select');
   const [selected, setSelected] = useState<SelectedElement>(null);
   const [savedLayoutId, setSavedLayoutId] = useState<string | null>(null);
+  const [isLoadingLayout, setIsLoadingLayout] = useState(false);
 
   const [projectData, setProjectData] = useState<ProjectData>({
     cameras: [],
@@ -66,6 +70,81 @@ export default function SecurityLayout() {
   // Compute pixelsPerMeter from floorPlan or project data
   const pixelsPerMeter = projectData.floorPlan?.pixelsPerMeter || projectData.pixelsPerMeter || 10;
 
+  // Fetch linked quotations
+  const { data: linkedQuotations = [], refetch: refetchQuotations } = useQuery({
+    queryKey: ["linked-quotations", savedLayoutId],
+    queryFn: async () => {
+      if (!savedLayoutId) return [];
+      const { data, error } = await supabase
+        .from("quotations")
+        .select("id, quotation_number, customer_name, total, status, is_completed")
+        .eq("security_layout_id", savedLayoutId)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!savedLayoutId,
+  });
+
+  // Load layout from URL param on mount
+  useEffect(() => {
+    const layoutId = searchParams.get("layoutId");
+    if (layoutId && user) {
+      loadLayoutFromId(layoutId);
+    }
+  }, [searchParams, user]);
+
+  const loadLayoutFromId = async (layoutId: string) => {
+    setIsLoadingLayout(true);
+    try {
+      const { data, error } = await supabase
+        .from("security_layouts")
+        .select("*")
+        .eq("id", layoutId)
+        .eq("user_id", user?.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setProjectName(data.name || "Untitled Security Layout");
+        setSavedLayoutId(data.id);
+        
+        const canvasData = data.canvas_data as any;
+        if (canvasData) {
+          setProjectData({
+            cameras: canvasData.cameras || [],
+            pirs: canvasData.pirs || [],
+            fans: canvasData.fans || [],
+            walls: canvasData.walls || [],
+            drawings: canvasData.drawings || [],
+            annotations: canvasData.annotations || [],
+            securityZones: canvasData.securityZones || [],
+            floorPlan: canvasData.floorPlan || null,
+            coverageSettings: (data.coverage_settings as any as CoverageSettings) || projectData.coverageSettings,
+            layerSettings: (data.layer_settings as any) || projectData.layerSettings,
+            pixelsPerMeter: canvasData.pixelsPerMeter || projectData.pixelsPerMeter,
+          });
+        }
+
+        toast({
+          title: "Layout loaded",
+          description: `Loaded "${data.name}"`,
+        });
+      }
+    } catch (error: any) {
+      console.error("Error loading layout:", error);
+      toast({
+        title: "Error loading layout",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingLayout(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!user) {
       toast({
@@ -94,6 +173,8 @@ export default function SecurityLayout() {
         title: "Success",
         description: "Security layout saved successfully",
       });
+
+      refetchQuotations();
     } catch (error) {
       toast({
         title: "Error",
@@ -404,11 +485,14 @@ export default function SecurityLayout() {
 
         <div className="w-80 border-l overflow-y-auto">
           <Tabs defaultValue="coverage" className="w-full">
-            <TabsList className="w-full grid grid-cols-4">
-              <TabsTrigger value="coverage">Coverage</TabsTrigger>
+            <TabsList className="w-full grid grid-cols-5 text-xs">
+              <TabsTrigger value="coverage">Cover</TabsTrigger>
               <TabsTrigger value="layers">Layers</TabsTrigger>
               <TabsTrigger value="zones">Zones</TabsTrigger>
               <TabsTrigger value="properties">Props</TabsTrigger>
+              <TabsTrigger value="quotations">
+                Quotes {linkedQuotations.length > 0 && `(${linkedQuotations.length})`}
+              </TabsTrigger>
             </TabsList>
             
             <div className="p-4">
@@ -451,6 +535,58 @@ export default function SecurityLayout() {
                   onDelete={deleteSelected}
                   pixelsPerMeter={pixelsPerMeter}
                 />
+              </TabsContent>
+
+              <TabsContent value="quotations" className="mt-0">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">Linked Quotations</h3>
+                    {linkedQuotations.length > 0 && (
+                      <Badge variant="secondary">{linkedQuotations.length}</Badge>
+                    )}
+                  </div>
+
+                  {!savedLayoutId ? (
+                    <div className="text-sm text-muted-foreground text-center py-8">
+                      Save the layout first to view linked quotations
+                    </div>
+                  ) : linkedQuotations.length === 0 ? (
+                    <div className="text-sm text-muted-foreground text-center py-8">
+                      No quotations linked to this layout yet
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {linkedQuotations.map((quotation) => (
+                        <div key={quotation.id} className="border rounded-lg p-3 space-y-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-medium text-sm">{quotation.quotation_number}</p>
+                              <p className="text-xs text-muted-foreground">{quotation.customer_name}</p>
+                            </div>
+                            <p className="text-sm font-semibold">${quotation.total.toLocaleString()}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={quotation.status === "sent" ? "default" : "secondary"} className="text-xs">
+                              {quotation.status === "sent" ? "Sent" : "Unsent"}
+                            </Badge>
+                            <Badge variant={quotation.is_completed ? "default" : "outline"} className="text-xs">
+                              {quotation.is_completed ? "Done" : "Pending"}
+                            </Badge>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full mt-2 text-xs"
+                            onClick={() => navigate(`/transactions/quotation?quotationId=${quotation.id}`)}
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            View Quotation
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </TabsContent>
             </div>
           </Tabs>
