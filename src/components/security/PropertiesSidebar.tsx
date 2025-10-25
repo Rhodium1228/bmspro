@@ -2,7 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Trash2 } from "lucide-react";
-import { SelectedElement } from "@/lib/securityTypes";
+import { SelectedElement, CameraType } from "@/lib/securityTypes";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PropertiesSidebarProps {
   selected: SelectedElement;
@@ -59,6 +66,23 @@ export const PropertiesSidebar = ({
 
         {type === 'camera' && (
           <>
+            <div>
+              <Label>Camera Type</Label>
+              <Select
+                value={data.type}
+                onValueChange={(type: CameraType) => onUpdate({ type })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bullet">Bullet Camera</SelectItem>
+                  <SelectItem value="dome">Dome Camera</SelectItem>
+                  <SelectItem value="ptz">PTZ Camera</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div>
               <Label>Field of View: {data.fov}°</Label>
               <Slider

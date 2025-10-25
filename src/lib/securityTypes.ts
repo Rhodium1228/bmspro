@@ -1,5 +1,7 @@
 // Types for security layout system
 
+export type CameraType = 'bullet' | 'dome' | 'ptz';
+
 export interface Camera {
   id: string;
   x: number;
@@ -7,6 +9,7 @@ export interface Camera {
   rotation: number;
   fov: number; // Field of view in degrees (1-180)
   range: number; // Range in meters (1-120)
+  type: CameraType;
 }
 
 export interface PirSensor {
@@ -40,6 +43,14 @@ export interface FloorPlan {
   scale: number;
   width: number;
   height: number;
+  locked: boolean;
+}
+
+export interface CanvasState {
+  zoom: number;
+  panX: number;
+  panY: number;
+  showGrid: boolean;
 }
 
 export interface ProjectData {

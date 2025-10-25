@@ -146,7 +146,6 @@ export default function SecurityLayout() {
           cameras={projectData.cameras}
           pirs={projectData.pirs}
           fans={projectData.fans}
-          drawings={projectData.drawings}
           floorPlan={projectData.floorPlan}
           selected={selected}
           onCameraAdd={(camera) => {
@@ -197,17 +196,16 @@ export default function SecurityLayout() {
               fans: projectData.fans.filter((fan) => fan.id !== id),
             });
           }}
-          onDrawingAdd={(drawing) => {
-            setProjectData({ ...projectData, drawings: [...projectData.drawings, drawing] });
-          }}
-          onDrawingDelete={(id) => {
-            setProjectData({
-              ...projectData,
-              drawings: projectData.drawings.filter((d) => d.id !== id),
-            });
-          }}
           onFloorPlanUpload={(floorPlan) => {
             setProjectData({ ...projectData, floorPlan });
+          }}
+          onFloorPlanUpdate={(updates) => {
+            if (projectData.floorPlan) {
+              setProjectData({
+                ...projectData,
+                floorPlan: { ...projectData.floorPlan, ...updates },
+              });
+            }
           }}
           onSelect={setSelected}
           onClearAll={() => {
