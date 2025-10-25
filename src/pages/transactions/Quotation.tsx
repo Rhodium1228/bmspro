@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { generateItemsFromLayout } from "@/lib/bomGeneration";
+import { ProjectData } from "@/lib/securityTypes";
 
 interface QuotationItem {
   id: string;
@@ -30,9 +33,11 @@ interface QuotationItem {
 export default function Quotation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState<QuotationItem[]>([]);
   const previewRef = useRef<HTMLDivElement>(null);
   const [currentQuotationId, setCurrentQuotationId] = useState<string | null>(null);
+  const [linkedLayoutId, setLinkedLayoutId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "done">("all");
@@ -180,6 +185,49 @@ export default function Quotation() {
     },
   });
 
+  // Handle layout ID from URL params
+  useEffect(() => {
+    const layoutId = searchParams.get('layoutId');
+    if (layoutId) {
+      loadLayoutAndGenerateItems(layoutId);
+    }
+  }, [searchParams]);
+
+  const loadLayoutAndGenerateItems = async (layoutId: string) => {
+    try {
+      const { data: layout, error } = await supabase
+        .from('security_layouts')
+        .select('*')
+        .eq('id', layoutId)
+        .single();
+
+      if (error) throw error;
+
+      if (layout) {
+        const projectData = layout.canvas_data as unknown as ProjectData;
+        const pixelsPerMeter = projectData.floorPlan?.pixelsPerMeter || projectData.pixelsPerMeter || 10;
+        
+        const generatedItems = generateItemsFromLayout(projectData, pixelsPerMeter);
+        
+        setItems(generatedItems);
+        setLinkedLayoutId(layoutId);
+        setIsCreatingQuotation(true);
+        setActiveTab("create");
+        
+        toast({
+          title: "Success",
+          description: `Generated ${generatedItems.length} items from security layout`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load security layout",
+        variant: "destructive",
+      });
+    }
+  };
+
   const saveQuotation = async () => {
     if (!customerName || items.length === 0) {
       toast({
@@ -213,6 +261,7 @@ export default function Quotation() {
         discount_amount: discountAmount,
         total: total,
         terms_conditions: termsAndConditions,
+        security_layout_id: linkedLayoutId,
       };
 
       if (currentQuotationId) {
@@ -265,6 +314,9 @@ export default function Quotation() {
     setTaxRate(quotation.tax_rate);
     setDiscountRate(quotation.discount_rate);
     setItems(quotation.items);
+    setLinkedLayoutId(quotation.security_layout_id || null);
+    setIsCreatingQuotation(true);
+    setActiveTab("create");
 
     toast({
       title: "Loaded",
@@ -347,6 +399,7 @@ export default function Quotation() {
 
   const resetForm = () => {
     setCurrentQuotationId(null);
+    setLinkedLayoutId(null);
     setQuotationNumber(`QUO-${Date.now().toString().slice(-6)}`);
     setQuotationDate(new Date().toISOString().split('T')[0]);
     setPaymentType("cash");

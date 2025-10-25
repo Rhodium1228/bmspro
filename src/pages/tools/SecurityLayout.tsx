@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { SecurityToolbar } from "@/components/security/SecurityToolbar";
 import { CanvasArea } from "@/components/security/CanvasArea";
 import { PropertiesSidebar } from "@/components/security/PropertiesSidebar";
@@ -21,7 +22,7 @@ import {
 } from "@/lib/securityTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save } from "lucide-react";
+import { Save, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/integrations/supabase/auth";
@@ -30,9 +31,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function SecurityLayout() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [projectName, setProjectName] = useState("Untitled Security Layout");
   const [activeTool, setActiveTool] = useState<ToolType>('select');
   const [selected, setSelected] = useState<SelectedElement>(null);
+  const [savedLayoutId, setSavedLayoutId] = useState<string | null>(null);
 
   const [projectData, setProjectData] = useState<ProjectData>({
     cameras: [],
@@ -74,14 +77,18 @@ export default function SecurityLayout() {
     }
 
     try {
-      const { error } = await supabase.from("security_layouts").insert([{
+      const { data, error } = await supabase.from("security_layouts").insert([{
         user_id: user.id,
         name: projectName,
         canvas_data: projectData as any,
         floor_plan_url: projectData.floorPlan?.url || null,
-      }]);
+      }]).select().single();
 
       if (error) throw error;
+
+      if (data) {
+        setSavedLayoutId(data.id);
+      }
 
       toast({
         title: "Success",
@@ -94,6 +101,51 @@ export default function SecurityLayout() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleGenerateQuotation = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Save the layout first if not already saved
+    let layoutId = savedLayoutId;
+    
+    if (!layoutId) {
+      try {
+        const { data, error } = await supabase.from("security_layouts").insert([{
+          user_id: user.id,
+          name: projectName,
+          canvas_data: projectData as any,
+          floor_plan_url: projectData.floorPlan?.url || null,
+        }]).select().single();
+
+        if (error) throw error;
+        
+        layoutId = data.id;
+        setSavedLayoutId(layoutId);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save layout",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Navigate to quotation page with layout ID
+    navigate(`/transactions/quotation?layoutId=${layoutId}`);
+    
+    toast({
+      title: "Success",
+      description: "Navigating to quotation page...",
+    });
   };
 
   const updateSelected = (updates: any) => {
@@ -189,9 +241,13 @@ export default function SecurityLayout() {
           <div className="flex gap-2">
             <FloorPlanTemplates onSelectTemplate={() => {}} />
             <AiPlanner />
-            <Button onClick={handleSave} className="gap-2">
+            <Button onClick={handleSave} variant="outline" className="gap-2">
               <Save className="h-4 w-4" />
               Save Project
+            </Button>
+            <Button onClick={handleGenerateQuotation} className="gap-2">
+              <FileText className="h-4 w-4" />
+              Generate Quotation
             </Button>
           </div>
         </div>
