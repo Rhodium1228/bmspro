@@ -9,6 +9,8 @@ import { AiPlanner } from "@/components/security/AiPlanner";
 import { LayerManagement } from "@/components/security/LayerManagement";
 import { ZoneManager } from "@/components/security/ZoneManager";
 import { ScaleCalibration } from "@/components/security/ScaleCalibration";
+import { DrawingEditor } from "@/components/security/DrawingEditor";
+import { KeyboardShortcuts } from "@/components/security/KeyboardShortcuts";
 import {
   Camera,
   PirSensor,
@@ -19,10 +21,13 @@ import {
   SelectedElement,
   ProjectData,
   CoverageSettings,
+  Annotation,
+  SecurityZone,
+  Wall,
 } from "@/lib/securityTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save, FileText, ExternalLink, FileDown, Sparkles } from "lucide-react";
+import { Save, FileText, ExternalLink, FileDown, Sparkles, Undo2, Redo2, Copy, Clipboard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/integrations/supabase/auth";
@@ -61,6 +66,20 @@ export default function SecurityLayout() {
   const [saveAsTemplateOpen, setSaveAsTemplateOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [templateCategory, setTemplateCategory] = useState("residential");
+  
+  // Undo/Redo state
+  const [history, setHistory] = useState<ProjectData[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  
+  // Copy/Paste state
+  const [clipboard, setClipboard] = useState<SelectedElement>(null);
+  
+  // Multi-select state
+  const [selectedElements, setSelectedElements] = useState<SelectedElement[]>([]);
+  
+  // Drawing editor state
+  const [editingDrawing, setEditingDrawing] = useState<Drawing | null>(null);
+  const [drawingEditorOpen, setDrawingEditorOpen] = useState(false);
 
   const [projectData, setProjectData] = useState<ProjectData>({
     cameras: [],
@@ -116,12 +135,75 @@ export default function SecurityLayout() {
     }
   }, [searchParams, user]);
 
-  // Track changes to mark unsaved
+  // Track changes to mark unsaved and add to history
   useEffect(() => {
     if (savedLayoutId && !isLoadingLayout) {
       setHasUnsavedChanges(true);
     }
+    
+    // Add to history (debounced to avoid too many history entries)
+    const timeoutId = setTimeout(() => {
+      addToHistory(projectData);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
   }, [projectData, projectName]);
+  
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+      
+      // Undo: Ctrl+Z / Cmd+Z
+      if (cmdOrCtrl && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      }
+      
+      // Redo: Ctrl+Shift+Z / Cmd+Shift+Z or Ctrl+Y / Cmd+Y
+      if ((cmdOrCtrl && e.key === 'z' && e.shiftKey) || (cmdOrCtrl && e.key === 'y')) {
+        e.preventDefault();
+        handleRedo();
+      }
+      
+      // Copy: Ctrl+C / Cmd+C
+      if (cmdOrCtrl && e.key === 'c') {
+        e.preventDefault();
+        handleCopy();
+      }
+      
+      // Paste: Ctrl+V / Cmd+V
+      if (cmdOrCtrl && e.key === 'v') {
+        e.preventDefault();
+        handlePaste();
+      }
+      
+      // Duplicate: Ctrl+D / Cmd+D
+      if (cmdOrCtrl && e.key === 'd') {
+        e.preventDefault();
+        handleDuplicate();
+      }
+      
+      // Delete: Delete or Backspace
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        if (selectedElements.length > 0) {
+          handleDeleteMultiple();
+        } else if (selected) {
+          deleteSelected();
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, history, selected, clipboard, selectedElements, projectData]);
 
   const loadLayoutFromId = async (layoutId: string) => {
     setIsLoadingLayout(true);
@@ -418,7 +500,192 @@ export default function SecurityLayout() {
       pixelsPerMeter: 10,
     });
     setHasUnsavedChanges(false);
+    setHistory([]);
+    setHistoryIndex(-1);
     navigate("/tools/security-layout", { replace: true });
+  };
+
+  // History management
+  const addToHistory = (state: ProjectData) => {
+    // Don't add duplicate states
+    if (historyIndex >= 0 && JSON.stringify(history[historyIndex]) === JSON.stringify(state)) {
+      return;
+    }
+    
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(JSON.parse(JSON.stringify(state))); // Deep clone
+    
+    // Limit history to 50 entries
+    if (newHistory.length > 50) {
+      newHistory.shift();
+    } else {
+      setHistoryIndex(historyIndex + 1);
+    }
+    
+    setHistory(newHistory);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setProjectData(JSON.parse(JSON.stringify(history[newIndex])));
+      setSelected(null);
+      setSelectedElements([]);
+      toast({
+        title: "Undo",
+        description: "Action undone",
+      });
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setProjectData(JSON.parse(JSON.stringify(history[newIndex])));
+      setSelected(null);
+      setSelectedElements([]);
+      toast({
+        title: "Redo",
+        description: "Action redone",
+      });
+    }
+  };
+
+  // Copy/Paste/Duplicate
+  const handleCopy = () => {
+    if (selected) {
+      setClipboard(selected);
+      toast({
+        title: "Copied",
+        description: `${selected.type} copied to clipboard`,
+      });
+    } else if (selectedElements.length > 0) {
+      toast({
+        title: "Multi-select copy not yet supported",
+        description: "Please select a single element to copy",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePaste = () => {
+    if (!clipboard) {
+      toast({
+        title: "Nothing to paste",
+        description: "Clipboard is empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const offset = 20;
+    
+    // Handle different element types
+    if (clipboard.type === 'drawing') {
+      // Drawings don't have x,y - they have points array
+      const newDrawing = {
+        ...clipboard.data,
+        id: crypto.randomUUID(),
+        points: (clipboard.data as Drawing).points.map((p, i) => 
+          i % 2 === 0 ? p + offset : p + offset
+        ),
+      };
+      setProjectData(prev => ({
+        ...prev,
+        drawings: [...prev.drawings, newDrawing as Drawing]
+      }));
+    } else {
+      // For elements with x, y properties
+      const newElement = {
+        ...clipboard.data,
+        id: crypto.randomUUID(),
+        x: (clipboard.data as any).x + offset,
+        y: (clipboard.data as any).y + offset,
+      };
+
+      if (clipboard.type === 'camera') {
+        setProjectData(prev => ({
+          ...prev,
+          cameras: [...prev.cameras, newElement as Camera]
+        }));
+      } else if (clipboard.type === 'pir') {
+        setProjectData(prev => ({
+          ...prev,
+          pirs: [...prev.pirs, newElement as PirSensor]
+        }));
+      } else if (clipboard.type === 'fan') {
+        setProjectData(prev => ({
+          ...prev,
+          fans: [...prev.fans, newElement as Fan]
+        }));
+      } else if (clipboard.type === 'annotation') {
+        setProjectData(prev => ({
+          ...prev,
+          annotations: [...prev.annotations, newElement as Annotation]
+        }));
+      } else if (clipboard.type === 'zone') {
+        setProjectData(prev => ({
+          ...prev,
+          securityZones: [...prev.securityZones, newElement as SecurityZone]
+        }));
+      } else if (clipboard.type === 'wall') {
+        setProjectData(prev => ({
+          ...prev,
+          walls: [...prev.walls, newElement as Wall]
+        }));
+      }
+    }
+
+    toast({
+      title: "Pasted",
+      description: `${clipboard.type} pasted`,
+    });
+  };
+
+  const handleDuplicate = () => {
+    if (selected) {
+      handleCopy();
+      setTimeout(() => handlePaste(), 100);
+    }
+  };
+
+  // Multi-select
+  const handleDeleteMultiple = () => {
+    if (selectedElements.length === 0) return;
+
+    const confirm = window.confirm(`Delete ${selectedElements.length} elements?`);
+    if (!confirm) return;
+
+    let newProjectData = { ...projectData };
+
+    selectedElements.forEach((element) => {
+      if (element.type === 'camera') {
+        newProjectData.cameras = newProjectData.cameras.filter(c => c.id !== element.data.id);
+      } else if (element.type === 'pir') {
+        newProjectData.pirs = newProjectData.pirs.filter(p => p.id !== element.data.id);
+      } else if (element.type === 'fan') {
+        newProjectData.fans = newProjectData.fans.filter(f => f.id !== element.data.id);
+      } else if (element.type === 'annotation') {
+        newProjectData.annotations = newProjectData.annotations.filter(a => a.id !== element.data.id);
+      } else if (element.type === 'zone') {
+        newProjectData.securityZones = newProjectData.securityZones.filter(z => z.id !== element.data.id);
+      } else if (element.type === 'wall') {
+        newProjectData.walls = newProjectData.walls.filter(w => w.id !== element.data.id);
+      } else if (element.type === 'drawing') {
+        newProjectData.drawings = newProjectData.drawings.filter(d => d.id !== element.data.id);
+      }
+    });
+
+    setProjectData(newProjectData);
+    setSelectedElements([]);
+    setSelected(null);
+
+    toast({
+      title: "Deleted",
+      description: `${selectedElements.length} elements deleted`,
+    });
   };
 
   const handleTemplateSelect = async (template: any) => {
@@ -719,65 +986,118 @@ export default function SecurityLayout() {
                 Unsaved changes
               </Badge>
             )}
+            {selectedElements.length > 0 && (
+              <Badge variant="default" className="text-xs">
+                {selectedElements.length} selected
+              </Badge>
+            )}
           </div>
           <div className="flex gap-2">
             <Button onClick={handleNewProject} variant="outline" size="sm">
               New Project
             </Button>
-            <FloorPlanTemplates onSelectTemplate={handleTemplateSelect} />
-            <AiPlanner />
-            <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2">
-              <FileDown className="h-4 w-4" />
-              Export PDF
-            </Button>
-            <Dialog open={saveAsTemplateOpen} onOpenChange={setSaveAsTemplateOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Save as Template
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Save as Template</DialogTitle>
-                  <DialogDescription>
-                    Save this layout as a reusable template for future projects
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="template-name">Template Name</Label>
-                    <Input
-                      id="template-name"
-                      value={templateName}
-                      onChange={(e) => setTemplateName(e.target.value)}
-                      placeholder="e.g., Small Office Layout"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="template-category">Category</Label>
-                    <Select value={templateCategory} onValueChange={setTemplateCategory}>
-                      <SelectTrigger id="template-category">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="residential">Residential</SelectItem>
-                        <SelectItem value="office">Office</SelectItem>
-                        <SelectItem value="retail">Retail</SelectItem>
-                        <SelectItem value="industrial">Industrial</SelectItem>
-                        <SelectItem value="institutional">Institutional</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setSaveAsTemplateOpen(false)}>
-                    Cancel
+            
+            {/* Undo/Redo */}
+            <div className="flex gap-1 border-l pl-2">
+              <Button 
+                onClick={handleUndo} 
+                variant="ghost" 
+                size="sm"
+                disabled={historyIndex <= 0}
+                title="Undo (Ctrl+Z)"
+              >
+                <Undo2 className="h-4 w-4" />
+              </Button>
+              <Button 
+                onClick={handleRedo} 
+                variant="ghost" 
+                size="sm"
+                disabled={historyIndex >= history.length - 1}
+                title="Redo (Ctrl+Shift+Z)"
+              >
+                <Redo2 className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Copy/Paste */}
+            <div className="flex gap-1 border-l pl-2">
+              <Button 
+                onClick={handleCopy} 
+                variant="ghost" 
+                size="sm"
+                disabled={!selected && selectedElements.length === 0}
+                title="Copy (Ctrl+C)"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button 
+                onClick={handlePaste} 
+                variant="ghost" 
+                size="sm"
+                disabled={!clipboard}
+                title="Paste (Ctrl+V)"
+              >
+                <Clipboard className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="border-l pl-2 flex gap-2">
+              <FloorPlanTemplates onSelectTemplate={handleTemplateSelect} />
+              <AiPlanner />
+              <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2">
+                <FileDown className="h-4 w-4" />
+                Export PDF
+              </Button>
+              <Dialog open={saveAsTemplateOpen} onOpenChange={setSaveAsTemplateOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Save as Template
                   </Button>
-                  <Button onClick={handleSaveAsTemplate}>Save Template</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Save as Template</DialogTitle>
+                    <DialogDescription>
+                      Save this layout as a reusable template for future projects
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="template-name">Template Name</Label>
+                      <Input
+                        id="template-name"
+                        value={templateName}
+                        onChange={(e) => setTemplateName(e.target.value)}
+                        placeholder="e.g., Small Office Layout"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="template-category">Category</Label>
+                      <Select value={templateCategory} onValueChange={setTemplateCategory}>
+                        <SelectTrigger id="template-category">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="office">Office</SelectItem>
+                          <SelectItem value="retail">Retail</SelectItem>
+                          <SelectItem value="industrial">Industrial</SelectItem>
+                          <SelectItem value="institutional">Institutional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setSaveAsTemplateOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSaveAsTemplate}>Save Template</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+            
             {savedLayoutId ? (
               <>
                 <Button onClick={handleUpdate} variant="outline" className="gap-2">
@@ -801,7 +1121,10 @@ export default function SecurityLayout() {
           </div>
         </div>
 
-        <SecurityToolbar activeTool={activeTool} onToolChange={setActiveTool} />
+        <div className="flex items-center gap-2">
+          <KeyboardShortcuts />
+          <SecurityToolbar activeTool={activeTool} onToolChange={setActiveTool} />
+        </div>
       </div>
 
       {/* Main Content */}
@@ -1060,6 +1383,31 @@ export default function SecurityLayout() {
           </Tabs>
         </div>
       </div>
+      
+      {/* Drawing Editor Dialog */}
+      {editingDrawing && (
+        <DrawingEditor
+          drawing={editingDrawing}
+          open={drawingEditorOpen}
+          onClose={() => {
+            setDrawingEditorOpen(false);
+            setEditingDrawing(null);
+          }}
+          onUpdate={(updates) => {
+            const updatedDrawings = projectData.drawings.map((d) =>
+              d.id === editingDrawing.id ? { ...d, ...updates } : d
+            );
+            setProjectData({ ...projectData, drawings: updatedDrawings });
+          }}
+          onDelete={() => {
+            const updatedDrawings = projectData.drawings.filter(
+              (d) => d.id !== editingDrawing.id
+            );
+            setProjectData({ ...projectData, drawings: updatedDrawings });
+            setSelected(null);
+          }}
+        />
+      )}
     </div>
   );
 }
