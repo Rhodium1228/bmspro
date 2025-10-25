@@ -88,6 +88,11 @@ export const CanvasArea = ({
   const [floorPlanDragStart, setFloorPlanDragStart] = useState({ x: 0, y: 0 });
   const [annotationStart, setAnnotationStart] = useState<{ x: number; y: number } | null>(null);
 
+  // Reset annotation state when tool changes
+  useEffect(() => {
+    setAnnotationStart(null);
+  }, [activeTool]);
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool === 'select' || activeTool === 'eraser') return;
 
@@ -409,19 +414,18 @@ export const CanvasArea = ({
           {renderGrid()}
 
           {/* Floor Plan */}
-          {floorPlan && (
-            <g>
+          {floorPlan && layerSettings.background.visible && (
+            <g opacity={layerSettings.background.opacity / 100}>
               <image
                 href={floorPlan.url}
                 x={floorPlan.x}
                 y={floorPlan.y}
                 width={floorPlan.width}
                 height={floorPlan.height}
-                opacity={0.6}
                 style={{ cursor: floorPlan.locked ? 'default' : 'move' }}
                 onMouseDown={handleFloorPlanMouseDown}
               />
-              {!floorPlan.locked && activeTool === 'select' && (
+              {!floorPlan.locked && (
                 <rect
                   x={floorPlan.x}
                   y={floorPlan.y}
@@ -552,6 +556,7 @@ export const CanvasArea = ({
               <CameraIcon
                 camera={camera}
                 isSelected={selected?.type === 'camera' && selected.data.id === camera.id}
+                zoom={canvasState.zoom}
                 onSelect={() => onSelect({ type: 'camera', data: camera })}
                 onMove={(x, y) => onCameraUpdate(camera.id, { x, y })}
                 onRotate={(rotation) => onCameraUpdate(camera.id, { rotation })}
@@ -565,6 +570,7 @@ export const CanvasArea = ({
               <PirIcon
                 pir={pir}
                 isSelected={selected?.type === 'pir' && selected.data.id === pir.id}
+                zoom={canvasState.zoom}
                 onSelect={() => onSelect({ type: 'pir', data: pir })}
                 onMove={(x, y) => onPirUpdate(pir.id, { x, y })}
                 onRotate={(rotation) => onPirUpdate(pir.id, { rotation })}
@@ -578,6 +584,7 @@ export const CanvasArea = ({
               <FanIcon
                 fan={fan}
                 isSelected={selected?.type === 'fan' && selected.data.id === fan.id}
+                zoom={canvasState.zoom}
                 onSelect={() => onSelect({ type: 'fan', data: fan })}
                 onMove={(x, y) => onFanUpdate(fan.id, { x, y })}
               />

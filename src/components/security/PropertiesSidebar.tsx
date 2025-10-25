@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
 import { SelectedElement, CameraType } from "@/lib/securityTypes";
 import {
@@ -22,7 +24,13 @@ export const PropertiesSidebar = ({
   onUpdate,
   onDelete,
 }: PropertiesSidebarProps) => {
-  if (!selected) return null;
+  if (!selected) {
+    return (
+      <div className="w-full p-6 text-center text-muted-foreground">
+        <p>Select an element to view and edit properties</p>
+      </div>
+    );
+  }
 
   const { type, data } = selected;
 
@@ -145,6 +153,94 @@ export const PropertiesSidebar = ({
                 step={1}
                 className="mt-2"
               />
+            </div>
+          </>
+        )}
+
+        {type === 'annotation' && (
+          <>
+            <div>
+              <Label>Text</Label>
+              <Input
+                value={data.text || ''}
+                onChange={(e) => onUpdate({ text: e.target.value })}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Color</Label>
+              <Input
+                type="color"
+                value={data.color || '#3b82f6'}
+                onChange={(e) => onUpdate({ color: e.target.value })}
+                className="mt-2 h-10"
+              />
+            </div>
+
+            {data.type === 'text' && (
+              <div>
+                <Label>Font Size: {data.fontSize || 16}px</Label>
+                <Slider
+                  value={[data.fontSize || 16]}
+                  onValueChange={([fontSize]) => onUpdate({ fontSize })}
+                  min={10}
+                  max={48}
+                  step={1}
+                  className="mt-2"
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {type === 'zone' && (
+          <>
+            <div>
+              <Label>Zone Name</Label>
+              <Input
+                value={data.name}
+                onChange={(e) => onUpdate({ name: e.target.value })}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Security Level</Label>
+              <Select
+                value={data.securityLevel}
+                onValueChange={(securityLevel) => onUpdate({ securityLevel })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Color</Label>
+              <Input
+                type="color"
+                value={data.color || '#f59e0b'}
+                onChange={(e) => onUpdate({ color: e.target.value })}
+                className="mt-2 h-10"
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm text-muted-foreground">Dimensions</Label>
+              <p className="text-sm">
+                {Math.round(data.width / 10)}m × {Math.round(data.height / 10)}m
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Area: {Math.round((data.width * data.height) / 100)}m²
+              </p>
             </div>
           </>
         )}

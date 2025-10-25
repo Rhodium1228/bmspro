@@ -4,6 +4,7 @@ import { SCALE_FACTOR } from "@/lib/securityTypes";
 interface PirIconProps {
   pir: PirSensor;
   isSelected: boolean;
+  zoom: number;
   onSelect: () => void;
   onMove: (x: number, y: number) => void;
   onRotate: (rotation: number) => void;
@@ -12,6 +13,7 @@ interface PirIconProps {
 export const PirIcon = ({
   pir,
   isSelected,
+  zoom,
   onSelect,
   onMove,
   onRotate,
@@ -28,8 +30,8 @@ export const PirIcon = ({
     const startPirY = pir.y;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+      const dx = (moveEvent.clientX - startX) / zoom;
+      const dy = (moveEvent.clientY - startY) / zoom;
       onMove(startPirX + dx, startPirY + dy);
     };
 

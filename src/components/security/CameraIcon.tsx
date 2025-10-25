@@ -4,6 +4,7 @@ import { SCALE_FACTOR, RANGE_COLORS } from "@/lib/securityTypes";
 interface CameraIconProps {
   camera: Camera;
   isSelected: boolean;
+  zoom: number;
   onSelect: () => void;
   onMove: (x: number, y: number) => void;
   onRotate: (rotation: number) => void;
@@ -12,6 +13,7 @@ interface CameraIconProps {
 export const CameraIcon = ({
   camera,
   isSelected,
+  zoom,
   onSelect,
   onMove,
   onRotate,
@@ -28,8 +30,8 @@ export const CameraIcon = ({
     const startCamY = camera.y;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+      const dx = (moveEvent.clientX - startX) / zoom;
+      const dy = (moveEvent.clientY - startY) / zoom;
       onMove(startCamX + dx, startCamY + dy);
     };
 

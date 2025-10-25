@@ -3,6 +3,7 @@ import { Fan } from "@/lib/securityTypes";
 interface FanIconProps {
   fan: Fan;
   isSelected: boolean;
+  zoom: number;
   onSelect: () => void;
   onMove: (x: number, y: number) => void;
 }
@@ -10,6 +11,7 @@ interface FanIconProps {
 export const FanIcon = ({
   fan,
   isSelected,
+  zoom,
   onSelect,
   onMove,
 }: FanIconProps) => {
@@ -25,8 +27,8 @@ export const FanIcon = ({
     const startFanY = fan.y;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+      const dx = (moveEvent.clientX - startX) / zoom;
+      const dy = (moveEvent.clientY - startY) / zoom;
       onMove(startFanX + dx, startFanY + dy);
     };
 

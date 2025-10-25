@@ -56,7 +56,7 @@ export interface SecurityZone {
   y: number;
   width: number;
   height: number;
-  securityLevel: 'high' | 'medium' | 'low';
+  securityLevel: 'high' | 'medium' | 'low' | 'critical';
   color: string;
   requiredCameras?: number;
 }
@@ -130,6 +130,8 @@ export type SelectedElement =
   | { type: 'camera'; data: Camera }
   | { type: 'pir'; data: PirSensor }
   | { type: 'fan'; data: Fan }
+  | { type: 'annotation'; data: Annotation }
+  | { type: 'zone'; data: SecurityZone }
   | { type: 'drawing'; data: Drawing }
   | null;
 

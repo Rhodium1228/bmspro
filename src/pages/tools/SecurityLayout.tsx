@@ -110,6 +110,18 @@ export default function SecurityLayout() {
       );
       setProjectData({ ...projectData, fans: updatedFans });
       setSelected({ type: 'fan', data: { ...selected.data, ...updates } });
+    } else if (selected.type === 'annotation') {
+      const updatedAnnotations = projectData.annotations.map((ann) =>
+        ann.id === selected.data.id ? { ...ann, ...updates } : ann
+      );
+      setProjectData({ ...projectData, annotations: updatedAnnotations });
+      setSelected({ type: 'annotation', data: { ...selected.data, ...updates } });
+    } else if (selected.type === 'zone') {
+      const updatedZones = projectData.securityZones.map((zone) =>
+        zone.id === selected.data.id ? { ...zone, ...updates } : zone
+      );
+      setProjectData({ ...projectData, securityZones: updatedZones });
+      setSelected({ type: 'zone', data: { ...selected.data, ...updates } });
     }
   };
 
@@ -130,6 +142,16 @@ export default function SecurityLayout() {
       setProjectData({
         ...projectData,
         fans: projectData.fans.filter((fan) => fan.id !== selected.data.id),
+      });
+    } else if (selected.type === 'annotation') {
+      setProjectData({
+        ...projectData,
+        annotations: projectData.annotations.filter((ann) => ann.id !== selected.data.id),
+      });
+    } else if (selected.type === 'zone') {
+      setProjectData({
+        ...projectData,
+        securityZones: projectData.securityZones.filter((zone) => zone.id !== selected.data.id),
       });
     }
 
