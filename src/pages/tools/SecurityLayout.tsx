@@ -2,6 +2,7 @@ import { useState } from "react";
 import { SecurityToolbar } from "@/components/security/SecurityToolbar";
 import { CanvasArea } from "@/components/security/CanvasArea";
 import { PropertiesSidebar } from "@/components/security/PropertiesSidebar";
+import { CoverageAnalysis } from "@/components/security/CoverageAnalysis";
 import { FloorPlanTemplates } from "@/components/security/FloorPlanTemplates";
 import { AiPlanner } from "@/components/security/AiPlanner";
 import {
@@ -13,6 +14,7 @@ import {
   ToolType,
   SelectedElement,
   ProjectData,
+  CoverageSettings,
 } from "@/lib/securityTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +36,11 @@ export default function SecurityLayout() {
     fans: [],
     drawings: [],
     floorPlan: null,
+    coverageSettings: {
+      showCoverage: true,
+      showHeatmap: false,
+      showBlindSpots: false,
+    },
   });
 
   const handleSave = async () => {
@@ -148,6 +155,7 @@ export default function SecurityLayout() {
           fans={projectData.fans}
           floorPlan={projectData.floorPlan}
           selected={selected}
+          coverageSettings={projectData.coverageSettings}
           onCameraAdd={(camera) => {
             setProjectData({ ...projectData, cameras: [...projectData.cameras, camera] });
             setActiveTool('select');
@@ -215,16 +223,33 @@ export default function SecurityLayout() {
               fans: [],
               drawings: [],
               floorPlan: null,
+              coverageSettings: {
+                showCoverage: true,
+                showHeatmap: false,
+                showBlindSpots: false,
+              },
             });
             setSelected(null);
           }}
         />
 
-        <PropertiesSidebar
-          selected={selected}
-          onUpdate={updateSelected}
-          onDelete={deleteSelected}
-        />
+        <div className="w-80 border-l overflow-y-auto space-y-4 p-4">
+          <CoverageAnalysis
+            cameras={projectData.cameras}
+            coverageSettings={projectData.coverageSettings}
+            onCoverageSettingsChange={(settings) =>
+              setProjectData({ ...projectData, coverageSettings: settings })
+            }
+            canvasWidth={2000}
+            canvasHeight={1500}
+          />
+          
+          <PropertiesSidebar
+            selected={selected}
+            onUpdate={updateSelected}
+            onDelete={deleteSelected}
+          />
+        </div>
       </div>
     </div>
   );

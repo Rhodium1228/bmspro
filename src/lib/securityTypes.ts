@@ -53,12 +53,19 @@ export interface CanvasState {
   showGrid: boolean;
 }
 
+export interface CoverageSettings {
+  showCoverage: boolean;
+  showHeatmap: boolean;
+  showBlindSpots: boolean;
+}
+
 export interface ProjectData {
   cameras: Camera[];
   pirs: PirSensor[];
   fans: Fan[];
   drawings: Drawing[];
   floorPlan: FloorPlan | null;
+  coverageSettings: CoverageSettings;
 }
 
 export type ToolType = 

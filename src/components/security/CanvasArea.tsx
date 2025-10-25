@@ -1,11 +1,12 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, PirSensor, Fan, FloorPlan, ToolType, SelectedElement, CanvasState } from "@/lib/securityTypes";
+import { Camera, PirSensor, Fan, FloorPlan, ToolType, SelectedElement, CanvasState, CoverageSettings } from "@/lib/securityTypes";
 import { Upload, Download, Trash2 } from "lucide-react";
 import { CameraIcon } from "./CameraIcon";
 import { PirIcon } from "./PirIcon";
 import { FanIcon } from "./FanIcon";
 import { CanvasControls } from "./CanvasControls";
+import { CoverageVisualization } from "./CoverageVisualization";
 import html2canvas from "html2canvas";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +17,7 @@ interface CanvasAreaProps {
   fans: Fan[];
   floorPlan: FloorPlan | null;
   selected: SelectedElement;
+  coverageSettings: CoverageSettings;
   onCameraAdd: (camera: Camera) => void;
   onCameraUpdate: (id: string, updates: Partial<Camera>) => void;
   onCameraDelete: (id: string) => void;
@@ -38,6 +40,7 @@ export const CanvasArea = ({
   fans,
   floorPlan,
   selected,
+  coverageSettings,
   onCameraAdd,
   onCameraUpdate,
   onCameraDelete,
@@ -371,6 +374,15 @@ export const CanvasArea = ({
               )}
             </g>
           )}
+
+          {/* Coverage Visualization */}
+          <CoverageVisualization
+            cameras={cameras}
+            showCoverage={coverageSettings.showCoverage}
+            showBlindSpots={coverageSettings.showBlindSpots}
+            canvasWidth={2000}
+            canvasHeight={1500}
+          />
 
           {/* Cameras */}
           {cameras.map((camera) => (
