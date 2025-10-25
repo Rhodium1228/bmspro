@@ -1,6 +1,9 @@
 // Coverage calculation utilities for security layout
 
-import { Camera, SCALE_FACTOR, RANGE_COLORS } from './securityTypes';
+import { Camera, RANGE_COLORS } from './securityTypes';
+
+// Default scale factor (1m = 10px) used when no calibration is available
+export const DEFAULT_SCALE_FACTOR = 10;
 
 export interface CoverageZone {
   color: string;
@@ -27,16 +30,17 @@ export interface CoverageStats {
 export function calculateCameraWedgePath(
   camera: Camera,
   rangeStart: number,
-  rangeEnd: number
+  rangeEnd: number,
+  pixelsPerMeter: number = DEFAULT_SCALE_FACTOR
 ): string {
   const x = camera.x;
   const y = camera.y;
   const rotation = camera.rotation;
   const fov = camera.fov;
   
-  // Convert to pixels
-  const innerRadius = rangeStart * SCALE_FACTOR;
-  const outerRadius = Math.min(rangeEnd, camera.range) * SCALE_FACTOR;
+  // Convert to pixels using calibration
+  const innerRadius = rangeStart * pixelsPerMeter;
+  const outerRadius = Math.min(rangeEnd, camera.range) * pixelsPerMeter;
   
   if (outerRadius <= innerRadius) return '';
   
@@ -80,7 +84,7 @@ export function calculateCameraWedgePath(
 /**
  * Generate coverage zones for a camera (red, blue, green)
  */
-export function getCameraCoverageZones(camera: Camera): CoverageZone[] {
+export function getCameraCoverageZones(camera: Camera, pixelsPerMeter: number = DEFAULT_SCALE_FACTOR): CoverageZone[] {
   const zones: CoverageZone[] = [];
   const range = camera.range;
   
@@ -89,7 +93,8 @@ export function getCameraCoverageZones(camera: Camera): CoverageZone[] {
     const path = calculateCameraWedgePath(
       camera,
       RANGE_COLORS.red.start,
-      Math.min(range, RANGE_COLORS.red.end)
+      Math.min(range, RANGE_COLORS.red.end),
+      pixelsPerMeter
     );
     if (path) {
       zones.push({
@@ -105,7 +110,8 @@ export function getCameraCoverageZones(camera: Camera): CoverageZone[] {
     const path = calculateCameraWedgePath(
       camera,
       RANGE_COLORS.blue.start,
-      Math.min(range, RANGE_COLORS.blue.end)
+      Math.min(range, RANGE_COLORS.blue.end),
+      pixelsPerMeter
     );
     if (path) {
       zones.push({
@@ -121,7 +127,8 @@ export function getCameraCoverageZones(camera: Camera): CoverageZone[] {
     const path = calculateCameraWedgePath(
       camera,
       RANGE_COLORS.green.start,
-      Math.min(range, RANGE_COLORS.green.end)
+      Math.min(range, RANGE_COLORS.green.end),
+      pixelsPerMeter
     );
     if (path) {
       zones.push({
@@ -142,6 +149,7 @@ export function calculateCoverageStats(
   cameras: Camera[],
   canvasWidth: number,
   canvasHeight: number,
+  pixelsPerMeter: number = DEFAULT_SCALE_FACTOR,
   gridSize: number = 10
 ): CoverageStats {
   const cols = Math.ceil(canvasWidth / gridSize);
@@ -152,7 +160,7 @@ export function calculateCoverageStats(
   
   // Mark covered cells for each camera
   cameras.forEach(camera => {
-    const maxRange = camera.range * SCALE_FACTOR;
+    const maxRange = camera.range * pixelsPerMeter;
     const fov = camera.fov;
     const rotation = camera.rotation;
     
@@ -223,6 +231,7 @@ export function detectBlindSpots(
   cameras: Camera[],
   canvasWidth: number,
   canvasHeight: number,
+  pixelsPerMeter: number = DEFAULT_SCALE_FACTOR,
   gridSize: number = 20
 ): BlindSpot[] {
   const cols = Math.ceil(canvasWidth / gridSize);
@@ -234,7 +243,7 @@ export function detectBlindSpots(
   
   // Mark covered cells
   cameras.forEach(camera => {
-    const maxRange = camera.range * SCALE_FACTOR;
+    const maxRange = camera.range * pixelsPerMeter;
     const fov = camera.fov;
     const rotation = camera.rotation;
     

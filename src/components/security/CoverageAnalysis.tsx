@@ -12,6 +12,7 @@ interface CoverageAnalysisProps {
   onCoverageSettingsChange: (settings: CoverageSettings) => void;
   canvasWidth: number;
   canvasHeight: number;
+  pixelsPerMeter?: number;
 }
 
 export function CoverageAnalysis({
@@ -19,14 +20,15 @@ export function CoverageAnalysis({
   coverageSettings,
   onCoverageSettingsChange,
   canvasWidth,
-  canvasHeight
+  canvasHeight,
+  pixelsPerMeter = 10
 }: CoverageAnalysisProps) {
   const stats = useMemo(() => {
     if (cameras.length === 0) {
       return { totalCoverage: 0, redundantCoverage: 0, blindSpotCount: 0, averageOverlap: 0 };
     }
-    return calculateCoverageStats(cameras, canvasWidth, canvasHeight, 10);
-  }, [cameras, canvasWidth, canvasHeight]);
+    return calculateCoverageStats(cameras, canvasWidth, canvasHeight, pixelsPerMeter, 10);
+  }, [cameras, canvasWidth, canvasHeight, pixelsPerMeter]);
 
   return (
     <Card className="w-full">

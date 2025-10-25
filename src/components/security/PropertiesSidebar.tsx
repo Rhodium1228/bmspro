@@ -17,12 +17,14 @@ interface PropertiesSidebarProps {
   selected: SelectedElement;
   onUpdate: (updates: any) => void;
   onDelete: () => void;
+  pixelsPerMeter?: number;
 }
 
 export const PropertiesSidebar = ({
   selected,
   onUpdate,
   onDelete,
+  pixelsPerMeter = 10,
 }: PropertiesSidebarProps) => {
   if (!selected) {
     return (
@@ -125,6 +127,9 @@ export const PropertiesSidebar = ({
                 step={1}
                 className="mt-2"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                {(data.range * pixelsPerMeter).toFixed(0)} pixels on canvas
+              </p>
             </div>
           </>
         )}
@@ -153,6 +158,9 @@ export const PropertiesSidebar = ({
                 step={1}
                 className="mt-2"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                {(data.range * pixelsPerMeter).toFixed(0)} pixels on canvas
+              </p>
             </div>
           </>
         )}
@@ -236,10 +244,10 @@ export const PropertiesSidebar = ({
             <div>
               <Label className="text-sm text-muted-foreground">Dimensions</Label>
               <p className="text-sm">
-                {Math.round(data.width / 10)}m × {Math.round(data.height / 10)}m
+                {(data.width / pixelsPerMeter).toFixed(1)}m × {(data.height / pixelsPerMeter).toFixed(1)}m
               </p>
               <p className="text-xs text-muted-foreground">
-                Area: {Math.round((data.width * data.height) / 100)}m²
+                Area: {((data.width * data.height) / (pixelsPerMeter * pixelsPerMeter)).toFixed(1)}m²
               </p>
             </div>
           </>

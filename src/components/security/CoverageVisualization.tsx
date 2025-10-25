@@ -8,6 +8,7 @@ interface CoverageVisualizationProps {
   showBlindSpots: boolean;
   canvasWidth: number;
   canvasHeight: number;
+  pixelsPerMeter?: number;
 }
 
 export function CoverageVisualization({
@@ -15,24 +16,25 @@ export function CoverageVisualization({
   showCoverage,
   showBlindSpots,
   canvasWidth,
-  canvasHeight
+  canvasHeight,
+  pixelsPerMeter
 }: CoverageVisualizationProps) {
   // Calculate coverage zones for all cameras
   const coverageZones = useMemo(() => {
     if (!showCoverage) return [];
     return cameras.flatMap(camera => 
-      getCameraCoverageZones(camera).map(zone => ({
+      getCameraCoverageZones(camera, pixelsPerMeter).map(zone => ({
         ...zone,
         cameraId: camera.id
       }))
     );
-  }, [cameras, showCoverage]);
+  }, [cameras, showCoverage, pixelsPerMeter]);
 
   // Detect blind spots
   const blindSpots: BlindSpot[] = useMemo(() => {
     if (!showBlindSpots || cameras.length === 0) return [];
-    return detectBlindSpots(cameras, canvasWidth, canvasHeight, 20);
-  }, [cameras, showBlindSpots, canvasWidth, canvasHeight]);
+    return detectBlindSpots(cameras, canvasWidth, canvasHeight, pixelsPerMeter, 20);
+  }, [cameras, showBlindSpots, canvasWidth, canvasHeight, pixelsPerMeter]);
 
   return (
     <g className="coverage-layer">

@@ -25,6 +25,7 @@ interface CanvasAreaProps {
   selected: SelectedElement;
   coverageSettings: CoverageSettings;
   layerSettings: LayerSettings;
+  pixelsPerMeter?: number;
   onCameraAdd: (camera: Camera) => void;
   onCameraUpdate: (id: string, updates: Partial<Camera>) => void;
   onCameraDelete: (id: string) => void;
@@ -57,6 +58,7 @@ export const CanvasArea = ({
   selected,
   coverageSettings,
   layerSettings,
+  pixelsPerMeter = 10,
   onCameraAdd,
   onCameraUpdate,
   onCameraDelete,
@@ -100,6 +102,7 @@ export const CanvasArea = ({
   const [drawingStart, setDrawingStart] = useState<{ x: number; y: number } | null>(null);
   const [currentDrawing, setCurrentDrawing] = useState<Partial<Drawing> | null>(null);
   const [freehandPoints, setFreehandPoints] = useState<number[]>([]);
+  const [currentMousePos, setCurrentMousePos] = useState<{ x: number; y: number } | null>(null);
   
   // Calibration state
   const [calibrationMode, setCalibrationMode] = useState(false);
@@ -108,7 +111,7 @@ export const CanvasArea = ({
   const [showCalibrationDialog, setShowCalibrationDialog] = useState(false);
   const [calibrationDistance, setCalibrationDistance] = useState("");
 
-  // Reset annotation state when tool changes
+  // Reset annotation state when tool changes (but preserve calibration)
   useEffect(() => {
     setAnnotationStart(null);
     setIsDrawing(false);
@@ -116,14 +119,13 @@ export const CanvasArea = ({
     setCurrentDrawing(null);
     setFreehandPoints([]);
     
+    // Only set calibration mode when tool is 'calibrate', don't reset existing calibration
     if (activeTool === 'calibrate') {
       setCalibrationMode(true);
-      setCalibrationPoint1(null);
-      setCalibrationPoint2(null);
-    } else {
+    } else if (calibrationMode) {
       setCalibrationMode(false);
     }
-  }, [activeTool]);
+  }, [activeTool, calibrationMode]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool === 'select' || activeTool === 'eraser') return;
@@ -229,7 +231,7 @@ export const CanvasArea = ({
         setAnnotationStart({ x, y });
       } else {
         const distance = Math.sqrt(Math.pow(x - annotationStart.x, 2) + Math.pow(y - annotationStart.y, 2));
-        const meters = (distance / 10).toFixed(1);
+        const meters = (distance / pixelsPerMeter).toFixed(1);
         const newAnnotation: Annotation = {
           id: `${activeTool.toUpperCase()}-${annotations.length + 1}`,
           type: activeTool,
@@ -276,6 +278,9 @@ export const CanvasArea = ({
     const x = (e.clientX - rect.left - canvasState.panX) / canvasState.zoom;
     const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
 
+    // Track mouse position for line preview
+    setCurrentMousePos({ x, y });
+
     if (isPanning) {
       setCanvasState(prev => ({
         ...prev,
@@ -286,9 +291,14 @@ export const CanvasArea = ({
       setMultiSelectEnd({ x, y });
     } else if (isDrawing) {
       if (activeTool === 'rectangle' && drawingStart) {
+        // Fix rectangle drawing with negative dimensions
+        const minX = Math.min(drawingStart.x, x);
+        const minY = Math.min(drawingStart.y, y);
+        const width = Math.abs(x - drawingStart.x);
+        const height = Math.abs(y - drawingStart.y);
         setCurrentDrawing({
           type: 'rectangle',
-          points: [drawingStart.x, drawingStart.y, x - drawingStart.x, y - drawingStart.y],
+          points: [minX, minY, width, height],
           color: '#3b82f6',
           strokeWidth: 2,
         });
@@ -314,10 +324,21 @@ export const CanvasArea = ({
     }
     
     if (isDrawing) {
-      if (activeTool === 'rectangle' && currentDrawing) {
+      if (activeTool === 'rectangle' && currentDrawing && drawingStart) {
+        // Fix rectangle with proper coordinates
+        const x = currentMousePos?.x || drawingStart.x;
+        const y = currentMousePos?.y || drawingStart.y;
+        const minX = Math.min(drawingStart.x, x);
+        const minY = Math.min(drawingStart.y, y);
+        const width = Math.abs(x - drawingStart.x);
+        const height = Math.abs(y - drawingStart.y);
+        
         const newDrawing: Drawing = {
           id: `RECT-${Date.now()}`,
-          ...currentDrawing as Omit<Drawing, 'id'>,
+          type: 'rectangle',
+          points: [minX, minY, width, height],
+          color: '#3b82f6',
+          strokeWidth: 2,
         };
         onDrawingAdd(newDrawing);
       } else if (activeTool === 'circle' && currentDrawing) {
@@ -472,12 +493,15 @@ export const CanvasArea = ({
   const renderGrid = () => {
     if (!canvasState.showGrid) return null;
     
-    const gridSize = 50; // 5 meters (10px per meter)
+    // Grid spacing represents 5 meters in real world
+    const metersPerGridLine = 5;
+    const gridSize = metersPerGridLine * pixelsPerMeter;
     const lines = [];
     const width = 2000;
     const height = 2000;
 
     for (let i = 0; i <= width; i += gridSize) {
+      const isMainLine = (i / gridSize) % 2 === 0;
       lines.push(
         <line
           key={`v-${i}`}
@@ -486,13 +510,30 @@ export const CanvasArea = ({
           x2={i}
           y2={height}
           stroke="currentColor"
-          strokeWidth={i % (gridSize * 2) === 0 ? 0.5 : 0.25}
+          strokeWidth={isMainLine ? 0.5 : 0.25}
           opacity={0.3}
         />
       );
+      // Add meter labels on major grid lines
+      if (isMainLine && floorPlan?.isCalibrated) {
+        const meters = (i / pixelsPerMeter).toFixed(0);
+        lines.push(
+          <text
+            key={`label-v-${i}`}
+            x={i + 5}
+            y={15}
+            fill="currentColor"
+            fontSize={10}
+            opacity={0.5}
+          >
+            {meters}m
+          </text>
+        );
+      }
     }
 
     for (let i = 0; i <= height; i += gridSize) {
+      const isMainLine = (i / gridSize) % 2 === 0;
       lines.push(
         <line
           key={`h-${i}`}
@@ -501,13 +542,77 @@ export const CanvasArea = ({
           x2={width}
           y2={i}
           stroke="currentColor"
-          strokeWidth={i % (gridSize * 2) === 0 ? 0.5 : 0.25}
+          strokeWidth={isMainLine ? 0.5 : 0.25}
           opacity={0.3}
         />
       );
+      // Add meter labels on major grid lines
+      if (isMainLine && floorPlan?.isCalibrated) {
+        const meters = (i / pixelsPerMeter).toFixed(0);
+        lines.push(
+          <text
+            key={`label-h-${i}`}
+            x={5}
+            y={i + 15}
+            fill="currentColor"
+            fontSize={10}
+            opacity={0.5}
+          >
+            {meters}m
+          </text>
+        );
+      }
     }
 
     return <g className="text-muted-foreground">{lines}</g>;
+  };
+
+  // Render scale bar indicator
+  const renderScaleBar = () => {
+    if (!floorPlan?.isCalibrated) return null;
+    
+    const scaleLength = 5 * pixelsPerMeter; // 5 meter scale bar
+    const x = 50;
+    const y = (canvasRef.current?.clientHeight || 600) / canvasState.zoom - 50;
+    
+    return (
+      <g className="scale-bar">
+        <line
+          x1={x}
+          y1={y}
+          x2={x + scaleLength}
+          y2={y}
+          stroke="hsl(var(--primary))"
+          strokeWidth={3 / canvasState.zoom}
+        />
+        <line
+          x1={x}
+          y1={y - 5 / canvasState.zoom}
+          x2={x}
+          y2={y + 5 / canvasState.zoom}
+          stroke="hsl(var(--primary))"
+          strokeWidth={3 / canvasState.zoom}
+        />
+        <line
+          x1={x + scaleLength}
+          y1={y - 5 / canvasState.zoom}
+          x2={x + scaleLength}
+          y2={y + 5 / canvasState.zoom}
+          stroke="hsl(var(--primary))"
+          strokeWidth={3 / canvasState.zoom}
+        />
+        <text
+          x={x + scaleLength / 2}
+          y={y - 10 / canvasState.zoom}
+          textAnchor="middle"
+          fill="hsl(var(--primary))"
+          fontSize={12 / canvasState.zoom}
+          fontWeight="bold"
+        >
+          5m
+        </text>
+      </g>
+    );
   };
 
   return (
@@ -611,6 +716,7 @@ export const CanvasArea = ({
                 showBlindSpots={coverageSettings.showBlindSpots}
                 canvasWidth={2000}
                 canvasHeight={1500}
+                pixelsPerMeter={pixelsPerMeter}
               />
             </g>
           )}
@@ -644,6 +750,7 @@ export const CanvasArea = ({
 
           {/* Drawings */}
           {layerSettings.annotations.visible && drawings.map((drawing) => {
+            const scaledStrokeWidth = drawing.strokeWidth / canvasState.zoom;
             if (drawing.type === 'line') {
               return (
                 <line
@@ -653,7 +760,7 @@ export const CanvasArea = ({
                   x2={drawing.points[2]}
                   y2={drawing.points[3]}
                   stroke={drawing.color}
-                  strokeWidth={drawing.strokeWidth}
+                  strokeWidth={scaledStrokeWidth}
                   opacity={layerSettings.annotations.opacity / 100}
                 />
               );
@@ -667,7 +774,7 @@ export const CanvasArea = ({
                   height={drawing.points[3]}
                   fill="none"
                   stroke={drawing.color}
-                  strokeWidth={drawing.strokeWidth}
+                  strokeWidth={scaledStrokeWidth}
                   opacity={layerSettings.annotations.opacity / 100}
                 />
               );
@@ -680,7 +787,7 @@ export const CanvasArea = ({
                   r={drawing.points[2]}
                   fill="none"
                   stroke={drawing.color}
-                  strokeWidth={drawing.strokeWidth}
+                  strokeWidth={scaledStrokeWidth}
                   opacity={layerSettings.annotations.opacity / 100}
                 />
               );
@@ -691,7 +798,7 @@ export const CanvasArea = ({
                   points={drawing.points.join(' ')}
                   fill="none"
                   stroke={drawing.color}
-                  strokeWidth={drawing.strokeWidth}
+                  strokeWidth={scaledStrokeWidth}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   opacity={layerSettings.annotations.opacity / 100}
@@ -712,7 +819,7 @@ export const CanvasArea = ({
                   height={currentDrawing.points![3]}
                   fill="none"
                   stroke={currentDrawing.color}
-                  strokeWidth={currentDrawing.strokeWidth}
+                  strokeWidth={currentDrawing.strokeWidth! / canvasState.zoom}
                   strokeDasharray="4,4"
                   opacity={0.7}
                 />
@@ -724,7 +831,7 @@ export const CanvasArea = ({
                   r={currentDrawing.points![2]}
                   fill="none"
                   stroke={currentDrawing.color}
-                  strokeWidth={currentDrawing.strokeWidth}
+                  strokeWidth={currentDrawing.strokeWidth! / canvasState.zoom}
                   strokeDasharray="4,4"
                   opacity={0.7}
                 />
@@ -738,23 +845,40 @@ export const CanvasArea = ({
               points={freehandPoints.join(' ')}
               fill="none"
               stroke="#3b82f6"
-              strokeWidth={2}
+              strokeWidth={2 / canvasState.zoom}
               strokeLinecap="round"
               strokeLinejoin="round"
               opacity={0.7}
             />
           )}
 
-          {/* Line drawing preview */}
+          {/* Line drawing preview with live feedback */}
           {drawingStart && activeTool === 'line' && (
-            <circle
-              cx={drawingStart.x}
-              cy={drawingStart.y}
-              r={4}
-              fill="#3b82f6"
-              opacity={0.7}
-            />
+            <>
+              <circle
+                cx={drawingStart.x}
+                cy={drawingStart.y}
+                r={4 / canvasState.zoom}
+                fill="#3b82f6"
+                opacity={0.7}
+              />
+              {currentMousePos && (
+                <line
+                  x1={drawingStart.x}
+                  y1={drawingStart.y}
+                  x2={currentMousePos.x}
+                  y2={currentMousePos.y}
+                  stroke="#3b82f6"
+                  strokeWidth={2 / canvasState.zoom}
+                  strokeDasharray="4,4"
+                  opacity={0.7}
+                />
+              )}
+            </>
           )}
+          
+          {/* Scale bar */}
+          {renderScaleBar()}
 
           {/* Calibration markers */}
           {calibrationMode && calibrationPoint1 && (

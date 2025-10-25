@@ -55,7 +55,11 @@ export default function SecurityLayout() {
       annotations: { visible: true, locked: false, opacity: 100 },
       coverage: { visible: true, locked: false, opacity: 100 },
     },
+    pixelsPerMeter: 10, // Default calibration
   });
+
+  // Compute pixelsPerMeter from floorPlan or project data
+  const pixelsPerMeter = projectData.floorPlan?.pixelsPerMeter || projectData.pixelsPerMeter || 10;
 
   const handleSave = async () => {
     if (!user) {
@@ -272,12 +276,16 @@ export default function SecurityLayout() {
           }}
           onFloorPlanUpdate={(updates) => {
             if (projectData.floorPlan) {
+              const updatedFloorPlan = { ...projectData.floorPlan, ...updates };
               setProjectData({
                 ...projectData,
-                floorPlan: { ...projectData.floorPlan, ...updates },
+                floorPlan: updatedFloorPlan,
+                // Sync global pixelsPerMeter when floor plan is calibrated
+                pixelsPerMeter: updatedFloorPlan.pixelsPerMeter || projectData.pixelsPerMeter,
               });
             }
           }}
+          pixelsPerMeter={pixelsPerMeter}
           onSelect={setSelected}
           onClearAll={() => {
             setProjectData({
@@ -326,6 +334,7 @@ export default function SecurityLayout() {
                   }
                   canvasWidth={2000}
                   canvasHeight={1500}
+                  pixelsPerMeter={pixelsPerMeter}
                 />
               </TabsContent>
               
@@ -352,6 +361,7 @@ export default function SecurityLayout() {
                   selected={selected}
                   onUpdate={updateSelected}
                   onDelete={deleteSelected}
+                  pixelsPerMeter={pixelsPerMeter}
                 />
               </TabsContent>
             </div>

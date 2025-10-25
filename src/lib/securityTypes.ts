@@ -113,6 +113,7 @@ export interface ProjectData {
   floorPlan: FloorPlan | null;
   coverageSettings: CoverageSettings;
   layerSettings: LayerSettings;
+  pixelsPerMeter?: number; // Global calibration for the entire project
 }
 
 export type ToolType = 
