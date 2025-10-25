@@ -496,6 +496,7 @@ export type Database = {
       }
       security_layouts: {
         Row: {
+          annotations: Json | null
           canvas_data: Json | null
           coverage_settings: Json | null
           created_at: string
@@ -504,13 +505,16 @@ export type Database = {
           floor_plan_type: string | null
           floor_plan_url: string | null
           id: string
+          layer_settings: Json | null
           name: string
           quotation_id: string | null
+          security_zones: Json | null
           template_name: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          annotations?: Json | null
           canvas_data?: Json | null
           coverage_settings?: Json | null
           created_at?: string
@@ -519,13 +523,16 @@ export type Database = {
           floor_plan_type?: string | null
           floor_plan_url?: string | null
           id?: string
+          layer_settings?: Json | null
           name: string
           quotation_id?: string | null
+          security_zones?: Json | null
           template_name?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          annotations?: Json | null
           canvas_data?: Json | null
           coverage_settings?: Json | null
           created_at?: string
@@ -534,8 +541,10 @@ export type Database = {
           floor_plan_type?: string | null
           floor_plan_url?: string | null
           id?: string
+          layer_settings?: Json | null
           name?: string
           quotation_id?: string | null
+          security_zones?: Json | null
           template_name?: string | null
           updated_at?: string
           user_id?: string

@@ -36,6 +36,46 @@ export interface Drawing {
   strokeWidth: number;
 }
 
+export interface Annotation {
+  id: string;
+  type: 'text' | 'zone' | 'dimension' | 'arrow';
+  x: number;
+  y: number;
+  x2?: number; // For dimension lines and arrows
+  y2?: number;
+  text: string;
+  color: string;
+  fontSize?: number;
+  rotation?: number;
+}
+
+export interface SecurityZone {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  securityLevel: 'high' | 'medium' | 'low';
+  color: string;
+  requiredCameras?: number;
+}
+
+export interface LayerSettings {
+  background: LayerState;
+  cameras: LayerState;
+  pirs: LayerState;
+  fans: LayerState;
+  annotations: LayerState;
+  coverage: LayerState;
+}
+
+export interface LayerState {
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
+}
+
 export interface FloorPlan {
   url: string;
   x: number;
@@ -64,8 +104,11 @@ export interface ProjectData {
   pirs: PirSensor[];
   fans: Fan[];
   drawings: Drawing[];
+  annotations: Annotation[];
+  securityZones: SecurityZone[];
   floorPlan: FloorPlan | null;
   coverageSettings: CoverageSettings;
+  layerSettings: LayerSettings;
 }
 
 export type ToolType = 
@@ -77,7 +120,11 @@ export type ToolType =
   | 'rectangle' 
   | 'circle' 
   | 'freehand'
-  | 'eraser';
+  | 'eraser'
+  | 'text'
+  | 'zone'
+  | 'dimension'
+  | 'arrow';
 
 export type SelectedElement = 
   | { type: 'camera'; data: Camera }

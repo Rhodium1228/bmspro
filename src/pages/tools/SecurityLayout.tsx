@@ -5,6 +5,8 @@ import { PropertiesSidebar } from "@/components/security/PropertiesSidebar";
 import { CoverageAnalysis } from "@/components/security/CoverageAnalysis";
 import { FloorPlanTemplates } from "@/components/security/FloorPlanTemplates";
 import { AiPlanner } from "@/components/security/AiPlanner";
+import { LayerManagement } from "@/components/security/LayerManagement";
+import { ZoneManager } from "@/components/security/ZoneManager";
 import {
   Camera,
   PirSensor,
@@ -22,6 +24,7 @@ import { Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/integrations/supabase/auth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SecurityLayout() {
   const { toast } = useToast();
@@ -35,11 +38,21 @@ export default function SecurityLayout() {
     pirs: [],
     fans: [],
     drawings: [],
+    annotations: [],
+    securityZones: [],
     floorPlan: null,
     coverageSettings: {
       showCoverage: true,
       showHeatmap: false,
       showBlindSpots: false,
+    },
+    layerSettings: {
+      background: { visible: true, locked: false, opacity: 100 },
+      cameras: { visible: true, locked: false, opacity: 100 },
+      pirs: { visible: true, locked: false, opacity: 100 },
+      fans: { visible: true, locked: false, opacity: 100 },
+      annotations: { visible: true, locked: false, opacity: 100 },
+      coverage: { visible: true, locked: false, opacity: 100 },
     },
   });
 
@@ -153,9 +166,12 @@ export default function SecurityLayout() {
           cameras={projectData.cameras}
           pirs={projectData.pirs}
           fans={projectData.fans}
+          annotations={projectData.annotations}
+          securityZones={projectData.securityZones}
           floorPlan={projectData.floorPlan}
           selected={selected}
           coverageSettings={projectData.coverageSettings}
+          layerSettings={projectData.layerSettings}
           onCameraAdd={(camera) => {
             setProjectData({ ...projectData, cameras: [...projectData.cameras, camera] });
             setActiveTool('select');
@@ -204,6 +220,26 @@ export default function SecurityLayout() {
               fans: projectData.fans.filter((fan) => fan.id !== id),
             });
           }}
+          onAnnotationAdd={(annotation) => {
+            setProjectData({ ...projectData, annotations: [...projectData.annotations, annotation] });
+            setActiveTool('select');
+          }}
+          onAnnotationUpdate={(id, updates) => {
+            const updatedAnnotations = projectData.annotations.map((ann) =>
+              ann.id === id ? { ...ann, ...updates } : ann
+            );
+            setProjectData({ ...projectData, annotations: updatedAnnotations });
+          }}
+          onZoneAdd={(zone) => {
+            setProjectData({ ...projectData, securityZones: [...projectData.securityZones, zone] });
+            setActiveTool('select');
+          }}
+          onZoneUpdate={(id, updates) => {
+            const updatedZones = projectData.securityZones.map((zone) =>
+              zone.id === id ? { ...zone, ...updates } : zone
+            );
+            setProjectData({ ...projectData, securityZones: updatedZones });
+          }}
           onFloorPlanUpload={(floorPlan) => {
             setProjectData({ ...projectData, floorPlan });
           }}
@@ -222,33 +258,76 @@ export default function SecurityLayout() {
               pirs: [],
               fans: [],
               drawings: [],
+              annotations: [],
+              securityZones: [],
               floorPlan: null,
               coverageSettings: {
                 showCoverage: true,
                 showHeatmap: false,
                 showBlindSpots: false,
               },
+              layerSettings: {
+                background: { visible: true, locked: false, opacity: 100 },
+                cameras: { visible: true, locked: false, opacity: 100 },
+                pirs: { visible: true, locked: false, opacity: 100 },
+                fans: { visible: true, locked: false, opacity: 100 },
+                annotations: { visible: true, locked: false, opacity: 100 },
+                coverage: { visible: true, locked: false, opacity: 100 },
+              },
             });
             setSelected(null);
           }}
         />
 
-        <div className="w-80 border-l overflow-y-auto space-y-4 p-4">
-          <CoverageAnalysis
-            cameras={projectData.cameras}
-            coverageSettings={projectData.coverageSettings}
-            onCoverageSettingsChange={(settings) =>
-              setProjectData({ ...projectData, coverageSettings: settings })
-            }
-            canvasWidth={2000}
-            canvasHeight={1500}
-          />
-          
-          <PropertiesSidebar
-            selected={selected}
-            onUpdate={updateSelected}
-            onDelete={deleteSelected}
-          />
+        <div className="w-80 border-l overflow-y-auto">
+          <Tabs defaultValue="coverage" className="w-full">
+            <TabsList className="w-full grid grid-cols-4">
+              <TabsTrigger value="coverage">Coverage</TabsTrigger>
+              <TabsTrigger value="layers">Layers</TabsTrigger>
+              <TabsTrigger value="zones">Zones</TabsTrigger>
+              <TabsTrigger value="properties">Props</TabsTrigger>
+            </TabsList>
+            
+            <div className="p-4">
+              <TabsContent value="coverage" className="mt-0">
+                <CoverageAnalysis
+                  cameras={projectData.cameras}
+                  coverageSettings={projectData.coverageSettings}
+                  onCoverageSettingsChange={(settings) =>
+                    setProjectData({ ...projectData, coverageSettings: settings })
+                  }
+                  canvasWidth={2000}
+                  canvasHeight={1500}
+                />
+              </TabsContent>
+              
+              <TabsContent value="layers" className="mt-0">
+                <LayerManagement
+                  layerSettings={projectData.layerSettings}
+                  onLayerSettingsChange={(settings) =>
+                    setProjectData({ ...projectData, layerSettings: settings })
+                  }
+                />
+              </TabsContent>
+              
+              <TabsContent value="zones" className="mt-0">
+                <ZoneManager
+                  zones={projectData.securityZones}
+                  onZonesChange={(zones) =>
+                    setProjectData({ ...projectData, securityZones: zones })
+                  }
+                />
+              </TabsContent>
+              
+              <TabsContent value="properties" className="mt-0">
+                <PropertiesSidebar
+                  selected={selected}
+                  onUpdate={updateSelected}
+                  onDelete={deleteSelected}
+                />
+              </TabsContent>
+            </div>
+          </Tabs>
         </div>
       </div>
     </div>

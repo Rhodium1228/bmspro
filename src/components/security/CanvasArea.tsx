@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, PirSensor, Fan, FloorPlan, ToolType, SelectedElement, CanvasState, CoverageSettings } from "@/lib/securityTypes";
+import { Camera, PirSensor, Fan, FloorPlan, ToolType, SelectedElement, CanvasState, CoverageSettings, Annotation, SecurityZone, LayerSettings } from "@/lib/securityTypes";
 import { Upload, Download, Trash2 } from "lucide-react";
 import { CameraIcon } from "./CameraIcon";
 import { PirIcon } from "./PirIcon";
@@ -15,9 +15,12 @@ interface CanvasAreaProps {
   cameras: Camera[];
   pirs: PirSensor[];
   fans: Fan[];
+  annotations: Annotation[];
+  securityZones: SecurityZone[];
   floorPlan: FloorPlan | null;
   selected: SelectedElement;
   coverageSettings: CoverageSettings;
+  layerSettings: LayerSettings;
   onCameraAdd: (camera: Camera) => void;
   onCameraUpdate: (id: string, updates: Partial<Camera>) => void;
   onCameraDelete: (id: string) => void;
@@ -27,6 +30,10 @@ interface CanvasAreaProps {
   onFanAdd: (fan: Fan) => void;
   onFanUpdate: (id: string, updates: Partial<Fan>) => void;
   onFanDelete: (id: string) => void;
+  onAnnotationAdd: (annotation: Annotation) => void;
+  onAnnotationUpdate: (id: string, updates: Partial<Annotation>) => void;
+  onZoneAdd: (zone: SecurityZone) => void;
+  onZoneUpdate: (id: string, updates: Partial<SecurityZone>) => void;
   onFloorPlanUpload: (floorPlan: FloorPlan) => void;
   onFloorPlanUpdate: (updates: Partial<FloorPlan>) => void;
   onSelect: (element: SelectedElement) => void;
@@ -38,9 +45,12 @@ export const CanvasArea = ({
   cameras,
   pirs,
   fans,
+  annotations,
+  securityZones,
   floorPlan,
   selected,
   coverageSettings,
+  layerSettings,
   onCameraAdd,
   onCameraUpdate,
   onCameraDelete,
@@ -50,6 +60,10 @@ export const CanvasArea = ({
   onFanAdd,
   onFanUpdate,
   onFanDelete,
+  onAnnotationAdd,
+  onAnnotationUpdate,
+  onZoneAdd,
+  onZoneUpdate,
   onFloorPlanUpload,
   onFloorPlanUpdate,
   onSelect,
@@ -72,6 +86,7 @@ export const CanvasArea = ({
   const [multiSelectEnd, setMultiSelectEnd] = useState<{ x: number; y: number } | null>(null);
   const [isDraggingFloorPlan, setIsDraggingFloorPlan] = useState(false);
   const [floorPlanDragStart, setFloorPlanDragStart] = useState({ x: 0, y: 0 });
+  const [annotationStart, setAnnotationStart] = useState<{ x: number; y: number } | null>(null);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool === 'select' || activeTool === 'eraser') return;
@@ -111,6 +126,53 @@ export const CanvasArea = ({
         rotation: 0,
       };
       onFanAdd(newFan);
+    } else if (activeTool === 'text') {
+      const newAnnotation: Annotation = {
+        id: `TEXT-${annotations.length + 1}`,
+        type: 'text',
+        x,
+        y,
+        text: 'New Label',
+        color: '#3b82f6',
+        fontSize: 16,
+      };
+      onAnnotationAdd(newAnnotation);
+    } else if (activeTool === 'zone') {
+      if (!annotationStart) {
+        setAnnotationStart({ x, y });
+      } else {
+        const newZone: SecurityZone = {
+          id: `ZONE-${securityZones.length + 1}`,
+          name: `Zone ${securityZones.length + 1}`,
+          x: Math.min(annotationStart.x, x),
+          y: Math.min(annotationStart.y, y),
+          width: Math.abs(x - annotationStart.x),
+          height: Math.abs(y - annotationStart.y),
+          securityLevel: 'medium',
+          color: '#f59e0b',
+        };
+        onZoneAdd(newZone);
+        setAnnotationStart(null);
+      }
+    } else if (activeTool === 'dimension' || activeTool === 'arrow') {
+      if (!annotationStart) {
+        setAnnotationStart({ x, y });
+      } else {
+        const distance = Math.sqrt(Math.pow(x - annotationStart.x, 2) + Math.pow(y - annotationStart.y, 2));
+        const meters = (distance / 10).toFixed(1);
+        const newAnnotation: Annotation = {
+          id: `${activeTool.toUpperCase()}-${annotations.length + 1}`,
+          type: activeTool,
+          x: annotationStart.x,
+          y: annotationStart.y,
+          x2: x,
+          y2: y,
+          text: activeTool === 'dimension' ? `${meters}m` : '',
+          color: '#3b82f6',
+        };
+        onAnnotationAdd(newAnnotation);
+        setAnnotationStart(null);
+      }
     }
   };
 
@@ -376,47 +438,150 @@ export const CanvasArea = ({
           )}
 
           {/* Coverage Visualization */}
-          <CoverageVisualization
-            cameras={cameras}
-            showCoverage={coverageSettings.showCoverage}
-            showBlindSpots={coverageSettings.showBlindSpots}
-            canvasWidth={2000}
-            canvasHeight={1500}
-          />
+          {layerSettings.coverage.visible && (
+            <g opacity={layerSettings.coverage.opacity / 100}>
+              <CoverageVisualization
+                cameras={cameras}
+                showCoverage={coverageSettings.showCoverage}
+                showBlindSpots={coverageSettings.showBlindSpots}
+                canvasWidth={2000}
+                canvasHeight={1500}
+              />
+            </g>
+          )}
+
+          {/* Security Zones */}
+          {layerSettings.annotations.visible && securityZones.map((zone) => (
+            <g key={zone.id} opacity={layerSettings.annotations.opacity / 100}>
+              <rect
+                x={zone.x}
+                y={zone.y}
+                width={zone.width}
+                height={zone.height}
+                fill={zone.color}
+                fillOpacity={0.15}
+                stroke={zone.color}
+                strokeWidth={2}
+                strokeDasharray="8,4"
+              />
+              <text
+                x={zone.x + zone.width / 2}
+                y={zone.y + zone.height / 2}
+                textAnchor="middle"
+                fill={zone.color}
+                fontSize={14}
+                fontWeight="bold"
+              >
+                {zone.name}
+              </text>
+            </g>
+          ))}
+
+          {/* Annotations */}
+          {layerSettings.annotations.visible && annotations.map((annotation) => {
+            if (annotation.type === 'text') {
+              return (
+                <text
+                  key={annotation.id}
+                  x={annotation.x}
+                  y={annotation.y}
+                  fill={annotation.color}
+                  fontSize={annotation.fontSize || 16}
+                  fontWeight="bold"
+                  opacity={layerSettings.annotations.opacity / 100}
+                >
+                  {annotation.text}
+                </text>
+              );
+            } else if (annotation.type === 'dimension') {
+              return (
+                <g key={annotation.id} opacity={layerSettings.annotations.opacity / 100}>
+                  <line
+                    x1={annotation.x}
+                    y1={annotation.y}
+                    x2={annotation.x2}
+                    y2={annotation.y2}
+                    stroke={annotation.color}
+                    strokeWidth={2}
+                  />
+                  <text
+                    x={(annotation.x + (annotation.x2 || annotation.x)) / 2}
+                    y={(annotation.y + (annotation.y2 || annotation.y)) / 2 - 5}
+                    fill={annotation.color}
+                    fontSize={12}
+                    fontWeight="bold"
+                    textAnchor="middle"
+                  >
+                    {annotation.text}
+                  </text>
+                </g>
+              );
+            } else if (annotation.type === 'arrow') {
+              return (
+                <g key={annotation.id} opacity={layerSettings.annotations.opacity / 100}>
+                  <defs>
+                    <marker
+                      id={`arrow-${annotation.id}`}
+                      markerWidth={10}
+                      markerHeight={7}
+                      refX={9}
+                      refY={3.5}
+                      orient="auto"
+                    >
+                      <polygon points="0 0, 10 3.5, 0 7" fill={annotation.color} />
+                    </marker>
+                  </defs>
+                  <line
+                    x1={annotation.x}
+                    y1={annotation.y}
+                    x2={annotation.x2}
+                    y2={annotation.y2}
+                    stroke={annotation.color}
+                    strokeWidth={2.5}
+                    markerEnd={`url(#arrow-${annotation.id})`}
+                  />
+                </g>
+              );
+            }
+            return null;
+          })}
 
           {/* Cameras */}
-          {cameras.map((camera) => (
-            <CameraIcon
-              key={camera.id}
-              camera={camera}
-              isSelected={selected?.type === 'camera' && selected.data.id === camera.id}
-              onSelect={() => onSelect({ type: 'camera', data: camera })}
-              onMove={(x, y) => onCameraUpdate(camera.id, { x, y })}
-              onRotate={(rotation) => onCameraUpdate(camera.id, { rotation })}
-            />
+          {layerSettings.cameras.visible && cameras.map((camera) => (
+            <g key={camera.id} opacity={layerSettings.cameras.opacity / 100}>
+              <CameraIcon
+                camera={camera}
+                isSelected={selected?.type === 'camera' && selected.data.id === camera.id}
+                onSelect={() => onSelect({ type: 'camera', data: camera })}
+                onMove={(x, y) => onCameraUpdate(camera.id, { x, y })}
+                onRotate={(rotation) => onCameraUpdate(camera.id, { rotation })}
+              />
+            </g>
           ))}
 
           {/* PIR Sensors */}
-          {pirs.map((pir) => (
-            <PirIcon
-              key={pir.id}
-              pir={pir}
-              isSelected={selected?.type === 'pir' && selected.data.id === pir.id}
-              onSelect={() => onSelect({ type: 'pir', data: pir })}
-              onMove={(x, y) => onPirUpdate(pir.id, { x, y })}
-              onRotate={(rotation) => onPirUpdate(pir.id, { rotation })}
-            />
+          {layerSettings.pirs.visible && pirs.map((pir) => (
+            <g key={pir.id} opacity={layerSettings.pirs.opacity / 100}>
+              <PirIcon
+                pir={pir}
+                isSelected={selected?.type === 'pir' && selected.data.id === pir.id}
+                onSelect={() => onSelect({ type: 'pir', data: pir })}
+                onMove={(x, y) => onPirUpdate(pir.id, { x, y })}
+                onRotate={(rotation) => onPirUpdate(pir.id, { rotation })}
+              />
+            </g>
           ))}
 
           {/* Fans */}
-          {fans.map((fan) => (
-            <FanIcon
-              key={fan.id}
-              fan={fan}
-              isSelected={selected?.type === 'fan' && selected.data.id === fan.id}
-              onSelect={() => onSelect({ type: 'fan', data: fan })}
-              onMove={(x, y) => onFanUpdate(fan.id, { x, y })}
-            />
+          {layerSettings.fans.visible && fans.map((fan) => (
+            <g key={fan.id} opacity={layerSettings.fans.opacity / 100}>
+              <FanIcon
+                fan={fan}
+                isSelected={selected?.type === 'fan' && selected.data.id === fan.id}
+                onSelect={() => onSelect({ type: 'fan', data: fan })}
+                onMove={(x, y) => onFanUpdate(fan.id, { x, y })}
+              />
+            </g>
           ))}
 
           {/* Multi-select box */}
