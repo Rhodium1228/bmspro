@@ -38,6 +38,7 @@ export default function SecurityLayout() {
     cameras: [],
     pirs: [],
     fans: [],
+    walls: [],
     drawings: [],
     annotations: [],
     securityZones: [],
@@ -52,6 +53,7 @@ export default function SecurityLayout() {
       cameras: { visible: true, locked: false, opacity: 100 },
       pirs: { visible: true, locked: false, opacity: 100 },
       fans: { visible: true, locked: false, opacity: 100 },
+      walls: { visible: true, locked: false, opacity: 100 },
       annotations: { visible: true, locked: false, opacity: 100 },
       coverage: { visible: true, locked: false, opacity: 100 },
     },
@@ -127,6 +129,12 @@ export default function SecurityLayout() {
       );
       setProjectData({ ...projectData, securityZones: updatedZones });
       setSelected({ type: 'zone', data: { ...selected.data, ...updates } });
+    } else if (selected.type === 'wall') {
+      const updatedWalls = projectData.walls.map((wall) =>
+        wall.id === selected.data.id ? { ...wall, ...updates } : wall
+      );
+      setProjectData({ ...projectData, walls: updatedWalls });
+      setSelected({ type: 'wall', data: { ...selected.data, ...updates } });
     }
   };
 
@@ -157,6 +165,11 @@ export default function SecurityLayout() {
       setProjectData({
         ...projectData,
         securityZones: projectData.securityZones.filter((zone) => zone.id !== selected.data.id),
+      });
+    } else if (selected.type === 'wall') {
+      setProjectData({
+        ...projectData,
+        walls: projectData.walls.filter((wall) => wall.id !== selected.data.id),
       });
     }
 
@@ -193,6 +206,7 @@ export default function SecurityLayout() {
           cameras={projectData.cameras}
           pirs={projectData.pirs}
           fans={projectData.fans}
+          walls={projectData.walls}
           drawings={projectData.drawings}
           annotations={projectData.annotations}
           securityZones={projectData.securityZones}
@@ -271,6 +285,22 @@ export default function SecurityLayout() {
             );
             setProjectData({ ...projectData, securityZones: updatedZones });
           }}
+          onWallAdd={(wall) => {
+            setProjectData({ ...projectData, walls: [...projectData.walls, wall] });
+            setActiveTool('select');
+          }}
+          onWallUpdate={(id, updates) => {
+            const updatedWalls = projectData.walls.map((wall) =>
+              wall.id === id ? { ...wall, ...updates } : wall
+            );
+            setProjectData({ ...projectData, walls: updatedWalls });
+          }}
+          onWallDelete={(id) => {
+            setProjectData({
+              ...projectData,
+              walls: projectData.walls.filter((wall) => wall.id !== id),
+            });
+          }}
           onFloorPlanUpload={(floorPlan) => {
             setProjectData({ ...projectData, floorPlan });
           }}
@@ -292,6 +322,7 @@ export default function SecurityLayout() {
               cameras: [],
               pirs: [],
               fans: [],
+              walls: [],
               drawings: [],
               annotations: [],
               securityZones: [],
@@ -306,6 +337,7 @@ export default function SecurityLayout() {
                 cameras: { visible: true, locked: false, opacity: 100 },
                 pirs: { visible: true, locked: false, opacity: 100 },
                 fans: { visible: true, locked: false, opacity: 100 },
+                walls: { visible: true, locked: false, opacity: 100 },
                 annotations: { visible: true, locked: false, opacity: 100 },
                 coverage: { visible: true, locked: false, opacity: 100 },
               },

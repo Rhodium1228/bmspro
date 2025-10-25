@@ -20,6 +20,7 @@ export const LayerManagement = ({
     { key: 'cameras' as const, label: '📹 Cameras', icon: '📹' },
     { key: 'pirs' as const, label: '🔴 PIR Sensors', icon: '🔴' },
     { key: 'fans' as const, label: '🌀 Fans', icon: '🌀' },
+    { key: 'walls' as const, label: '🧱 Walls', icon: '🧱' },
     { key: 'annotations' as const, label: '📝 Annotations', icon: '📝' },
     { key: 'coverage' as const, label: '🎯 Coverage Zones', icon: '🎯' },
   ];

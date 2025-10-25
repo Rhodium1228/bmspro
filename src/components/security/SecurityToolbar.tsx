@@ -29,6 +29,11 @@ export const SecurityToolbar = ({ activeTool, onToolChange }: SecurityToolbarPro
     { id: 'fan' as ToolType, icon: Fan, label: 'Fan' },
   ];
 
+  const structureTools = [
+    { id: 'wall' as ToolType, icon: Minus, label: 'Wall' },
+    { id: 'pillar' as ToolType, icon: Square, label: 'Pillar' },
+  ];
+
   const drawingTools = [
     { id: 'line' as ToolType, icon: Minus, label: 'Line' },
     { id: 'rectangle' as ToolType, icon: Square, label: 'Rectangle' },
@@ -69,6 +74,8 @@ export const SecurityToolbar = ({ activeTool, onToolChange }: SecurityToolbarPro
   return (
     <div className="flex gap-4 flex-wrap items-center">
       {renderToolGroup(deviceTools, "Devices")}
+      <Separator orientation="vertical" className="h-8" />
+      {renderToolGroup(structureTools, "Structures")}
       <Separator orientation="vertical" className="h-8" />
       {renderToolGroup(drawingTools, "Drawing")}
       <Separator orientation="vertical" className="h-8" />

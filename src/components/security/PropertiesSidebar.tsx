@@ -202,6 +202,77 @@ export const PropertiesSidebar = ({
           </>
         )}
 
+        {type === 'wall' && (
+          <>
+            <div>
+              <Label>Wall Type</Label>
+              <Select
+                value={data.type}
+                onValueChange={(type: 'wall' | 'pillar' | 'obstacle') => onUpdate({ type })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="wall">Wall</SelectItem>
+                  <SelectItem value="pillar">Pillar</SelectItem>
+                  <SelectItem value="obstacle">Obstacle</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Thickness: {data.thickness}px</Label>
+              <Slider
+                value={[data.thickness]}
+                onValueChange={([thickness]) => onUpdate({ thickness })}
+                min={5}
+                max={50}
+                step={5}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Height: {data.height}m</Label>
+              <Slider
+                value={[data.height]}
+                onValueChange={([height]) => onUpdate({ height })}
+                min={0.5}
+                max={10}
+                step={0.5}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Color</Label>
+              <Input
+                type="color"
+                value={data.color || '#64748b'}
+                onChange={(e) => onUpdate({ color: e.target.value })}
+                className="mt-2 h-10"
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm text-muted-foreground">Length</Label>
+              <p className="text-sm">
+                {data.type === 'wall' && (() => {
+                  const [x1, y1, x2, y2] = data.points;
+                  const pixelLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                  return (pixelLength / pixelsPerMeter).toFixed(2);
+                })()}
+                {data.type === 'pillar' && (() => {
+                  const [, , width, height] = data.points;
+                  return `${(width / pixelsPerMeter).toFixed(1)}m × ${(height / pixelsPerMeter).toFixed(1)}m`;
+                })()}
+                {data.type === 'obstacle' && 'N/A'}
+              </p>
+            </div>
+          </>
+        )}
+
         {type === 'zone' && (
           <>
             <div>

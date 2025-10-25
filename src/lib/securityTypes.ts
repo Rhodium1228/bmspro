@@ -28,6 +28,15 @@ export interface Fan {
   rotation: number;
 }
 
+export interface Wall {
+  id: string;
+  type: 'wall' | 'pillar' | 'obstacle';
+  points: number[]; // [x1, y1, x2, y2] for walls, [x, y, width, height] for pillars
+  thickness: number; // in pixels, default 10
+  height: number; // in meters, affects what it blocks (default 3m)
+  color?: string; // visual representation color
+}
+
 export interface Drawing {
   id: string;
   type: 'line' | 'rectangle' | 'circle' | 'freehand';
@@ -66,6 +75,7 @@ export interface LayerSettings {
   cameras: LayerState;
   pirs: LayerState;
   fans: LayerState;
+  walls: LayerState;
   annotations: LayerState;
   coverage: LayerState;
 }
@@ -107,6 +117,7 @@ export interface ProjectData {
   cameras: Camera[];
   pirs: PirSensor[];
   fans: Fan[];
+  walls: Wall[];
   drawings: Drawing[];
   annotations: Annotation[];
   securityZones: SecurityZone[];
@@ -120,7 +131,9 @@ export type ToolType =
   | 'select' 
   | 'camera' 
   | 'pir' 
-  | 'fan' 
+  | 'fan'
+  | 'wall'
+  | 'pillar'
   | 'line' 
   | 'rectangle' 
   | 'circle' 
@@ -136,6 +149,7 @@ export type SelectedElement =
   | { type: 'camera'; data: Camera }
   | { type: 'pir'; data: PirSensor }
   | { type: 'fan'; data: Fan }
+  | { type: 'wall'; data: Wall }
   | { type: 'annotation'; data: Annotation }
   | { type: 'zone'; data: SecurityZone }
   | { type: 'drawing'; data: Drawing }

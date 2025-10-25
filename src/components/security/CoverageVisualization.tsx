@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { Camera } from '@/lib/securityTypes';
+import { Camera, Wall } from '@/lib/securityTypes';
 import { getCameraCoverageZones, detectBlindSpots, BlindSpot } from '@/lib/coverageCalculations';
 
 interface CoverageVisualizationProps {
   cameras: Camera[];
+  walls: Wall[];
   showCoverage: boolean;
   showBlindSpots: boolean;
   canvasWidth: number;
@@ -13,6 +14,7 @@ interface CoverageVisualizationProps {
 
 export function CoverageVisualization({
   cameras,
+  walls = [],
   showCoverage,
   showBlindSpots,
   canvasWidth,

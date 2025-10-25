@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, PirSensor, Fan, FloorPlan, ToolType, SelectedElement, CanvasState, CoverageSettings, Annotation, SecurityZone, LayerSettings, Drawing } from "@/lib/securityTypes";
+import { Camera, PirSensor, Fan, Wall, FloorPlan, ToolType, SelectedElement, CanvasState, CoverageSettings, Annotation, SecurityZone, LayerSettings, Drawing } from "@/lib/securityTypes";
 import { Upload, Download, Trash2 } from "lucide-react";
 import { CameraIcon } from "./CameraIcon";
 import { PirIcon } from "./PirIcon";
@@ -18,6 +18,7 @@ interface CanvasAreaProps {
   cameras: Camera[];
   pirs: PirSensor[];
   fans: Fan[];
+  walls: Wall[];
   drawings: Drawing[];
   annotations: Annotation[];
   securityZones: SecurityZone[];
@@ -35,6 +36,9 @@ interface CanvasAreaProps {
   onFanAdd: (fan: Fan) => void;
   onFanUpdate: (id: string, updates: Partial<Fan>) => void;
   onFanDelete: (id: string) => void;
+  onWallAdd: (wall: Wall) => void;
+  onWallUpdate: (id: string, updates: Partial<Wall>) => void;
+  onWallDelete: (id: string) => void;
   onDrawingAdd: (drawing: Drawing) => void;
   onAnnotationAdd: (annotation: Annotation) => void;
   onAnnotationUpdate: (id: string, updates: Partial<Annotation>) => void;
@@ -51,6 +55,7 @@ export const CanvasArea = ({
   cameras,
   pirs,
   fans,
+  walls,
   drawings,
   annotations,
   securityZones,
@@ -68,6 +73,9 @@ export const CanvasArea = ({
   onFanAdd,
   onFanUpdate,
   onFanDelete,
+  onWallAdd,
+  onWallUpdate,
+  onWallDelete,
   onDrawingAdd,
   onAnnotationAdd,
   onAnnotationUpdate,
@@ -198,6 +206,38 @@ export const CanvasArea = ({
         rotation: 0,
       };
       onFanAdd(newFan);
+    } else if (activeTool === 'wall') {
+      if (!drawingStart) {
+        setDrawingStart({ x, y });
+      } else {
+        const newWall: Wall = {
+          id: `WALL-${walls.length + 1}`,
+          type: 'wall',
+          points: [drawingStart.x, drawingStart.y, x, y],
+          thickness: 10,
+          height: 3,
+          color: '#64748b',
+        };
+        onWallAdd(newWall);
+        setDrawingStart(null);
+      }
+    } else if (activeTool === 'pillar') {
+      if (!drawingStart) {
+        setDrawingStart({ x, y });
+      } else {
+        const width = Math.abs(x - drawingStart.x);
+        const height = Math.abs(y - drawingStart.y);
+        const newWall: Wall = {
+          id: `PILLAR-${walls.length + 1}`,
+          type: 'pillar',
+          points: [Math.min(drawingStart.x, x), Math.min(drawingStart.y, y), width, height],
+          thickness: 10,
+          height: 3,
+          color: '#64748b',
+        };
+        onWallAdd(newWall);
+        setDrawingStart(null);
+      }
     } else if (activeTool === 'text') {
       const newAnnotation: Annotation = {
         id: `TEXT-${annotations.length + 1}`,
@@ -728,6 +768,7 @@ export const CanvasArea = ({
             <g opacity={layerSettings.coverage.opacity / 100}>
               <CoverageVisualization
                 cameras={cameras}
+                walls={walls}
                 showCoverage={coverageSettings.showCoverage}
                 showBlindSpots={coverageSettings.showBlindSpots}
                 canvasWidth={2000}
@@ -1060,6 +1101,98 @@ export const CanvasArea = ({
               />
             </g>
           ))}
+
+          {/* Walls */}
+          {layerSettings.walls.visible && walls.map((wall) => (
+            <g 
+              key={wall.id} 
+              opacity={layerSettings.walls.opacity / 100}
+              onClick={() => onSelect({ type: 'wall', data: wall })}
+              style={{ cursor: 'pointer' }}
+            >
+              {wall.type === 'wall' && (
+                <line
+                  x1={wall.points[0]}
+                  y1={wall.points[1]}
+                  x2={wall.points[2]}
+                  y2={wall.points[3]}
+                  stroke={wall.color || '#64748b'}
+                  strokeWidth={wall.thickness / canvasState.zoom}
+                  strokeLinecap="square"
+                />
+              )}
+              {wall.type === 'pillar' && (
+                <rect
+                  x={wall.points[0]}
+                  y={wall.points[1]}
+                  width={wall.points[2]}
+                  height={wall.points[3]}
+                  fill={wall.color || '#64748b'}
+                  fillOpacity={0.8}
+                  stroke={wall.color || '#64748b'}
+                  strokeWidth={2 / canvasState.zoom}
+                />
+              )}
+              {selected?.type === 'wall' && selected.data.id === wall.id && (
+                wall.type === 'wall' ? (
+                  <line
+                    x1={wall.points[0]}
+                    y1={wall.points[1]}
+                    x2={wall.points[2]}
+                    y2={wall.points[3]}
+                    stroke="#3b82f6"
+                    strokeWidth={(wall.thickness + 4) / canvasState.zoom}
+                    strokeLinecap="square"
+                    opacity={0.5}
+                    pointerEvents="none"
+                  />
+                ) : (
+                  <rect
+                    x={wall.points[0] - 2 / canvasState.zoom}
+                    y={wall.points[1] - 2 / canvasState.zoom}
+                    width={wall.points[2] + 4 / canvasState.zoom}
+                    height={wall.points[3] + 4 / canvasState.zoom}
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth={2 / canvasState.zoom}
+                    strokeDasharray="4,4"
+                    pointerEvents="none"
+                  />
+                )
+              )}
+            </g>
+          ))}
+
+          {/* Wall drawing preview */}
+          {drawingStart && (activeTool === 'wall' || activeTool === 'pillar') && currentMousePos && (
+            <g opacity={0.7}>
+              {activeTool === 'wall' && (
+                <line
+                  x1={drawingStart.x}
+                  y1={drawingStart.y}
+                  x2={currentMousePos.x}
+                  y2={currentMousePos.y}
+                  stroke="#64748b"
+                  strokeWidth={10 / canvasState.zoom}
+                  strokeLinecap="square"
+                  strokeDasharray="4,4"
+                />
+              )}
+              {activeTool === 'pillar' && (
+                <rect
+                  x={Math.min(drawingStart.x, currentMousePos.x)}
+                  y={Math.min(drawingStart.y, currentMousePos.y)}
+                  width={Math.abs(currentMousePos.x - drawingStart.x)}
+                  height={Math.abs(currentMousePos.y - drawingStart.y)}
+                  fill="#64748b"
+                  fillOpacity={0.5}
+                  stroke="#64748b"
+                  strokeWidth={2 / canvasState.zoom}
+                  strokeDasharray="4,4"
+                />
+              )}
+            </g>
+          )}
 
           {/* Multi-select box */}
           {multiSelectStart && multiSelectEnd && (
