@@ -24,15 +24,15 @@ export function CoverageVisualization({
   // Calculate coverage zones for all cameras
   const coverageZones = useMemo(() => {
     if (!showCoverage) return [];
-    console.log('🎥 Recalculating coverage zones with pixelsPerMeter:', pixelsPerMeter);
+    console.log('🎥 Recalculating coverage zones with pixelsPerMeter:', pixelsPerMeter, 'walls:', walls.length);
     return cameras.flatMap(camera => {
       console.log(`  Camera ${camera.id}: range=${camera.range}m, pixels=${camera.range * pixelsPerMeter}px`);
-      return getCameraCoverageZones(camera, pixelsPerMeter).map(zone => ({
+      return getCameraCoverageZones(camera, walls, pixelsPerMeter).map(zone => ({
         ...zone,
         cameraId: camera.id
       }));
     });
-  }, [cameras, showCoverage, pixelsPerMeter]);
+  }, [cameras, walls, showCoverage, pixelsPerMeter]);
 
   // Detect blind spots
   const blindSpots: BlindSpot[] = useMemo(() => {

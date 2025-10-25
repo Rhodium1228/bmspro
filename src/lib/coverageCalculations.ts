@@ -1,6 +1,7 @@
 // Coverage calculation utilities for security layout
 
-import { Camera, RANGE_COLORS } from './securityTypes';
+import { Camera, Wall, RANGE_COLORS } from './securityTypes';
+import { getRayWallIntersection } from './wallCalculations';
 
 // Default scale factor (1m = 10px) used when no calibration is available
 export const DEFAULT_SCALE_FACTOR = 10;
@@ -25,12 +26,13 @@ export interface CoverageStats {
 }
 
 /**
- * Calculate SVG path for camera coverage wedge
+ * Calculate SVG path for camera coverage wedge, considering walls
  */
 export function calculateCameraWedgePath(
   camera: Camera,
   rangeStart: number,
   rangeEnd: number,
+  walls: Wall[] = [],
   pixelsPerMeter: number = DEFAULT_SCALE_FACTOR
 ): string {
   const x = camera.x;
@@ -48,43 +50,86 @@ export function calculateCameraWedgePath(
   const startAngle = ((rotation - fov / 2) * Math.PI) / 180;
   const endAngle = ((rotation + fov / 2) * Math.PI) / 180;
   
-  // Inner arc points
-  const innerStart = {
-    x: x + innerRadius * Math.cos(startAngle),
-    y: y + innerRadius * Math.sin(startAngle)
-  };
-  const innerEnd = {
-    x: x + innerRadius * Math.cos(endAngle),
-    y: y + innerRadius * Math.sin(endAngle)
-  };
+  // If no walls, use simple arc approach
+  if (walls.length === 0) {
+    // Inner arc points
+    const innerStart = {
+      x: x + innerRadius * Math.cos(startAngle),
+      y: y + innerRadius * Math.sin(startAngle)
+    };
+    const innerEnd = {
+      x: x + innerRadius * Math.cos(endAngle),
+      y: y + innerRadius * Math.sin(endAngle)
+    };
+    
+    // Outer arc points
+    const outerStart = {
+      x: x + outerRadius * Math.cos(startAngle),
+      y: y + outerRadius * Math.sin(startAngle)
+    };
+    const outerEnd = {
+      x: x + outerRadius * Math.cos(endAngle),
+      y: y + outerRadius * Math.sin(endAngle)
+    };
+    
+    // Large arc flag
+    const largeArc = fov > 180 ? 1 : 0;
+    
+    // Build path: outer arc -> line -> inner arc -> close
+    return `
+      M ${outerStart.x} ${outerStart.y}
+      A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}
+      L ${innerEnd.x} ${innerEnd.y}
+      A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}
+      Z
+    `;
+  }
   
-  // Outer arc points
-  const outerStart = {
-    x: x + outerRadius * Math.cos(startAngle),
-    y: y + outerRadius * Math.sin(startAngle)
-  };
-  const outerEnd = {
-    x: x + outerRadius * Math.cos(endAngle),
-    y: y + outerRadius * Math.sin(endAngle)
-  };
+  // With walls: cast rays and create polygon from intersection points
+  const points: Array<{ x: number; y: number }> = [];
+  const angleStep = (endAngle - startAngle) / 50; // 50 points for smooth coverage
   
-  // Large arc flag
-  const largeArc = fov > 180 ? 1 : 0;
+  // Start from camera position
+  points.push({ x, y });
   
-  // Build path: outer arc -> line -> inner arc -> close
-  return `
-    M ${outerStart.x} ${outerStart.y}
-    A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}
-    L ${innerEnd.x} ${innerEnd.y}
-    A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}
-    Z
-  `;
+  // Cast rays in FOV and find wall intersections
+  for (let angle = startAngle; angle <= endAngle; angle += angleStep) {
+    const intersection = getRayWallIntersection(x, y, angle, outerRadius, walls);
+    
+    if (intersection && intersection.distance >= innerRadius) {
+      // Ray hits wall within range
+      points.push({ x: intersection.x, y: intersection.y });
+    } else if (!intersection || intersection.distance > outerRadius) {
+      // Ray doesn't hit wall or hits beyond range
+      const px = x + outerRadius * Math.cos(angle);
+      const py = y + outerRadius * Math.sin(angle);
+      points.push({ x: px, y: py });
+    }
+  }
+  
+  // Close path back to origin
+  points.push({ x, y });
+  
+  // Build SVG path from points
+  if (points.length < 3) return '';
+  
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    path += ` L ${points[i].x} ${points[i].y}`;
+  }
+  path += ' Z';
+  
+  return path;
 }
 
 /**
  * Generate coverage zones for a camera (red, blue, green)
  */
-export function getCameraCoverageZones(camera: Camera, pixelsPerMeter: number = DEFAULT_SCALE_FACTOR): CoverageZone[] {
+export function getCameraCoverageZones(
+  camera: Camera, 
+  walls: Wall[] = [], 
+  pixelsPerMeter: number = DEFAULT_SCALE_FACTOR
+): CoverageZone[] {
   const zones: CoverageZone[] = [];
   const range = camera.range;
   
@@ -94,6 +139,7 @@ export function getCameraCoverageZones(camera: Camera, pixelsPerMeter: number = 
       camera,
       RANGE_COLORS.red.start,
       Math.min(range, RANGE_COLORS.red.end),
+      walls,
       pixelsPerMeter
     );
     if (path) {
@@ -111,6 +157,7 @@ export function getCameraCoverageZones(camera: Camera, pixelsPerMeter: number = 
       camera,
       RANGE_COLORS.blue.start,
       Math.min(range, RANGE_COLORS.blue.end),
+      walls,
       pixelsPerMeter
     );
     if (path) {
@@ -128,6 +175,7 @@ export function getCameraCoverageZones(camera: Camera, pixelsPerMeter: number = 
       camera,
       RANGE_COLORS.green.start,
       Math.min(range, RANGE_COLORS.green.end),
+      walls,
       pixelsPerMeter
     );
     if (path) {
