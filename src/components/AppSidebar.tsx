@@ -99,6 +99,7 @@ const menuItems = [
     title: "Tools",
     icon: Wrench,
     items: [
+      { title: "Security Projects", url: "/tools/security-projects", icon: Camera },
       { title: "Security Layout", url: "/tools/security-layout", icon: Camera },
     ],
   },

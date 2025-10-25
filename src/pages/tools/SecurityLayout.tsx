@@ -40,6 +40,7 @@ export default function SecurityLayout() {
   const [selected, setSelected] = useState<SelectedElement>(null);
   const [savedLayoutId, setSavedLayoutId] = useState<string | null>(null);
   const [isLoadingLayout, setIsLoadingLayout] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const [projectData, setProjectData] = useState<ProjectData>({
     cameras: [],
@@ -95,6 +96,13 @@ export default function SecurityLayout() {
     }
   }, [searchParams, user]);
 
+  // Track changes to mark unsaved
+  useEffect(() => {
+    if (savedLayoutId && !isLoadingLayout) {
+      setHasUnsavedChanges(true);
+    }
+  }, [projectData, projectName]);
+
   const loadLayoutFromId = async (layoutId: string) => {
     setIsLoadingLayout(true);
     try {
@@ -145,6 +153,59 @@ export default function SecurityLayout() {
     }
   };
 
+  const generateLayoutImage = async (): Promise<string | null> => {
+    try {
+      const canvasElement = document.querySelector('.canvas-main-svg') as HTMLElement;
+      if (!canvasElement) return null;
+
+      const { default: html2canvas } = await import('html2canvas');
+      const canvas = await html2canvas(canvasElement, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+      });
+
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(URL.createObjectURL(blob));
+          } else {
+            resolve(null);
+          }
+        }, 'image/png');
+      });
+    } catch (error) {
+      console.error('Error generating image:', error);
+      return null;
+    }
+  };
+
+  const uploadLayoutImage = async (imageUrl: string): Promise<string | null> => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+
+      const fileName = `layout-${savedLayoutId || Date.now()}.png`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('layout-exports')
+        .upload(fileName, blob, {
+          contentType: 'image/png',
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('layout-exports')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
   const handleSave = async () => {
     if (!user) {
       toast({
@@ -156,17 +217,37 @@ export default function SecurityLayout() {
     }
 
     try {
-      const { data, error } = await supabase.from("security_layouts").insert([{
-        user_id: user.id,
+      // Generate preview image
+      const imageUrl = await generateLayoutImage();
+      let exportImageUrl = null;
+
+      if (imageUrl) {
+        exportImageUrl = await uploadLayoutImage(imageUrl);
+      }
+
+      const layoutData = {
         name: projectName,
         canvas_data: projectData as any,
         floor_plan_url: projectData.floorPlan?.url || null,
-      }]).select().single();
+        export_image_url: exportImageUrl,
+      };
+
+      const { data, error } = await supabase
+        .from("security_layouts")
+        .insert([{
+          user_id: user.id,
+          ...layoutData,
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
       if (data) {
         setSavedLayoutId(data.id);
+        setHasUnsavedChanges(false);
+        // Update URL with new layout ID
+        navigate(`/tools/security-layout?layoutId=${data.id}`, { replace: true });
       }
 
       toast({
@@ -182,6 +263,142 @@ export default function SecurityLayout() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleUpdate = async () => {
+    if (!user || !savedLayoutId) {
+      toast({
+        title: "Error",
+        description: "No layout to update",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Generate preview image
+      const imageUrl = await generateLayoutImage();
+      let exportImageUrl = null;
+
+      if (imageUrl) {
+        exportImageUrl = await uploadLayoutImage(imageUrl);
+      }
+
+      const { error } = await supabase
+        .from("security_layouts")
+        .update({
+          name: projectName,
+          canvas_data: projectData as any,
+          floor_plan_url: projectData.floorPlan?.url || null,
+          export_image_url: exportImageUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", savedLayoutId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setHasUnsavedChanges(false);
+
+      toast({
+        title: "Success",
+        description: "Layout updated successfully",
+      });
+
+      refetchQuotations();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update layout",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveAsCopy = async () => {
+    if (!user) return;
+
+    try {
+      const imageUrl = await generateLayoutImage();
+      let exportImageUrl = null;
+
+      if (imageUrl) {
+        exportImageUrl = await uploadLayoutImage(imageUrl);
+      }
+
+      const { data, error } = await supabase
+        .from("security_layouts")
+        .insert([{
+          user_id: user.id,
+          name: `${projectName} (Copy)`,
+          canvas_data: projectData as any,
+          floor_plan_url: projectData.floorPlan?.url || null,
+          export_image_url: exportImageUrl,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setSavedLayoutId(data.id);
+        setProjectName(`${projectName} (Copy)`);
+        setHasUnsavedChanges(false);
+        navigate(`/tools/security-layout?layoutId=${data.id}`, { replace: true });
+      }
+
+      toast({
+        title: "Success",
+        description: "Layout copied successfully",
+      });
+
+      refetchQuotations();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy layout",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleNewProject = () => {
+    if (hasUnsavedChanges) {
+      const confirm = window.confirm(
+        "You have unsaved changes. Are you sure you want to create a new project?"
+      );
+      if (!confirm) return;
+    }
+
+    setSavedLayoutId(null);
+    setProjectName("Untitled Security Layout");
+    setProjectData({
+      cameras: [],
+      pirs: [],
+      fans: [],
+      walls: [],
+      drawings: [],
+      annotations: [],
+      securityZones: [],
+      floorPlan: null,
+      coverageSettings: {
+        showCoverage: true,
+        showHeatmap: false,
+        showBlindSpots: false,
+      },
+      layerSettings: {
+        background: { visible: true, locked: false, opacity: 100 },
+        cameras: { visible: true, locked: false, opacity: 100 },
+        pirs: { visible: true, locked: false, opacity: 100 },
+        fans: { visible: true, locked: false, opacity: 100 },
+        walls: { visible: true, locked: false, opacity: 100 },
+        annotations: { visible: true, locked: false, opacity: 100 },
+        coverage: { visible: true, locked: false, opacity: 100 },
+      },
+      pixelsPerMeter: 10,
+    });
+    setHasUnsavedChanges(false);
+    navigate("/tools/security-layout", { replace: true });
   };
 
   const handleGenerateQuotation = async () => {
@@ -314,18 +531,40 @@ export default function SecurityLayout() {
       {/* Header */}
       <div className="border-b p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <Input
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            className="max-w-md font-semibold text-lg"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className="max-w-md font-semibold text-lg"
+            />
+            {hasUnsavedChanges && savedLayoutId && (
+              <Badge variant="outline" className="text-xs text-amber-600">
+                Unsaved changes
+              </Badge>
+            )}
+          </div>
           <div className="flex gap-2">
+            <Button onClick={handleNewProject} variant="outline" size="sm">
+              New Project
+            </Button>
             <FloorPlanTemplates onSelectTemplate={() => {}} />
             <AiPlanner />
-            <Button onClick={handleSave} variant="outline" className="gap-2">
-              <Save className="h-4 w-4" />
-              Save Project
-            </Button>
+            {savedLayoutId ? (
+              <>
+                <Button onClick={handleUpdate} variant="outline" className="gap-2">
+                  <Save className="h-4 w-4" />
+                  Update
+                </Button>
+                <Button onClick={handleSaveAsCopy} variant="outline" size="sm">
+                  Save as Copy
+                </Button>
+              </>
+            ) : (
+              <Button onClick={handleSave} variant="outline" className="gap-2">
+                <Save className="h-4 w-4" />
+                Save Project
+              </Button>
+            )}
             <Button onClick={handleGenerateQuotation} className="gap-2">
               <FileText className="h-4 w-4" />
               Generate Quotation

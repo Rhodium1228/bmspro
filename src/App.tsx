@@ -29,6 +29,7 @@ import JobCard from "./pages/transactions/JobCard";
 import Company from "./pages/more/Company";
 import Options from "./pages/more/Options";
 import SecurityLayout from "./pages/tools/SecurityLayout";
+import SecurityProjects from "./pages/tools/SecurityProjects";
 import NotFound from "./pages/NotFound";
 
 // ===== QUERY CLIENT CONFIGURATION =====
@@ -195,6 +196,17 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Options />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/tools/security-projects"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SecurityProjects />
                   </Layout>
                 </ProtectedRoute>
               }

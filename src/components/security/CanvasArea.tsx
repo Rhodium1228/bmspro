@@ -729,7 +729,7 @@ export const CanvasArea = ({
         onMouseUp={handleMouseUp}
       >
         <svg 
-          className="w-full h-full" 
+          className="w-full h-full canvas-main-svg" 
           viewBox={`${-canvasState.panX / canvasState.zoom} ${-canvasState.panY / canvasState.zoom} ${(canvasRef.current?.clientWidth || 800) / canvasState.zoom} ${(canvasRef.current?.clientHeight || 600) / canvasState.zoom}`}
         >
           {/* Grid */}
