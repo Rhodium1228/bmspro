@@ -7,6 +7,7 @@ import { FloorPlanTemplates } from "@/components/security/FloorPlanTemplates";
 import { AiPlanner } from "@/components/security/AiPlanner";
 import { LayerManagement } from "@/components/security/LayerManagement";
 import { ZoneManager } from "@/components/security/ZoneManager";
+import { ScaleCalibration } from "@/components/security/ScaleCalibration";
 import {
   Camera,
   PirSensor,
@@ -188,6 +189,7 @@ export default function SecurityLayout() {
           cameras={projectData.cameras}
           pirs={projectData.pirs}
           fans={projectData.fans}
+          drawings={projectData.drawings}
           annotations={projectData.annotations}
           securityZones={projectData.securityZones}
           floorPlan={projectData.floorPlan}
@@ -241,6 +243,9 @@ export default function SecurityLayout() {
               ...projectData,
               fans: projectData.fans.filter((fan) => fan.id !== id),
             });
+          }}
+          onDrawingAdd={(drawing) => {
+            setProjectData({ ...projectData, drawings: [...projectData.drawings, drawing] });
           }}
           onAnnotationAdd={(annotation) => {
             setProjectData({ ...projectData, annotations: [...projectData.annotations, annotation] });
@@ -311,7 +316,8 @@ export default function SecurityLayout() {
             </TabsList>
             
             <div className="p-4">
-              <TabsContent value="coverage" className="mt-0">
+              <TabsContent value="coverage" className="mt-0 space-y-4">
+                <ScaleCalibration floorPlan={projectData.floorPlan} />
                 <CoverageAnalysis
                   cameras={projectData.cameras}
                   coverageSettings={projectData.coverageSettings}

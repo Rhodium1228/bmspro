@@ -84,6 +84,10 @@ export interface FloorPlan {
   width: number;
   height: number;
   locked: boolean;
+  realWorldWidth?: number; // in meters
+  realWorldHeight?: number; // in meters
+  pixelsPerMeter?: number; // calculated scale
+  isCalibrated?: boolean;
 }
 
 export interface CanvasState {
@@ -124,7 +128,8 @@ export type ToolType =
   | 'text'
   | 'zone'
   | 'dimension'
-  | 'arrow';
+  | 'arrow'
+  | 'calibrate';
 
 export type SelectedElement = 
   | { type: 'camera'; data: Camera }

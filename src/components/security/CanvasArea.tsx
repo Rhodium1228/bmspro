@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, PirSensor, Fan, FloorPlan, ToolType, SelectedElement, CanvasState, CoverageSettings, Annotation, SecurityZone, LayerSettings } from "@/lib/securityTypes";
+import { Camera, PirSensor, Fan, FloorPlan, ToolType, SelectedElement, CanvasState, CoverageSettings, Annotation, SecurityZone, LayerSettings, Drawing } from "@/lib/securityTypes";
 import { Upload, Download, Trash2 } from "lucide-react";
 import { CameraIcon } from "./CameraIcon";
 import { PirIcon } from "./PirIcon";
@@ -9,12 +9,16 @@ import { CanvasControls } from "./CanvasControls";
 import { CoverageVisualization } from "./CoverageVisualization";
 import html2canvas from "html2canvas";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface CanvasAreaProps {
   activeTool: ToolType;
   cameras: Camera[];
   pirs: PirSensor[];
   fans: Fan[];
+  drawings: Drawing[];
   annotations: Annotation[];
   securityZones: SecurityZone[];
   floorPlan: FloorPlan | null;
@@ -30,6 +34,7 @@ interface CanvasAreaProps {
   onFanAdd: (fan: Fan) => void;
   onFanUpdate: (id: string, updates: Partial<Fan>) => void;
   onFanDelete: (id: string) => void;
+  onDrawingAdd: (drawing: Drawing) => void;
   onAnnotationAdd: (annotation: Annotation) => void;
   onAnnotationUpdate: (id: string, updates: Partial<Annotation>) => void;
   onZoneAdd: (zone: SecurityZone) => void;
@@ -45,6 +50,7 @@ export const CanvasArea = ({
   cameras,
   pirs,
   fans,
+  drawings,
   annotations,
   securityZones,
   floorPlan,
@@ -60,6 +66,7 @@ export const CanvasArea = ({
   onFanAdd,
   onFanUpdate,
   onFanDelete,
+  onDrawingAdd,
   onAnnotationAdd,
   onAnnotationUpdate,
   onZoneAdd,
@@ -87,10 +94,35 @@ export const CanvasArea = ({
   const [isDraggingFloorPlan, setIsDraggingFloorPlan] = useState(false);
   const [floorPlanDragStart, setFloorPlanDragStart] = useState({ x: 0, y: 0 });
   const [annotationStart, setAnnotationStart] = useState<{ x: number; y: number } | null>(null);
+  
+  // Drawing state
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawingStart, setDrawingStart] = useState<{ x: number; y: number } | null>(null);
+  const [currentDrawing, setCurrentDrawing] = useState<Partial<Drawing> | null>(null);
+  const [freehandPoints, setFreehandPoints] = useState<number[]>([]);
+  
+  // Calibration state
+  const [calibrationMode, setCalibrationMode] = useState(false);
+  const [calibrationPoint1, setCalibrationPoint1] = useState<{ x: number; y: number } | null>(null);
+  const [calibrationPoint2, setCalibrationPoint2] = useState<{ x: number; y: number } | null>(null);
+  const [showCalibrationDialog, setShowCalibrationDialog] = useState(false);
+  const [calibrationDistance, setCalibrationDistance] = useState("");
 
   // Reset annotation state when tool changes
   useEffect(() => {
     setAnnotationStart(null);
+    setIsDrawing(false);
+    setDrawingStart(null);
+    setCurrentDrawing(null);
+    setFreehandPoints([]);
+    
+    if (activeTool === 'calibrate') {
+      setCalibrationMode(true);
+      setCalibrationPoint1(null);
+      setCalibrationPoint2(null);
+    } else {
+      setCalibrationMode(false);
+    }
   }, [activeTool]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -101,6 +133,39 @@ export const CanvasArea = ({
 
     const x = (e.clientX - rect.left - canvasState.panX) / canvasState.zoom;
     const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
+
+    // Handle calibration mode
+    if (activeTool === 'calibrate') {
+      if (!calibrationPoint1) {
+        setCalibrationPoint1({ x, y });
+        toast({
+          title: "Point 1 marked",
+          description: "Click second point on a known distance",
+        });
+      } else {
+        setCalibrationPoint2({ x, y });
+        setShowCalibrationDialog(true);
+      }
+      return;
+    }
+
+    // Handle line drawing
+    if (activeTool === 'line') {
+      if (!drawingStart) {
+        setDrawingStart({ x, y });
+      } else {
+        const newDrawing: Drawing = {
+          id: `LINE-${Date.now()}`,
+          type: 'line',
+          points: [drawingStart.x, drawingStart.y, x, y],
+          color: '#3b82f6',
+          strokeWidth: 2,
+        };
+        onDrawingAdd(newDrawing);
+        setDrawingStart(null);
+      }
+      return;
+    }
 
     if (activeTool === 'camera') {
       const newCamera: Camera = {
@@ -182,6 +247,11 @@ export const CanvasArea = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left - canvasState.panX) / canvasState.zoom;
+    const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
+
     if (e.altKey) {
       // Pan mode with Alt key
       e.preventDefault();
@@ -189,16 +259,23 @@ export const CanvasArea = ({
       setPanStart({ x: e.clientX - canvasState.panX, y: e.clientY - canvasState.panY });
     } else if (e.button === 0 && activeTool === 'select' && !selected) {
       // Multi-select mode
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const x = (e.clientX - rect.left - canvasState.panX) / canvasState.zoom;
-      const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
       setMultiSelectStart({ x, y });
       setMultiSelectEnd({ x, y });
+    } else if (activeTool === 'rectangle' || activeTool === 'circle') {
+      setIsDrawing(true);
+      setDrawingStart({ x, y });
+    } else if (activeTool === 'freehand') {
+      setIsDrawing(true);
+      setFreehandPoints([x, y]);
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left - canvasState.panX) / canvasState.zoom;
+    const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
+
     if (isPanning) {
       setCanvasState(prev => ({
         ...prev,
@@ -206,21 +283,64 @@ export const CanvasArea = ({
         panY: e.clientY - panStart.y,
       }));
     } else if (multiSelectStart) {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const x = (e.clientX - rect.left - canvasState.panX) / canvasState.zoom;
-      const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
       setMultiSelectEnd({ x, y });
+    } else if (isDrawing) {
+      if (activeTool === 'rectangle' && drawingStart) {
+        setCurrentDrawing({
+          type: 'rectangle',
+          points: [drawingStart.x, drawingStart.y, x - drawingStart.x, y - drawingStart.y],
+          color: '#3b82f6',
+          strokeWidth: 2,
+        });
+      } else if (activeTool === 'circle' && drawingStart) {
+        const radius = Math.sqrt(Math.pow(x - drawingStart.x, 2) + Math.pow(y - drawingStart.y, 2));
+        setCurrentDrawing({
+          type: 'circle',
+          points: [drawingStart.x, drawingStart.y, radius],
+          color: '#3b82f6',
+          strokeWidth: 2,
+        });
+      } else if (activeTool === 'freehand') {
+        setFreehandPoints(prev => [...prev, x, y]);
+      }
     }
   };
 
   const handleMouseUp = () => {
     setIsPanning(false);
     if (multiSelectStart && multiSelectEnd) {
-      // Handle multi-select completion
-      // For now, just clear the selection box
       setMultiSelectStart(null);
       setMultiSelectEnd(null);
+    }
+    
+    if (isDrawing) {
+      if (activeTool === 'rectangle' && currentDrawing) {
+        const newDrawing: Drawing = {
+          id: `RECT-${Date.now()}`,
+          ...currentDrawing as Omit<Drawing, 'id'>,
+        };
+        onDrawingAdd(newDrawing);
+      } else if (activeTool === 'circle' && currentDrawing) {
+        const newDrawing: Drawing = {
+          id: `CIRCLE-${Date.now()}`,
+          ...currentDrawing as Omit<Drawing, 'id'>,
+        };
+        onDrawingAdd(newDrawing);
+      } else if (activeTool === 'freehand' && freehandPoints.length > 2) {
+        const newDrawing: Drawing = {
+          id: `FREEHAND-${Date.now()}`,
+          type: 'freehand',
+          points: freehandPoints,
+          color: '#3b82f6',
+          strokeWidth: 2,
+        };
+        onDrawingAdd(newDrawing);
+      }
+      
+      setIsDrawing(false);
+      setDrawingStart(null);
+      setCurrentDrawing(null);
+      setFreehandPoints([]);
     }
   };
 
@@ -306,6 +426,47 @@ export const CanvasArea = ({
         variant: "destructive",
       });
     }
+  };
+
+  const applyCalibration = () => {
+    if (!calibrationPoint1 || !calibrationPoint2 || !calibrationDistance || !floorPlan) return;
+
+    const distance = parseFloat(calibrationDistance);
+    if (isNaN(distance) || distance <= 0) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid distance",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const pixelDistance = Math.sqrt(
+      Math.pow(calibrationPoint2.x - calibrationPoint1.x, 2) +
+      Math.pow(calibrationPoint2.y - calibrationPoint1.y, 2)
+    );
+
+    const pixelsPerMeter = pixelDistance / distance;
+    const realWorldWidth = floorPlan.width / pixelsPerMeter;
+    const realWorldHeight = floorPlan.height / pixelsPerMeter;
+
+    onFloorPlanUpdate({
+      pixelsPerMeter,
+      realWorldWidth,
+      realWorldHeight,
+      isCalibrated: true,
+    });
+
+    setShowCalibrationDialog(false);
+    setCalibrationPoint1(null);
+    setCalibrationPoint2(null);
+    setCalibrationDistance("");
+    setCalibrationMode(false);
+
+    toast({
+      title: "Success",
+      description: `Scale calibrated: 1m = ${pixelsPerMeter.toFixed(1)} pixels`,
+    });
   };
 
   const renderGrid = () => {
@@ -481,6 +642,175 @@ export const CanvasArea = ({
             </g>
           ))}
 
+          {/* Drawings */}
+          {layerSettings.annotations.visible && drawings.map((drawing) => {
+            if (drawing.type === 'line') {
+              return (
+                <line
+                  key={drawing.id}
+                  x1={drawing.points[0]}
+                  y1={drawing.points[1]}
+                  x2={drawing.points[2]}
+                  y2={drawing.points[3]}
+                  stroke={drawing.color}
+                  strokeWidth={drawing.strokeWidth}
+                  opacity={layerSettings.annotations.opacity / 100}
+                />
+              );
+            } else if (drawing.type === 'rectangle') {
+              return (
+                <rect
+                  key={drawing.id}
+                  x={drawing.points[0]}
+                  y={drawing.points[1]}
+                  width={drawing.points[2]}
+                  height={drawing.points[3]}
+                  fill="none"
+                  stroke={drawing.color}
+                  strokeWidth={drawing.strokeWidth}
+                  opacity={layerSettings.annotations.opacity / 100}
+                />
+              );
+            } else if (drawing.type === 'circle') {
+              return (
+                <circle
+                  key={drawing.id}
+                  cx={drawing.points[0]}
+                  cy={drawing.points[1]}
+                  r={drawing.points[2]}
+                  fill="none"
+                  stroke={drawing.color}
+                  strokeWidth={drawing.strokeWidth}
+                  opacity={layerSettings.annotations.opacity / 100}
+                />
+              );
+            } else if (drawing.type === 'freehand') {
+              return (
+                <polyline
+                  key={drawing.id}
+                  points={drawing.points.join(' ')}
+                  fill="none"
+                  stroke={drawing.color}
+                  strokeWidth={drawing.strokeWidth}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={layerSettings.annotations.opacity / 100}
+                />
+              );
+            }
+            return null;
+          })}
+
+          {/* Current drawing preview */}
+          {currentDrawing && (
+            <>
+              {currentDrawing.type === 'rectangle' && (
+                <rect
+                  x={currentDrawing.points![0]}
+                  y={currentDrawing.points![1]}
+                  width={currentDrawing.points![2]}
+                  height={currentDrawing.points![3]}
+                  fill="none"
+                  stroke={currentDrawing.color}
+                  strokeWidth={currentDrawing.strokeWidth}
+                  strokeDasharray="4,4"
+                  opacity={0.7}
+                />
+              )}
+              {currentDrawing.type === 'circle' && (
+                <circle
+                  cx={currentDrawing.points![0]}
+                  cy={currentDrawing.points![1]}
+                  r={currentDrawing.points![2]}
+                  fill="none"
+                  stroke={currentDrawing.color}
+                  strokeWidth={currentDrawing.strokeWidth}
+                  strokeDasharray="4,4"
+                  opacity={0.7}
+                />
+              )}
+            </>
+          )}
+
+          {/* Freehand drawing preview */}
+          {isDrawing && activeTool === 'freehand' && freehandPoints.length > 2 && (
+            <polyline
+              points={freehandPoints.join(' ')}
+              fill="none"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={0.7}
+            />
+          )}
+
+          {/* Line drawing preview */}
+          {drawingStart && activeTool === 'line' && (
+            <circle
+              cx={drawingStart.x}
+              cy={drawingStart.y}
+              r={4}
+              fill="#3b82f6"
+              opacity={0.7}
+            />
+          )}
+
+          {/* Calibration markers */}
+          {calibrationMode && calibrationPoint1 && (
+            <>
+              <circle
+                cx={calibrationPoint1.x}
+                cy={calibrationPoint1.y}
+                r={6}
+                fill="#f59e0b"
+                stroke="#ffffff"
+                strokeWidth={2}
+              />
+              <text
+                x={calibrationPoint1.x}
+                y={calibrationPoint1.y - 10}
+                fill="#f59e0b"
+                fontSize={12}
+                fontWeight="bold"
+                textAnchor="middle"
+              >
+                A
+              </text>
+            </>
+          )}
+          {calibrationMode && calibrationPoint2 && (
+            <>
+              <line
+                x1={calibrationPoint1!.x}
+                y1={calibrationPoint1!.y}
+                x2={calibrationPoint2.x}
+                y2={calibrationPoint2.y}
+                stroke="#f59e0b"
+                strokeWidth={2}
+                strokeDasharray="4,4"
+              />
+              <circle
+                cx={calibrationPoint2.x}
+                cy={calibrationPoint2.y}
+                r={6}
+                fill="#f59e0b"
+                stroke="#ffffff"
+                strokeWidth={2}
+              />
+              <text
+                x={calibrationPoint2.x}
+                y={calibrationPoint2.y - 10}
+                fill="#f59e0b"
+                fontSize={12}
+                fontWeight="bold"
+                textAnchor="middle"
+              >
+                B
+              </text>
+            </>
+          )}
+
           {/* Annotations */}
           {layerSettings.annotations.visible && annotations.map((annotation) => {
             if (annotation.type === 'text') {
@@ -606,6 +936,40 @@ export const CanvasArea = ({
           )}
         </svg>
       </div>
+
+      {/* Calibration Dialog */}
+      <Dialog open={showCalibrationDialog} onOpenChange={setShowCalibrationDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set Real-World Distance</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="distance">Distance between marked points (in meters)</Label>
+              <Input
+                id="distance"
+                type="number"
+                step="0.1"
+                min="0.1"
+                placeholder="e.g., 5.0"
+                value={calibrationDistance}
+                onChange={(e) => setCalibrationDistance(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowCalibrationDialog(false);
+              setCalibrationPoint1(null);
+              setCalibrationPoint2(null);
+              setCalibrationDistance("");
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={applyCalibration}>Apply Calibration</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

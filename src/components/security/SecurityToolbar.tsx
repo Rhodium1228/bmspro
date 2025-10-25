@@ -42,6 +42,7 @@ export const SecurityToolbar = ({ activeTool, onToolChange }: SecurityToolbarPro
     { id: 'zone' as ToolType, icon: Square, label: 'Zone' },
     { id: 'dimension' as ToolType, icon: Ruler, label: 'Dimension' },
     { id: 'arrow' as ToolType, icon: ArrowRight, label: 'Arrow' },
+    { id: 'calibrate' as ToolType, icon: Ruler, label: 'Calibrate' },
   ];
 
   const renderToolGroup = (tools: typeof deviceTools, label: string) => (
