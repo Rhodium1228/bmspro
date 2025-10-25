@@ -471,6 +471,13 @@ export const CanvasArea = ({
     const realWorldWidth = floorPlan.width / pixelsPerMeter;
     const realWorldHeight = floorPlan.height / pixelsPerMeter;
 
+    console.log('📏 Calibration Applied:', {
+      pixelDistance: pixelDistance.toFixed(2),
+      realWorldDistance: distance,
+      pixelsPerMeter: pixelsPerMeter.toFixed(2),
+      floorPlanSize: `${realWorldWidth.toFixed(1)}m × ${realWorldHeight.toFixed(1)}m`
+    });
+
     onFloorPlanUpdate({
       pixelsPerMeter,
       realWorldWidth,
@@ -610,6 +617,15 @@ export const CanvasArea = ({
           fontWeight="bold"
         >
           5m
+        </text>
+        <text
+          x={x + scaleLength / 2}
+          y={y + 20 / canvasState.zoom}
+          textAnchor="middle"
+          fill="hsl(var(--muted-foreground))"
+          fontSize={10 / canvasState.zoom}
+        >
+          1m = {pixelsPerMeter.toFixed(1)}px
         </text>
       </g>
     );

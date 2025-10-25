@@ -22,12 +22,14 @@ export function CoverageVisualization({
   // Calculate coverage zones for all cameras
   const coverageZones = useMemo(() => {
     if (!showCoverage) return [];
-    return cameras.flatMap(camera => 
-      getCameraCoverageZones(camera, pixelsPerMeter).map(zone => ({
+    console.log('🎥 Recalculating coverage zones with pixelsPerMeter:', pixelsPerMeter);
+    return cameras.flatMap(camera => {
+      console.log(`  Camera ${camera.id}: range=${camera.range}m, pixels=${camera.range * pixelsPerMeter}px`);
+      return getCameraCoverageZones(camera, pixelsPerMeter).map(zone => ({
         ...zone,
         cameraId: camera.id
-      }))
-    );
+      }));
+    });
   }, [cameras, showCoverage, pixelsPerMeter]);
 
   // Detect blind spots
