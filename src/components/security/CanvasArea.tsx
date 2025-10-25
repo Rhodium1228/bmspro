@@ -125,7 +125,7 @@ export const CanvasArea = ({
     } else if (calibrationMode) {
       setCalibrationMode(false);
     }
-  }, [activeTool, calibrationMode]);
+  }, [activeTool]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool === 'select' || activeTool === 'eraser') return;
@@ -515,7 +515,7 @@ export const CanvasArea = ({
         />
       );
       // Add meter labels on major grid lines
-      if (isMainLine && floorPlan?.isCalibrated) {
+      if (isMainLine && floorPlan?.isCalibrated && canvasState.zoom > 0.4) {
         const meters = (i / pixelsPerMeter).toFixed(0);
         lines.push(
           <text
@@ -547,7 +547,7 @@ export const CanvasArea = ({
         />
       );
       // Add meter labels on major grid lines
-      if (isMainLine && floorPlan?.isCalibrated) {
+      if (isMainLine && floorPlan?.isCalibrated && canvasState.zoom > 0.4) {
         const meters = (i / pixelsPerMeter).toFixed(0);
         lines.push(
           <text
@@ -573,7 +573,7 @@ export const CanvasArea = ({
     
     const scaleLength = 5 * pixelsPerMeter; // 5 meter scale bar
     const x = 50;
-    const y = (canvasRef.current?.clientHeight || 600) / canvasState.zoom - 50;
+    const y = ((canvasRef.current?.clientHeight || 600) - 70) / canvasState.zoom;
     
     return (
       <g className="scale-bar">
