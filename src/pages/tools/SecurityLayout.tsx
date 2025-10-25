@@ -110,6 +110,21 @@ export default function SecurityLayout() {
   // Compute pixelsPerMeter from floorPlan or project data
   const pixelsPerMeter = projectData.floorPlan?.pixelsPerMeter || projectData.pixelsPerMeter || 10;
 
+  // Normalize layer settings to ensure all layers exist
+  const normalizeLayerSettings = (layerSettings: any): typeof projectData.layerSettings => {
+    const defaultLayer = { visible: true, locked: false, opacity: 100 };
+    
+    return {
+      background: layerSettings?.background || defaultLayer,
+      cameras: layerSettings?.cameras || defaultLayer,
+      pirs: layerSettings?.pirs || defaultLayer,
+      fans: layerSettings?.fans || defaultLayer,
+      walls: layerSettings?.walls || defaultLayer,
+      annotations: layerSettings?.annotations || defaultLayer,
+      coverage: layerSettings?.coverage || defaultLayer,
+    };
+  };
+
   // Fetch linked quotations
   const { data: linkedQuotations = [], refetch: refetchQuotations } = useQuery({
     queryKey: ["linked-quotations", savedLayoutId],
@@ -233,7 +248,7 @@ export default function SecurityLayout() {
             securityZones: canvasData.securityZones || [],
             floorPlan: canvasData.floorPlan || null,
             coverageSettings: (data.coverage_settings as any as CoverageSettings) || projectData.coverageSettings,
-            layerSettings: (data.layer_settings as any) || projectData.layerSettings,
+            layerSettings: normalizeLayerSettings((data.layer_settings as any) || projectData.layerSettings),
             pixelsPerMeter: canvasData.pixelsPerMeter || projectData.pixelsPerMeter,
           });
         }
@@ -529,7 +544,10 @@ export default function SecurityLayout() {
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
       setHistoryIndex(newIndex);
-      setProjectData(JSON.parse(JSON.stringify(history[newIndex])));
+      const restoredState = JSON.parse(JSON.stringify(history[newIndex]));
+      // Normalize layer settings to prevent undefined errors
+      restoredState.layerSettings = normalizeLayerSettings(restoredState.layerSettings);
+      setProjectData(restoredState);
       setSelected(null);
       setSelectedElements([]);
       toast({
@@ -543,7 +561,10 @@ export default function SecurityLayout() {
     if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1;
       setHistoryIndex(newIndex);
-      setProjectData(JSON.parse(JSON.stringify(history[newIndex])));
+      const restoredState = JSON.parse(JSON.stringify(history[newIndex]));
+      // Normalize layer settings to prevent undefined errors
+      restoredState.layerSettings = normalizeLayerSettings(restoredState.layerSettings);
+      setProjectData(restoredState);
       setSelected(null);
       setSelectedElements([]);
       toast({
