@@ -497,6 +497,7 @@ export type Database = {
       security_layouts: {
         Row: {
           canvas_data: Json | null
+          coverage_settings: Json | null
           created_at: string
           description: string | null
           export_image_url: string | null
@@ -511,6 +512,7 @@ export type Database = {
         }
         Insert: {
           canvas_data?: Json | null
+          coverage_settings?: Json | null
           created_at?: string
           description?: string | null
           export_image_url?: string | null
@@ -525,6 +527,7 @@ export type Database = {
         }
         Update: {
           canvas_data?: Json | null
+          coverage_settings?: Json | null
           created_at?: string
           description?: string | null
           export_image_url?: string | null
