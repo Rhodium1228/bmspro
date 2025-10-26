@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { calculateSystemOutput, calculateFinancials } from "@/lib/solarCalculations";
-import { SolarPanel } from "@/lib/solarTypes";
+import { SolarPanel, PanelSpec } from "@/lib/solarTypes";
 import { Zap, DollarSign, Leaf, TrendingUp } from "lucide-react";
 
 interface SolarAnalysisProps {
   panels: SolarPanel[];
-  panelWattage: number;
+  panelSpecs: Map<string, PanelSpec>;
   peakSunHours: number;
   electricityRate: number;
   installationCost: number;
@@ -14,13 +14,25 @@ interface SolarAnalysisProps {
 
 const SolarAnalysis = ({
   panels,
-  panelWattage,
+  panelSpecs,
   peakSunHours = 5,
   electricityRate = 0.25,
   installationCost = 0,
 }: SolarAnalysisProps) => {
   const activePanels = panels.filter(p => p.isActive);
-  const totalWattage = activePanels.length * panelWattage;
+  
+  // Calculate total wattage from different panel types
+  const totalWattage = activePanels.reduce((sum, panel) => {
+    const spec = panelSpecs.get(panel.panelSpecId);
+    return sum + (spec?.wattage || 0);
+  }, 0);
+
+  // Group panels by spec for breakdown
+  const panelsBySpec = new Map<string, number>();
+  activePanels.forEach(panel => {
+    const count = panelsBySpec.get(panel.panelSpecId) || 0;
+    panelsBySpec.set(panel.panelSpecId, count + 1);
+  });
 
   const systemCalc = calculateSystemOutput(
     activePanels.length,
@@ -50,7 +62,21 @@ const SolarAnalysis = ({
               System Overview
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+           <CardContent className="space-y-3">
+            {/* Panel breakdown */}
+            <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+              <div className="text-sm font-medium mb-2">Panel Breakdown</div>
+              {Array.from(panelsBySpec.entries()).map(([specId, count]) => {
+                const spec = panelSpecs.get(specId);
+                if (!spec) return null;
+                return (
+                  <div key={specId} className="text-xs text-muted-foreground">
+                    {count}× {spec.wattage}W {spec.name}
+                  </div>
+                );
+              })}
+            </div>
+            
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total Panels</span>
               <span className="font-semibold">{systemCalc.totalPanels}</span>

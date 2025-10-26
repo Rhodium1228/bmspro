@@ -11,20 +11,30 @@ import {
   ArrowRight,
   Square
 } from "lucide-react";
-import { SolarToolType } from "@/lib/solarTypes";
+import { SolarToolType, PanelSpec } from "@/lib/solarTypes";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import PanelSpecSelector from "./PanelSpecSelector";
 
 interface SolarToolbarProps {
   activeTool: SolarToolType;
   onToolChange: (tool: SolarToolType) => void;
+  panelSpecs?: Map<string, PanelSpec>;
+  selectedSpecId?: string | null;
+  onSelectSpec?: (specId: string) => void;
 }
 
-const SolarToolbar = ({ activeTool, onToolChange }: SolarToolbarProps) => {
+const SolarToolbar = ({ 
+  activeTool, 
+  onToolChange,
+  panelSpecs,
+  selectedSpecId,
+  onSelectSpec 
+}: SolarToolbarProps) => {
   const tools = [
     { type: 'select' as SolarToolType, icon: MousePointer2, label: 'Select' },
     { type: 'panel' as SolarToolType, icon: Square, label: 'Add Panel' },
@@ -37,26 +47,43 @@ const SolarToolbar = ({ activeTool, onToolChange }: SolarToolbarProps) => {
 
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-2 p-2 bg-background border rounded-lg shadow-sm">
-        {tools.map((tool, index) => (
-          <React.Fragment key={tool.type}>
-            {(index === 3 || index === 4) && <Separator orientation="vertical" className="h-8" />}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={activeTool === tool.type ? "default" : "ghost"}
-                  size="icon"
-                  onClick={() => onToolChange(tool.type)}
-                >
-                  <tool.icon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{tool.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          </React.Fragment>
-        ))}
+      <div className="flex flex-col gap-4">
+        {/* Panel spec selector */}
+        {panelSpecs && selectedSpecId !== undefined && onSelectSpec && (
+          <div>
+            <label className="text-xs font-medium mb-2 block">Panel Type</label>
+            <PanelSpecSelector
+              specs={panelSpecs}
+              selectedSpecId={selectedSpecId}
+              onSelectSpec={onSelectSpec}
+            />
+          </div>
+        )}
+
+        <Separator />
+
+        {/* Tool buttons */}
+        <div className="flex flex-col gap-2">
+          {tools.map((tool, index) => (
+            <React.Fragment key={tool.type}>
+              {(index === 3 || index === 4) && <Separator className="my-1" />}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={activeTool === tool.type ? "default" : "ghost"}
+                    size="icon"
+                    onClick={() => onToolChange(tool.type)}
+                  >
+                    <tool.icon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{tool.label}</p>
+                </TooltipContent>
+              </Tooltip>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     </TooltipProvider>
   );

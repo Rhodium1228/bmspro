@@ -3,6 +3,31 @@
 export type PanelOrientation = 'portrait' | 'landscape';
 export type RoofType = 'gable' | 'hip' | 'flat' | 'shed' | 'complex';
 
+export interface CellConfig {
+  rows: number;
+  cols: number;
+  type: 'mono' | 'poly' | 'mono-hf' | 'poly-hf';
+}
+
+export interface PanelSpec {
+  id: string;
+  name: string;
+  manufacturer: string;
+  model: string;
+  wattage: number;
+  efficiency: number;
+  dimensions_mm: {
+    width: number;
+    height: number;
+    depth: number;
+    cells?: CellConfig;
+  };
+  voltage: number;
+  current: number;
+  datasheet_url?: string;
+  is_default: boolean;
+}
+
 export interface SolarPanel {
   id: string;
   x: number;

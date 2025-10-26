@@ -9,10 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Save, ArrowLeft, Download, Upload, FileImage } from "lucide-react";
-import { SolarProjectData, SolarPanel, LayerSettings, SolarToolType, SelectedSolarElement } from "@/lib/solarTypes";
+import { SolarProjectData, SolarPanel, LayerSettings, SolarToolType, SelectedSolarElement, PanelSpec } from "@/lib/solarTypes";
 import SolarToolbar from "@/components/solar/SolarToolbar";
 import RoofTemplates from "@/components/solar/RoofTemplates";
 import SolarAnalysis from "@/components/solar/SolarAnalysis";
+import SolarPanelIcon from "@/components/solar/SolarPanelIcon";
 import html2canvas from "html2canvas";
 
 const SolarLayout = () => {
@@ -25,6 +26,8 @@ const SolarLayout = () => {
   const [activeTool, setActiveTool] = useState<SolarToolType>('select');
   const [selected, setSelected] = useState<SelectedSolarElement>(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [panelSpecs, setPanelSpecs] = useState<Map<string, PanelSpec>>(new Map());
+  const [selectedPanelSpec, setSelectedPanelSpec] = useState<string | null>(null);
 
   const [projectData, setProjectData] = useState<SolarProjectData>({
     panels: [],
@@ -42,6 +45,48 @@ const SolarLayout = () => {
     },
     pixelsPerMeter: 10,
   });
+
+  // Load panel specs
+  useEffect(() => {
+    const loadPanelSpecs = async () => {
+      const { data, error } = await supabase
+        .from("solar_panel_specs")
+        .select("*")
+        .eq("is_default", true);
+
+      if (error) {
+        console.error("Error loading panel specs:", error);
+        return;
+      }
+
+      if (data) {
+        const specsMap = new Map<string, PanelSpec>();
+        data.forEach((spec: any) => {
+          specsMap.set(spec.id, {
+            id: spec.id,
+            name: spec.name,
+            manufacturer: spec.manufacturer,
+            model: spec.model,
+            wattage: spec.wattage,
+            efficiency: spec.efficiency,
+            dimensions_mm: spec.dimensions_mm,
+            voltage: spec.voltage,
+            current: spec.current,
+            datasheet_url: spec.datasheet_url,
+            is_default: spec.is_default,
+          });
+        });
+        setPanelSpecs(specsMap);
+        
+        // Set first spec as default
+        if (specsMap.size > 0) {
+          setSelectedPanelSpec(Array.from(specsMap.keys())[0]);
+        }
+      }
+    };
+
+    loadPanelSpecs();
+  }, []);
 
   // Load project data
   const { refetch: refetchProject } = useQuery({
@@ -146,13 +191,21 @@ const SolarLayout = () => {
   };
 
   const handleAddPanel = (x: number, y: number) => {
+    if (!selectedPanelSpec) {
+      toast({ title: "Error", description: "Please select a panel type first", variant: "destructive" });
+      return;
+    }
+
+    const spec = panelSpecs.get(selectedPanelSpec);
+    if (!spec) return;
+
     const newPanel: SolarPanel = {
       id: `panel-${Date.now()}`,
       x,
       y,
       rotation: 0,
       orientation: 'portrait',
-      panelSpecId: '',
+      panelSpecId: selectedPanelSpec,
       isActive: true,
     };
     
@@ -279,7 +332,13 @@ const SolarLayout = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Toolbar */}
         <div className="border-r p-4 flex flex-col gap-4">
-          <SolarToolbar activeTool={activeTool} onToolChange={setActiveTool} />
+          <SolarToolbar 
+            activeTool={activeTool} 
+            onToolChange={setActiveTool}
+            panelSpecs={panelSpecs}
+            selectedSpecId={selectedPanelSpec}
+            onSelectSpec={setSelectedPanelSpec}
+          />
         </div>
 
         {/* Canvas */}
@@ -311,21 +370,30 @@ const SolarLayout = () => {
               <rect width="100%" height="100%" fill="url(#solar-grid)" />
 
               {/* Panels */}
-              {projectData.panels.map((panel) => (
-                <rect
-                  key={panel.id}
-                  x={panel.x - 50}
-                  y={panel.y - 25}
-                  width={100}
-                  height={50}
-                  fill={panel.isActive ? "#3B82F6" : "#94A3B8"}
-                  opacity={0.7}
-                  stroke="#1E293B"
-                  strokeWidth={2}
-                  transform={`rotate(${panel.rotation} ${panel.x} ${panel.y})`}
-                  className="cursor-pointer"
-                />
-              ))}
+              {projectData.panels.map((panel) => {
+                const spec = panelSpecs.get(panel.panelSpecId);
+                if (!spec) return null;
+
+                // Calculate dimensions from mm to pixels
+                const widthMm = spec.dimensions_mm.width;
+                const heightMm = spec.dimensions_mm.height;
+                const widthPx = (widthMm / 1000) * (projectData.pixelsPerMeter || 10) * 10;
+                const heightPx = (heightMm / 1000) * (projectData.pixelsPerMeter || 10) * 10;
+
+                return (
+                  <SolarPanelIcon
+                    key={panel.id}
+                    x={panel.x}
+                    y={panel.y}
+                    width={widthPx}
+                    height={heightPx}
+                    rotation={panel.rotation}
+                    isActive={panel.isActive}
+                    isSelected={selected?.type === 'panel' && selected.data.id === panel.id}
+                    cellConfig={spec.dimensions_mm.cells}
+                  />
+                );
+              })}
             </svg>
           </div>
         </div>
@@ -341,7 +409,7 @@ const SolarLayout = () => {
             <TabsContent value="analysis" className="mt-4">
               <SolarAnalysis
                 panels={projectData.panels}
-                panelWattage={450}
+                panelSpecs={panelSpecs}
                 peakSunHours={5}
                 electricityRate={0.25}
                 installationCost={projectData.panels.length * 1000}
