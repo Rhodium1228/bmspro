@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Save, ArrowLeft, Download, Upload, FileImage } from "lucide-react";
+import { Save, ArrowLeft, Download, Upload, FileImage, Trash2, RotateCw, Power } from "lucide-react";
 import { SolarProjectData, SolarPanel, LayerSettings, SolarToolType, SelectedSolarElement, PanelSpec } from "@/lib/solarTypes";
 import SolarToolbar from "@/components/solar/SolarToolbar";
 import RoofTemplates from "@/components/solar/RoofTemplates";
@@ -28,6 +28,9 @@ const SolarLayout = () => {
   const [showTemplates, setShowTemplates] = useState(false);
   const [panelSpecs, setPanelSpecs] = useState<Map<string, PanelSpec>>(new Map());
   const [selectedPanelSpec, setSelectedPanelSpec] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const [projectData, setProjectData] = useState<SolarProjectData>({
     panels: [],
@@ -281,6 +284,165 @@ const SolarLayout = () => {
     toast({ title: "Success", description: "Template loaded" });
   };
 
+  const getCursorStyle = (tool: SolarToolType): string => {
+    switch (tool) {
+      case 'panel':
+      case 'obstacle':
+      case 'text':
+        return 'crosshair';
+      case 'select':
+        return 'default';
+      default:
+        return 'default';
+    }
+  };
+
+  const getClickCoordinates = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return { x: 0, y: 0 };
+    const rect = svgRef.current.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  };
+
+  const handleCanvasClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (projectData.layerSettings.background.locked) return;
+    if (isDragging) return; // Don't add panel if we were dragging
+    
+    const coords = getClickCoordinates(e);
+    
+    switch (activeTool) {
+      case 'panel':
+        handleAddPanel(coords.x, coords.y);
+        break;
+      case 'select':
+        // Clicking on empty space deselects
+        if (e.target === e.currentTarget || (e.target as SVGElement).tagName === 'rect') {
+          setSelected(null);
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handlePanelClick = (panel: SolarPanel, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (activeTool === 'select') {
+      setSelected({ type: 'panel', data: panel });
+    }
+  };
+
+  const handlePanelMouseDown = (panel: SolarPanel, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (activeTool === 'select') {
+      setIsDragging(true);
+      const coords = getClickCoordinates(e as any);
+      setDragOffset({
+        x: coords.x - panel.x,
+        y: coords.y - panel.y,
+      });
+      setSelected({ type: 'panel', data: panel });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!isDragging || !selected || selected.type !== 'panel') return;
+    
+    const coords = getClickCoordinates(e);
+    const newX = coords.x - dragOffset.x;
+    const newY = coords.y - dragOffset.y;
+    
+    setProjectData(prev => ({
+      ...prev,
+      panels: prev.panels.map(p => 
+        p.id === selected.data.id ? { ...p, x: newX, y: newY } : p
+      ),
+    }));
+    
+    // Update selected data
+    setSelected({
+      type: 'panel',
+      data: { ...selected.data, x: newX, y: newY },
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleDeleteSelected = () => {
+    if (!selected) return;
+    
+    if (selected.type === 'panel') {
+      setProjectData(prev => ({
+        ...prev,
+        panels: prev.panels.filter(p => p.id !== selected.data.id),
+      }));
+      setSelected(null);
+      toast({ title: "Success", description: "Panel deleted" });
+    }
+  };
+
+  const handleRotateSelected = () => {
+    if (!selected || selected.type !== 'panel') return;
+    
+    setProjectData(prev => ({
+      ...prev,
+      panels: prev.panels.map(p => 
+        p.id === selected.data.id 
+          ? { ...p, rotation: (p.rotation + 90) % 360 } 
+          : p
+      ),
+    }));
+    
+    const updatedPanel = projectData.panels.find(p => p.id === selected.data.id);
+    if (updatedPanel) {
+      setSelected({
+        type: 'panel',
+        data: { ...updatedPanel, rotation: (updatedPanel.rotation + 90) % 360 },
+      });
+    }
+  };
+
+  const handleToggleActive = () => {
+    if (!selected || selected.type !== 'panel') return;
+    
+    setProjectData(prev => ({
+      ...prev,
+      panels: prev.panels.map(p => 
+        p.id === selected.data.id 
+          ? { ...p, isActive: !p.isActive } 
+          : p
+      ),
+    }));
+    
+    const updatedPanel = projectData.panels.find(p => p.id === selected.data.id);
+    if (updatedPanel) {
+      setSelected({
+        type: 'panel',
+        data: { ...updatedPanel, isActive: !updatedPanel.isActive },
+      });
+    }
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' && selected) {
+        handleDeleteSelected();
+      } else if (e.key === 'Escape') {
+        setSelected(null);
+      } else if (e.key === 'r' && selected?.type === 'panel') {
+        handleRotateSelected();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selected, projectData]);
+
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
@@ -348,7 +510,17 @@ const SolarLayout = () => {
             className="w-full h-full flex items-center justify-center"
             style={{ minHeight: '800px' }}
           >
-            <svg width="1200" height="800" className="border bg-white">
+            <svg 
+              ref={svgRef}
+              width="1200" 
+              height="800" 
+              className="border bg-white"
+              onClick={handleCanvasClick}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              style={{ cursor: getCursorStyle(activeTool) }}
+            >
               {/* Roof background */}
               {projectData.roofPlan && (
                 <image
@@ -374,24 +546,30 @@ const SolarLayout = () => {
                 const spec = panelSpecs.get(panel.panelSpecId);
                 if (!spec) return null;
 
-                // Calculate dimensions from mm to pixels
+                // Calculate dimensions from mm to pixels - FIXED: removed extra * 10
                 const widthMm = spec.dimensions_mm.width;
                 const heightMm = spec.dimensions_mm.height;
-                const widthPx = (widthMm / 1000) * (projectData.pixelsPerMeter || 10) * 10;
-                const heightPx = (heightMm / 1000) * (projectData.pixelsPerMeter || 10) * 10;
+                const widthPx = (widthMm / 1000) * (projectData.pixelsPerMeter || 10);
+                const heightPx = (heightMm / 1000) * (projectData.pixelsPerMeter || 10);
 
                 return (
-                  <SolarPanelIcon
+                  <g
                     key={panel.id}
-                    x={panel.x}
-                    y={panel.y}
-                    width={widthPx}
-                    height={heightPx}
-                    rotation={panel.rotation}
-                    isActive={panel.isActive}
-                    isSelected={selected?.type === 'panel' && selected.data.id === panel.id}
-                    cellConfig={spec.dimensions_mm.cells}
-                  />
+                    onClick={(e) => handlePanelClick(panel, e)}
+                    onMouseDown={(e) => handlePanelMouseDown(panel, e)}
+                    style={{ cursor: activeTool === 'select' ? 'move' : 'default' }}
+                  >
+                    <SolarPanelIcon
+                      x={panel.x}
+                      y={panel.y}
+                      width={widthPx}
+                      height={heightPx}
+                      rotation={panel.rotation}
+                      isActive={panel.isActive}
+                      isSelected={selected?.type === 'panel' && selected.data.id === panel.id}
+                      cellConfig={spec.dimensions_mm.cells}
+                    />
+                  </g>
                 );
               })}
             </svg>
@@ -418,15 +596,73 @@ const SolarLayout = () => {
 
             <TabsContent value="properties" className="mt-4">
               <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Project Info</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Total Panels: {projectData.panels.length}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Active Panels: {projectData.panels.filter(p => p.isActive).length}
-                  </p>
-                </div>
+                {selected?.type === 'panel' && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Selected Panel</h3>
+                      {(() => {
+                        const spec = panelSpecs.get(selected.data.panelSpecId);
+                        return spec ? (
+                          <div className="space-y-2 text-sm">
+                            <p><span className="font-medium">Type:</span> {spec.name}</p>
+                            <p><span className="font-medium">Wattage:</span> {spec.wattage}W</p>
+                            <p><span className="font-medium">Efficiency:</span> {spec.efficiency}%</p>
+                            <p><span className="font-medium">Dimensions:</span> {spec.dimensions_mm.width} x {spec.dimensions_mm.height} mm</p>
+                            <p><span className="font-medium">Status:</span> {selected.data.isActive ? 'Active' : 'Inactive'}</p>
+                            <p><span className="font-medium">Rotation:</span> {selected.data.rotation}°</p>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Actions</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRotateSelected}
+                          className="w-full"
+                        >
+                          <RotateCw className="mr-2 h-4 w-4" />
+                          Rotate
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleToggleActive}
+                          className="w-full"
+                        >
+                          <Power className="mr-2 h-4 w-4" />
+                          {selected.data.isActive ? 'Deactivate' : 'Activate'}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleDeleteSelected}
+                          className="w-full col-span-2"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Panel
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {!selected && (
+                  <div>
+                    <h3 className="font-semibold mb-2">Project Info</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Total Panels: {projectData.panels.length}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Active Panels: {projectData.panels.filter(p => p.isActive).length}
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
