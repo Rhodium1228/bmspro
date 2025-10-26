@@ -34,6 +34,7 @@ import { useAuth } from "@/integrations/supabase/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import { linkLayoutToQuotation, unlinkLayoutFromQuotation, getQuotationForLayout } from "@/lib/layoutQuotationSync";
 import {
   Dialog,
   DialogContent,
@@ -66,6 +67,9 @@ export default function SecurityLayout() {
   const [saveAsTemplateOpen, setSaveAsTemplateOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [templateCategory, setTemplateCategory] = useState("residential");
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
+  const [linkedQuotationData, setLinkedQuotationData] = useState<any>(null);
   
   // Undo/Redo state
   const [history, setHistory] = useState<ProjectData[]>([]);
@@ -141,6 +145,33 @@ export default function SecurityLayout() {
     },
     enabled: !!savedLayoutId,
   });
+
+  // Fetch all user quotations for the selector
+  const { data: userQuotations = [] } = useQuery({
+    queryKey: ["user-quotations"],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("quotations")
+        .select("id, quotation_number, customer_name, total")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Load linked quotation details
+  useEffect(() => {
+    if (savedLayoutId) {
+      getQuotationForLayout(savedLayoutId).then((quotation) => {
+        setLinkedQuotationData(quotation);
+        setSelectedQuotationId(quotation?.id || null);
+      }).catch(console.error);
+    }
+  }, [savedLayoutId]);
 
   // Load layout from URL param on mount
   useEffect(() => {
@@ -333,6 +364,13 @@ export default function SecurityLayout() {
       return;
     }
 
+    // Show save dialog instead of saving directly
+    setShowSaveDialog(true);
+  };
+
+  const performSave = async () => {
+    if (!user) return;
+
     try {
       // Generate preview image
       const imageUrl = await generateLayoutImage();
@@ -347,6 +385,7 @@ export default function SecurityLayout() {
         canvas_data: projectData as any,
         floor_plan_url: projectData.floorPlan?.url || null,
         export_image_url: exportImageUrl,
+        quotation_id: selectedQuotationId,
       };
 
       const { data, error } = await supabase
@@ -363,6 +402,12 @@ export default function SecurityLayout() {
       if (data) {
         setSavedLayoutId(data.id);
         setHasUnsavedChanges(false);
+        
+        // Link to quotation if selected
+        if (selectedQuotationId) {
+          await linkLayoutToQuotation(data.id, selectedQuotationId);
+        }
+        
         // Update URL with new layout ID
         navigate(`/tools/security-layout?layoutId=${data.id}`, { replace: true });
       }
@@ -372,6 +417,7 @@ export default function SecurityLayout() {
         description: "Security layout saved successfully",
       });
 
+      setShowSaveDialog(false);
       refetchQuotations();
     } catch (error) {
       toast({
@@ -408,12 +454,21 @@ export default function SecurityLayout() {
           canvas_data: projectData as any,
           floor_plan_url: projectData.floorPlan?.url || null,
           export_image_url: exportImageUrl,
+          quotation_id: selectedQuotationId,
           updated_at: new Date().toISOString(),
         })
         .eq("id", savedLayoutId)
         .eq("user_id", user.id);
 
       if (error) throw error;
+
+      // Update bidirectional link
+      if (selectedQuotationId) {
+        await linkLayoutToQuotation(savedLayoutId, selectedQuotationId);
+      } else if (linkedQuotationData) {
+        // Unlink if quotation was deselected
+        await unlinkLayoutFromQuotation(savedLayoutId, linkedQuotationData.id);
+      }
 
       setHasUnsavedChanges(false);
 
@@ -1351,8 +1406,52 @@ export default function SecurityLayout() {
 
               <TabsContent value="quotations" className="mt-0">
                 <div className="space-y-4">
+                  {linkedQuotationData && (
+                    <div className="border-l-4 border-primary bg-primary/5 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-primary">Currently Linked</h4>
+                        <Badge variant="default" className="text-xs">Active Link</Badge>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-sm">{linkedQuotationData.quotation_number}</p>
+                        <p className="text-xs text-muted-foreground">{linkedQuotationData.customer_name}</p>
+                        <p className="text-sm font-semibold">${linkedQuotationData.total?.toLocaleString() || '0'}</p>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs"
+                          onClick={() => navigate(`/transactions/quotation?quotationId=${linkedQuotationData.id}`)}
+                        >
+                          <ExternalLink className="w-3 h-3 mr-1" />
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs"
+                          onClick={async () => {
+                            if (savedLayoutId && linkedQuotationData.id) {
+                              await unlinkLayoutFromQuotation(savedLayoutId, linkedQuotationData.id);
+                              setLinkedQuotationData(null);
+                              setSelectedQuotationId(null);
+                              refetchQuotations();
+                              toast({
+                                title: "Unlinked",
+                                description: "Layout has been unlinked from quotation",
+                              });
+                            }
+                          }}
+                        >
+                          Unlink
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">Linked Quotations</h3>
+                    <h3 className="text-sm font-semibold">All Linked Quotations</h3>
                     {linkedQuotations.length > 0 && (
                       <Badge variant="secondary">{linkedQuotations.length}</Badge>
                     )}
@@ -1429,6 +1528,53 @@ export default function SecurityLayout() {
           }}
         />
       )}
+
+      {/* Save Dialog with Quotation Selector */}
+      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Security Layout</DialogTitle>
+            <DialogDescription>
+              {linkedQuotationData 
+                ? "This layout is currently linked to a quotation. You can change the link or keep it."
+                : "Optionally link this layout to an existing quotation."
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="quotation-link">Link to Quotation (Optional)</Label>
+              <Select value={selectedQuotationId || "none"} onValueChange={(value) => setSelectedQuotationId(value === "none" ? null : value)}>
+                <SelectTrigger id="quotation-link">
+                  <SelectValue placeholder="Select a quotation..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {userQuotations.map((quotation) => (
+                    <SelectItem key={quotation.id} value={quotation.id}>
+                      {quotation.quotation_number} - {quotation.customer_name} (${quotation.total.toFixed(2)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedQuotationId && (
+                <p className="text-xs text-muted-foreground">
+                  The selected quotation will be linked to this layout.
+                </p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={performSave}>
+              <Save className="h-4 w-4 mr-2" />
+              Save Layout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

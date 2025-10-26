@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { generateItemsFromLayout } from "@/lib/bomGeneration";
 import { ProjectData } from "@/lib/securityTypes";
+import { linkLayoutToQuotation, unlinkLayoutFromQuotation, checkLayoutLinkStatus } from "@/lib/layoutQuotationSync";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface QuotationItem {
   id: string;
@@ -46,6 +48,10 @@ export default function Quotation() {
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "done">("all");
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
   const [activeTab, setActiveTab] = useState("list");
+  const [showDetachConfirm, setShowDetachConfirm] = useState(false);
+  const [layoutToAttach, setLayoutToAttach] = useState<string | null>(null);
+  const [showAttachConfirm, setShowAttachConfirm] = useState(false);
+  const [conflictingQuotation, setConflictingQuotation] = useState<{ quotationNumber: string; customerName: string } | null>(null);
   
   // Quotation details
   const [quotationNumber, setQuotationNumber] = useState(`QUO-${Date.now().toString().slice(-6)}`);
@@ -270,19 +276,81 @@ export default function Quotation() {
     }
   };
 
-  const detachLayout = () => {
-    setLinkedLayoutId(null);
-    setShowLayoutPicker(false);
-    toast({
-      title: "Layout detached",
-      description: "Security layout has been removed from this quotation",
-    });
+  const detachLayout = async () => {
+    if (!linkedLayoutId || !currentQuotationId) return;
+    
+    try {
+      await unlinkLayoutFromQuotation(linkedLayoutId, currentQuotationId);
+      setLinkedLayoutId(null);
+      setShowLayoutPicker(false);
+      setShowDetachConfirm(false);
+      
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+      queryClient.invalidateQueries({ queryKey: ['linked-layout'] });
+      
+      toast({
+        title: "Layout detached",
+        description: "Security layout has been removed from this quotation",
+      });
+    } catch (error: any) {
+      console.error("Error detaching layout:", error);
+      toast({
+        title: "Error",
+        description: "Failed to detach layout",
+        variant: "destructive",
+      });
+    }
   };
 
-  const attachLayout = (layoutId: string) => {
-    setLinkedLayoutId(layoutId);
-    setShowLayoutPicker(false);
-    loadLayoutAndGenerateItems(layoutId);
+  const attachLayout = async (layoutId: string) => {
+    try {
+      // Check if layout is already linked to another quotation
+      const linkStatus = await checkLayoutLinkStatus(layoutId);
+      
+      if (linkStatus.isLinked && linkStatus.linkedTo) {
+        // Show confirmation dialog
+        setConflictingQuotation({
+          quotationNumber: linkStatus.linkedTo.quotationNumber,
+          customerName: linkStatus.linkedTo.customerName,
+        });
+        setLayoutToAttach(layoutId);
+        setShowAttachConfirm(true);
+        return;
+      }
+      
+      // No conflict, proceed with attaching
+      await performAttachLayout(layoutId);
+    } catch (error: any) {
+      console.error("Error checking layout link status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check layout status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const performAttachLayout = async (layoutId: string) => {
+    try {
+      // Link in database if quotation is already saved
+      if (currentQuotationId) {
+        await linkLayoutToQuotation(layoutId, currentQuotationId);
+        queryClient.invalidateQueries({ queryKey: ['quotations'] });
+        queryClient.invalidateQueries({ queryKey: ['linked-layout'] });
+      }
+      
+      setLinkedLayoutId(layoutId);
+      setShowLayoutPicker(false);
+      setShowAttachConfirm(false);
+      await loadLayoutAndGenerateItems(layoutId);
+    } catch (error: any) {
+      console.error("Error attaching layout:", error);
+      toast({
+        title: "Error",
+        description: "Failed to attach layout",
+        variant: "destructive",
+      });
+    }
   };
 
   const loadLayoutAndGenerateItems = async (layoutId: string) => {
@@ -356,6 +424,8 @@ export default function Quotation() {
         security_layout_id: linkedLayoutId,
       };
 
+      let savedQuotationId = currentQuotationId;
+
       if (currentQuotationId) {
         const { error } = await supabase
           .from('quotations')
@@ -369,16 +439,25 @@ export default function Quotation() {
           description: "Quotation updated successfully",
         });
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('quotations')
-          .insert(quotationData);
+          .insert(quotationData)
+          .select()
+          .single();
 
         if (error) throw error;
+        savedQuotationId = data.id;
+        setCurrentQuotationId(data.id);
 
         toast({
           title: "Success",
           description: "Quotation saved successfully",
         });
+      }
+
+      // Update bidirectional link if layout is attached
+      if (linkedLayoutId && savedQuotationId) {
+        await linkLayoutToQuotation(linkedLayoutId, savedQuotationId);
       }
 
       queryClient.invalidateQueries({ queryKey: ['quotations'] });
@@ -1134,7 +1213,7 @@ export default function Quotation() {
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={detachLayout}
+                              onClick={() => setShowDetachConfirm(true)}
                             >
                               <Unlink className="w-3 h-3 mr-1" />
                               Detach
@@ -2001,6 +2080,50 @@ export default function Quotation() {
           </Card>
         </div>
       </div>
+
+      {/* Detach Confirmation Dialog */}
+      <AlertDialog open={showDetachConfirm} onOpenChange={setShowDetachConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Detach Security Layout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the link between this quotation and the security layout. 
+              The quotation items will remain, but they won't auto-update from the layout anymore.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={detachLayout}>Detach</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Attach Confirmation Dialog (when layout is linked to another quotation) */}
+      <AlertDialog open={showAttachConfirm} onOpenChange={setShowAttachConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Layout Already Linked</AlertDialogTitle>
+            <AlertDialogDescription>
+              This security layout is already linked to <strong>{conflictingQuotation?.quotationNumber}</strong> ({conflictingQuotation?.customerName}).
+              <br /><br />
+              Attaching it to this quotation will move the link from the other quotation. Do you want to proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setLayoutToAttach(null);
+              setConflictingQuotation(null);
+            }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (layoutToAttach) {
+                performAttachLayout(layoutToAttach);
+                setLayoutToAttach(null);
+                setConflictingQuotation(null);
+              }
+            }}>Move Layout Here</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
