@@ -30,6 +30,8 @@ import Company from "./pages/more/Company";
 import Options from "./pages/more/Options";
 import SecurityLayout from "./pages/tools/SecurityLayout";
 import SecurityProjects from "./pages/tools/SecurityProjects";
+import SolarLayout from "./pages/tools/SolarLayout";
+import SolarProjects from "./pages/tools/SolarProjects";
 import NotFound from "./pages/NotFound";
 
 // ===== QUERY CLIENT CONFIGURATION =====
@@ -218,6 +220,28 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <SecurityLayout />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/tools/solar-projects"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SolarProjects />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/tools/solar-layout"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SolarLayout />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -22,6 +22,7 @@ import {
   ShoppingBag,
   Wrench,
   Camera,
+  Sun,
 } from "lucide-react";
 
 // Sidebar UI components
@@ -101,6 +102,8 @@ const menuItems = [
     items: [
       { title: "Security Projects", url: "/tools/security-projects", icon: Camera },
       { title: "Security Layout", url: "/tools/security-layout", icon: Camera },
+      { title: "Solar Projects", url: "/tools/solar-projects", icon: Sun },
+      { title: "Solar Layout", url: "/tools/solar-layout", icon: Sun },
     ],
   },
   {

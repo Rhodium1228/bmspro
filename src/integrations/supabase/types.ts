@@ -405,6 +405,36 @@ export type Database = {
           },
         ]
       }
+      roof_templates: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          dimensions: Json | null
+          id: string
+          image_url: string
+          name: string
+          roof_type: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          dimensions?: Json | null
+          id?: string
+          image_url: string
+          name: string
+          roof_type?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          dimensions?: Json | null
+          id?: string
+          image_url?: string
+          name?: string
+          roof_type?: string | null
+        }
+        Relationships: []
+      }
       sale_orders: {
         Row: {
           created_at: string
@@ -594,6 +624,145 @@ export type Database = {
           name?: string
           template_name?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      solar_calculations: {
+        Row: {
+          created_at: string | null
+          financial_data: Json | null
+          id: string
+          location_data: Json | null
+          project_id: string | null
+          system_data: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          financial_data?: Json | null
+          id?: string
+          location_data?: Json | null
+          project_id?: string | null
+          system_data?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          financial_data?: Json | null
+          id?: string
+          location_data?: Json | null
+          project_id?: string | null
+          system_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solar_calculations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "solar_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solar_panel_specs: {
+        Row: {
+          created_at: string | null
+          current: number | null
+          datasheet_url: string | null
+          dimensions_mm: Json | null
+          efficiency: number | null
+          id: string
+          is_default: boolean | null
+          item_id: string | null
+          manufacturer: string | null
+          model: string | null
+          name: string
+          user_id: string | null
+          voltage: number | null
+          wattage: number
+        }
+        Insert: {
+          created_at?: string | null
+          current?: number | null
+          datasheet_url?: string | null
+          dimensions_mm?: Json | null
+          efficiency?: number | null
+          id?: string
+          is_default?: boolean | null
+          item_id?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          name: string
+          user_id?: string | null
+          voltage?: number | null
+          wattage: number
+        }
+        Update: {
+          created_at?: string | null
+          current?: number | null
+          datasheet_url?: string | null
+          dimensions_mm?: Json | null
+          efficiency?: number | null
+          id?: string
+          is_default?: boolean | null
+          item_id?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          name?: string
+          user_id?: string | null
+          voltage?: number | null
+          wattage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solar_panel_specs_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solar_projects: {
+        Row: {
+          canvas_data: Json | null
+          created_at: string | null
+          description: string | null
+          export_image_url: string | null
+          id: string
+          layer_settings: Json | null
+          name: string
+          roof_plan_type: string | null
+          roof_plan_url: string | null
+          template_name: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          canvas_data?: Json | null
+          created_at?: string | null
+          description?: string | null
+          export_image_url?: string | null
+          id?: string
+          layer_settings?: Json | null
+          name: string
+          roof_plan_type?: string | null
+          roof_plan_url?: string | null
+          template_name?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          canvas_data?: Json | null
+          created_at?: string | null
+          description?: string | null
+          export_image_url?: string | null
+          id?: string
+          layer_settings?: Json | null
+          name?: string
+          roof_plan_type?: string | null
+          roof_plan_url?: string | null
+          template_name?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
