@@ -14,10 +14,8 @@ import {
   Users,
   UserCog,
   FileEdit,
-  Wallet,
   Building,
   ChevronDown,
-  Briefcase,
   ShoppingCart,
   ShoppingBag,
   Wrench,
@@ -65,7 +63,8 @@ import logo from "@/assets/bms-pro-logo.jpg";
  *   - Customer management
  * - Transactions: Business transactions (expandable section)
  *   - Quotations
- *   - Job cards
+ *   - Sale Orders
+ *   - Purchase Orders
  * - More: Additional settings (expandable section)
  *   - Company information
  *   - Other options
@@ -93,7 +92,6 @@ const menuItems = [
       { title: "Quotation", url: "/transactions/quotation", icon: FileEdit },
       { title: "Sale Order", url: "/transactions/sale-order", icon: ShoppingCart },
       { title: "Purchase Order", url: "/transactions/purchase-order", icon: ShoppingBag },
-      { title: "Job Card", url: "/transactions/jobcard", icon: Briefcase },
     ],
   },
   {

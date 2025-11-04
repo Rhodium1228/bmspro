@@ -25,7 +25,6 @@ import Customers from "./pages/masters/Customers";
 import Quotation from "./pages/transactions/Quotation";
 import SaleOrder from "./pages/transactions/SaleOrder";
 import PurchaseOrder from "./pages/transactions/PurchaseOrder";
-import JobCard from "./pages/transactions/JobCard";
 import Company from "./pages/more/Company";
 import Options from "./pages/more/Options";
 import SecurityLayout from "./pages/tools/SecurityLayout";
@@ -165,17 +164,6 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <PurchaseOrder />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/transactions/jobcard"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <JobCard />
                   </Layout>
                 </ProtectedRoute>
               }
