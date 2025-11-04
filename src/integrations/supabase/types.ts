@@ -173,6 +173,116 @@ export type Database = {
         }
         Relationships: []
       }
+      job_card_items: {
+        Row: {
+          assigned_employee_id: string | null
+          assigned_employee_name: string | null
+          availability_date: string
+          created_at: string
+          id: string
+          item_name: string
+          job_card_id: string
+          notes: string | null
+          quantity: number
+          status: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_employee_id?: string | null
+          assigned_employee_name?: string | null
+          availability_date: string
+          created_at?: string
+          id?: string
+          item_name: string
+          job_card_id: string
+          notes?: string | null
+          quantity: number
+          status?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_employee_id?: string | null
+          assigned_employee_name?: string | null
+          availability_date?: string
+          created_at?: string
+          id?: string
+          item_name?: string
+          job_card_id?: string
+          notes?: string | null
+          quantity?: number
+          status?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_card_items_assigned_employee_id_fkey"
+            columns: ["assigned_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_card_items_job_card_id_fkey"
+            columns: ["job_card_id"]
+            isOneToOne: false
+            referencedRelation: "job_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_cards: {
+        Row: {
+          completed_items: number
+          created_at: string
+          customer_name: string
+          id: string
+          notes: string | null
+          order_number: string
+          sale_order_id: string | null
+          status: string
+          total_items: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_items?: number
+          created_at?: string
+          customer_name: string
+          id?: string
+          notes?: string | null
+          order_number: string
+          sale_order_id?: string | null
+          status?: string
+          total_items?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_items?: number
+          created_at?: string
+          customer_name?: string
+          id?: string
+          notes?: string | null
+          order_number?: string
+          sale_order_id?: string | null
+          status?: string
+          total_items?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_cards_sale_order_id_fkey"
+            columns: ["sale_order_id"]
+            isOneToOne: false
+            referencedRelation: "sale_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_profiles: {
         Row: {
           company_name: string

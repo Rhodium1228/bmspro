@@ -1,144 +1,697 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Eye, Trash2, User, Calendar as CalendarIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import {
-  Building2,
-  Briefcase,
-  Calendar,
-  MapPin,
-} from "lucide-react";
-
-const jobCards = [
-  {
-    id: "JOB-2024-001",
-    title: "Commercial Building Renovation",
-    client: "ABC Constructions Pty Ltd",
-    status: "in-progress",
-    priority: "high",
-    progress: 65,
-    deadline: "2024-11-15",
-    assignedWorkers: ["JD", "SM", "RK"],
-    budget: "$125,000",
-    location: "Sydney",
-  },
-  {
-    id: "JOB-2024-002",
-    title: "Warehouse Electrical Installation",
-    client: "Metro Logistics Group",
-    status: "in-progress",
-    priority: "medium",
-    progress: 40,
-    deadline: "2024-11-28",
-    assignedWorkers: ["AL", "BT"],
-    budget: "$85,000",
-    location: "Melbourne",
-  },
-  {
-    id: "JOB-2024-003",
-    title: "Residential Solar Panel Setup",
-    client: "Green Energy Solutions",
-    status: "pending",
-    priority: "low",
-    progress: 15,
-    deadline: "2024-12-10",
-    assignedWorkers: ["MJ"],
-    budget: "$45,000",
-    location: "Brisbane",
-  },
-  {
-    id: "JOB-2024-004",
-    title: "Office HVAC System Upgrade",
-    client: "TechCorp Industries",
-    status: "in-progress",
-    priority: "high",
-    progress: 80,
-    deadline: "2024-11-08",
-    assignedWorkers: ["PK", "DN", "FM", "LS"],
-    budget: "$95,000",
-    location: "Perth",
-  },
-];
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function JobCard() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orderItems, setOrderItems] = useState<any[]>([]);
+  const [notes, setNotes] = useState("");
+  const [viewingJobCard, setViewingJobCard] = useState<any>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+
+  // Fetch sale orders
+  const { data: saleOrders = [] } = useQuery({
+    queryKey: ["saleOrders"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("sale_orders")
+        .select(`
+          *,
+          quotations (
+            id,
+            items,
+            quotation_number
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch employees
+  const { data: employees = [] } = useQuery({
+    queryKey: ["employees"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("employees")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("name");
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch job cards
+  const { data: jobCards = [], isLoading } = useQuery({
+    queryKey: ["jobCards"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("job_cards")
+        .select(`
+          *,
+          job_card_items (
+            *
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const handleOrderChange = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    const order = saleOrders.find((o: any) => o.id === orderId);
+    setSelectedOrder(order);
+
+    if (order?.quotations?.items && Array.isArray(order.quotations.items)) {
+      const items = (order.quotations.items as any[]).map((item: any, index: number) => ({
+        ...item,
+        tempId: `item-${index}`,
+        availability_date: new Date(),
+        assigned_employee_id: "",
+        notes: "",
+      }));
+      setOrderItems(items);
+    } else {
+      setOrderItems([]);
+    }
+  };
+
+  const updateItemField = (tempId: string, field: string, value: any) => {
+    setOrderItems(prev => prev.map(item => 
+      item.tempId === tempId ? { ...item, [field]: value } : item
+    ));
+  };
+
+  const resetForm = () => {
+    setSelectedOrderId("");
+    setSelectedOrder(null);
+    setOrderItems([]);
+    setNotes("");
+  };
+
+  const handleDialogChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      resetForm();
+    }
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedOrder) {
+      toast({
+        title: "Error",
+        description: "Please select a sale order",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (orderItems.length === 0) {
+      toast({
+        title: "Error",
+        description: "No items found in the selected order",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if all items have employees assigned
+    const unassignedItems = orderItems.filter(item => !item.assigned_employee_id);
+    if (unassignedItems.length > 0) {
+      toast({
+        title: "Error",
+        description: "Please assign employees to all items",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Create job card
+      const { data: jobCard, error: jobCardError } = await supabase
+        .from("job_cards")
+        .insert([{
+          user_id: user.id,
+          sale_order_id: selectedOrder.id,
+          order_number: selectedOrder.order_number,
+          customer_name: selectedOrder.customer_name,
+          status: "pending",
+          total_items: orderItems.length,
+          completed_items: 0,
+          notes,
+        }])
+        .select()
+        .single();
+
+      if (jobCardError) throw jobCardError;
+
+      // Create job card items
+      const jobCardItems = orderItems.map(item => {
+        const employee = employees.find((e: any) => e.id === item.assigned_employee_id);
+        return {
+          job_card_id: jobCard.id,
+          item_name: item.name || item.item_name || "Unnamed Item",
+          quantity: item.quantity || 1,
+          unit: item.unit || "unit",
+          availability_date: format(new Date(item.availability_date), "yyyy-MM-dd"),
+          assigned_employee_id: item.assigned_employee_id,
+          assigned_employee_name: employee?.name || "",
+          status: "pending",
+          notes: item.notes || "",
+        };
+      });
+
+      const { error: itemsError } = await supabase
+        .from("job_card_items")
+        .insert(jobCardItems);
+
+      if (itemsError) throw itemsError;
+
+      toast({
+        title: "Success",
+        description: "Job card created successfully",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["jobCards"] });
+      handleDialogChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleView = async (jobCardId: string) => {
+    const jobCard = jobCards.find((jc: any) => jc.id === jobCardId);
+    setViewingJobCard(jobCard);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this job card?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("job_cards")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Job card deleted successfully",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["jobCards"] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateItemStatus = async (itemId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from("job_card_items")
+        .update({ status: newStatus })
+        .eq("id", itemId);
+
+      if (error) throw error;
+
+      // Update job card completed count
+      if (viewingJobCard) {
+        const completedCount = viewingJobCard.job_card_items.filter(
+          (item: any) => item.id === itemId ? newStatus === "completed" : item.status === "completed"
+        ).length;
+
+        await supabase
+          .from("job_cards")
+          .update({ 
+            completed_items: completedCount,
+            status: completedCount === viewingJobCard.total_items ? "completed" : "in-progress"
+          })
+          .eq("id", viewingJobCard.id);
+      }
+
+      toast({
+        title: "Success",
+        description: "Item status updated",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["jobCards"] });
+      setIsViewDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Job Cards</h1>
-        <p className="text-muted-foreground">Manage and track all your active job cards</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Job Cards</h1>
+          <p className="text-muted-foreground">Create and manage job cards from sale orders</p>
+        </div>
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Job Card
+        </Button>
       </div>
 
-      <Card className="hover:shadow-md transition-shadow">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-primary" />
-            Active Job Cards
-          </CardTitle>
+          <CardTitle>All Job Cards</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {jobCards.map((job) => (
-              <Card key={job.id} className="border-l-4 border-l-primary hover:shadow-lg transition-all">
-                <CardContent className="pt-6 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <p className="text-xs font-mono text-muted-foreground">{job.id}</p>
-                      <h3 className="font-semibold text-base leading-tight">{job.title}</h3>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Building2 className="h-3 w-3" />
-                        {job.client}
-                      </p>
-                    </div>
-                    <Badge 
-                      variant={job.priority === "high" ? "destructive" : job.priority === "medium" ? "default" : "secondary"}
-                      className="text-xs"
-                    >
-                      {job.priority}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium">{job.progress}%</span>
-                    </div>
-                    <Progress value={job.progress} className="h-2" />
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{new Date(job.deadline).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{job.location}</span>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {job.status === "in-progress" ? "In Progress" : "Pending"}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <div className="flex -space-x-2">
-                      {job.assignedWorkers.map((worker, idx) => (
-                        <Avatar key={idx} className="h-7 w-7 border-2 border-background">
-                          <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                            {worker}
-                          </AvatarFallback>
-                        </Avatar>
-                      ))}
-                    </div>
-                    <span className="text-sm font-semibold text-primary">{job.budget}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order Number</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Total Items</TableHead>
+                  <TableHead>Completed</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : jobCards.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center">
+                      No job cards found. Create one from a sale order.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  jobCards.map((jobCard: any) => (
+                    <TableRow key={jobCard.id}>
+                      <TableCell className="font-medium">{jobCard.order_number}</TableCell>
+                      <TableCell>{jobCard.customer_name}</TableCell>
+                      <TableCell>{jobCard.total_items}</TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {jobCard.completed_items}/{jobCard.total_items}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            jobCard.status === "completed" ? "default" : 
+                            jobCard.status === "in-progress" ? "secondary" : 
+                            "outline"
+                          }
+                        >
+                          {jobCard.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{new Date(jobCard.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleView(jobCard.id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(jobCard.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
+
+      {/* Create Job Card Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Job Card</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="saleOrder">Select Sale Order *</Label>
+              <Select value={selectedOrderId} onValueChange={handleOrderChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a sale order" />
+                </SelectTrigger>
+                <SelectContent>
+                  {saleOrders.map((order: any) => (
+                    <SelectItem key={order.id} value={order.id}>
+                      {order.order_number} - {order.customer_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedOrder && (
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <h3 className="font-semibold mb-2">Order Details</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Customer:</span>{" "}
+                      <span className="font-medium">{selectedOrder.customer_name}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Order Date:</span>{" "}
+                      <span className="font-medium">
+                        {new Date(selectedOrder.order_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Delivery Date:</span>{" "}
+                      <span className="font-medium">
+                        {new Date(selectedOrder.delivery_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Total Amount:</span>{" "}
+                      <span className="font-medium">${selectedOrder.total_amount}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {orderItems.length > 0 ? (
+                  <div className="space-y-3">
+                    <h3 className="font-semibold">Assign Tasks</h3>
+                    {orderItems.map((item) => (
+                      <Card key={item.tempId} className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-medium">
+                                {item.name || item.item_name || "Unnamed Item"}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Quantity: {item.quantity} {item.unit || "unit"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <Label>Availability Date *</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !item.availability_date && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {item.availability_date ? (
+                                      format(new Date(item.availability_date), "PPP")
+                                    ) : (
+                                      <span>Pick a date</span>
+                                    )}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={new Date(item.availability_date)}
+                                    onSelect={(date) => 
+                                      updateItemField(item.tempId, "availability_date", date)
+                                    }
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Assign Employee *</Label>
+                              <Select
+                                value={item.assigned_employee_id}
+                                onValueChange={(value) =>
+                                  updateItemField(item.tempId, "assigned_employee_id", value)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select employee">
+                                    {item.assigned_employee_id && (
+                                      <span className="flex items-center">
+                                        <User className="mr-2 h-4 w-4" />
+                                        {employees.find((e: any) => e.id === item.assigned_employee_id)?.name}
+                                      </span>
+                                    )}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {employees.map((emp: any) => (
+                                    <SelectItem key={emp.id} value={emp.id}>
+                                      <span className="flex items-center">
+                                        <User className="mr-2 h-4 w-4" />
+                                        {emp.name} - {emp.designation}
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Notes (Optional)</Label>
+                            <Input
+                              placeholder="Add notes for this item..."
+                              value={item.notes}
+                              onChange={(e) =>
+                                updateItemField(item.tempId, "notes", e.target.value)
+                              }
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">
+                    No items found in this sale order. Make sure the order is linked to a quotation with items.
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Job Card Notes</Label>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add general notes for this job card..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => handleDialogChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!selectedOrder || orderItems.length === 0}>
+                Create Job Card
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Job Card Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Job Card Details</DialogTitle>
+          </DialogHeader>
+          {viewingJobCard && (
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Order Number</p>
+                    <p className="font-medium">{viewingJobCard.order_number}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Customer</p>
+                    <p className="font-medium">{viewingJobCard.customer_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <Badge variant={viewingJobCard.status === "completed" ? "default" : "secondary"}>
+                      {viewingJobCard.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Progress</p>
+                    <p className="font-medium">
+                      {viewingJobCard.completed_items}/{viewingJobCard.total_items} items
+                    </p>
+                  </div>
+                  {viewingJobCard.notes && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Notes</p>
+                      <p className="font-medium">{viewingJobCard.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold">Assigned Tasks</h3>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Employee</TableHead>
+                        <TableHead>Availability Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {viewingJobCard.job_card_items.map((item: any) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{item.item_name}</p>
+                              {item.notes && (
+                                <p className="text-xs text-muted-foreground">{item.notes}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {item.quantity} {item.unit}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <User className="mr-2 h-4 w-4" />
+                              {item.assigned_employee_name}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(item.availability_date).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                item.status === "completed" ? "default" :
+                                item.status === "in-progress" ? "secondary" :
+                                "outline"
+                              }
+                            >
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={item.status}
+                              onValueChange={(value) => updateItemStatus(item.id, value)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="in-progress">In Progress</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
