@@ -283,6 +283,109 @@ export type Database = {
           },
         ]
       }
+      job_work_schedule_items: {
+        Row: {
+          assigned_employee_id: string | null
+          assigned_employee_name: string | null
+          availability_date: string
+          created_at: string
+          id: string
+          item_name: string
+          job_work_schedule_id: string
+          notes: string | null
+          quantity: number
+          status: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_employee_id?: string | null
+          assigned_employee_name?: string | null
+          availability_date: string
+          created_at?: string
+          id?: string
+          item_name: string
+          job_work_schedule_id: string
+          notes?: string | null
+          quantity: number
+          status?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_employee_id?: string | null
+          assigned_employee_name?: string | null
+          availability_date?: string
+          created_at?: string
+          id?: string
+          item_name?: string
+          job_work_schedule_id?: string
+          notes?: string | null
+          quantity?: number
+          status?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_work_schedule_items_job_work_schedule_id_fkey"
+            columns: ["job_work_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "job_work_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_work_schedules: {
+        Row: {
+          completed_items: number
+          created_at: string
+          id: string
+          notes: string | null
+          order_number: string
+          purchase_order_id: string | null
+          status: string
+          supplier_name: string
+          total_items: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_items?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_number: string
+          purchase_order_id?: string | null
+          status?: string
+          supplier_name: string
+          total_items?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_items?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_number?: string
+          purchase_order_id?: string | null
+          status?: string
+          supplier_name?: string
+          total_items?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_work_schedules_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_profiles: {
         Row: {
           company_name: string

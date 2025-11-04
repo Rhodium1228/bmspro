@@ -16,6 +16,7 @@ import {
   FileEdit,
   Building,
   ChevronDown,
+  Briefcase,
   ShoppingCart,
   ShoppingBag,
   Wrench,
@@ -92,6 +93,7 @@ const menuItems = [
       { title: "Quotation", url: "/transactions/quotation", icon: FileEdit },
       { title: "Sale Order", url: "/transactions/sale-order", icon: ShoppingCart },
       { title: "Purchase Order", url: "/transactions/purchase-order", icon: ShoppingBag },
+      { title: "Job Work Schedule", url: "/transactions/job-work-schedule", icon: Briefcase },
     ],
   },
   {
