@@ -36,6 +36,8 @@ export default function JobCard() {
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderItems, setOrderItems] = useState<any[]>([]);
+  const [availabilityDate, setAvailabilityDate] = useState<Date>();
+  const [selectedEmployee, setSelectedEmployee] = useState("");
   const [notes, setNotes] = useState("");
   const [viewingJobCard, setViewingJobCard] = useState<any>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -112,29 +114,18 @@ export default function JobCard() {
     setSelectedOrder(order);
 
     if (order?.quotations?.items && Array.isArray(order.quotations.items)) {
-      const items = (order.quotations.items as any[]).map((item: any, index: number) => ({
-        ...item,
-        tempId: `item-${index}`,
-        availability_date: new Date(),
-        assigned_employee_id: "",
-        notes: "",
-      }));
-      setOrderItems(items);
+      setOrderItems(order.quotations.items);
     } else {
       setOrderItems([]);
     }
-  };
-
-  const updateItemField = (tempId: string, field: string, value: any) => {
-    setOrderItems(prev => prev.map(item => 
-      item.tempId === tempId ? { ...item, [field]: value } : item
-    ));
   };
 
   const resetForm = () => {
     setSelectedOrderId("");
     setSelectedOrder(null);
     setOrderItems([]);
+    setAvailabilityDate(undefined);
+    setSelectedEmployee("");
     setNotes("");
   };
 
@@ -166,12 +157,19 @@ export default function JobCard() {
       return;
     }
 
-    // Check if all items have employees assigned
-    const unassignedItems = orderItems.filter(item => !item.assigned_employee_id);
-    if (unassignedItems.length > 0) {
+    if (!availabilityDate) {
       toast({
         title: "Error",
-        description: "Please assign employees to all items",
+        description: "Please select availability date",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedEmployee) {
+      toast({
+        title: "Error",
+        description: "Please select an employee",
         variant: "destructive",
       });
       return;
@@ -200,20 +198,18 @@ export default function JobCard() {
       if (jobCardError) throw jobCardError;
 
       // Create job card items
-      const jobCardItems = orderItems.map(item => {
-        const employee = employees.find((e: any) => e.id === item.assigned_employee_id);
-        return {
-          job_card_id: jobCard.id,
-          item_name: item.name || item.item_name || "Unnamed Item",
-          quantity: item.quantity || 1,
-          unit: item.unit || "unit",
-          availability_date: format(new Date(item.availability_date), "yyyy-MM-dd"),
-          assigned_employee_id: item.assigned_employee_id,
-          assigned_employee_name: employee?.name || "",
-          status: "pending",
-          notes: item.notes || "",
-        };
-      });
+      const employee = employees.find((e: any) => e.id === selectedEmployee);
+      const jobCardItems = orderItems.map(item => ({
+        job_card_id: jobCard.id,
+        item_name: item.name || item.item_name || "Unnamed Item",
+        quantity: item.quantity || 1,
+        unit: item.unit || "unit",
+        availability_date: format(availabilityDate, "yyyy-MM-dd"),
+        assigned_employee_id: selectedEmployee,
+        assigned_employee_name: employee?.name || "",
+        status: "pending",
+        notes: "",
+      }));
 
       const { error: itemsError } = await supabase
         .from("job_card_items")
@@ -452,102 +448,73 @@ export default function JobCard() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Availability Date *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !availabilityDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {availabilityDate ? (
+                            format(availabilityDate, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={availabilityDate}
+                          onSelect={setAvailabilityDate}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Assign Employee *</Label>
+                    <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employee" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {employees.map((emp: any) => (
+                          <SelectItem key={emp.id} value={emp.id}>
+                            <span className="flex items-center">
+                              <User className="mr-2 h-4 w-4" />
+                              {emp.name} - {emp.designation}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 {orderItems.length > 0 ? (
-                  <div className="space-y-3">
-                    <h3 className="font-semibold">Assign Tasks</h3>
-                    {orderItems.map((item) => (
-                      <Card key={item.tempId} className="p-4">
-                        <div className="space-y-3">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="font-medium">
-                                {item.name || item.item_name || "Unnamed Item"}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Quantity: {item.quantity} {item.unit || "unit"}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-2">
-                              <Label>Availability Date *</Label>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full justify-start text-left font-normal",
-                                      !item.availability_date && "text-muted-foreground"
-                                    )}
-                                  >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {item.availability_date ? (
-                                      format(new Date(item.availability_date), "PPP")
-                                    ) : (
-                                      <span>Pick a date</span>
-                                    )}
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={new Date(item.availability_date)}
-                                    onSelect={(date) => 
-                                      updateItemField(item.tempId, "availability_date", date)
-                                    }
-                                    initialFocus
-                                    className="pointer-events-auto"
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label>Assign Employee *</Label>
-                              <Select
-                                value={item.assigned_employee_id}
-                                onValueChange={(value) =>
-                                  updateItemField(item.tempId, "assigned_employee_id", value)
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select employee">
-                                    {item.assigned_employee_id && (
-                                      <span className="flex items-center">
-                                        <User className="mr-2 h-4 w-4" />
-                                        {employees.find((e: any) => e.id === item.assigned_employee_id)?.name}
-                                      </span>
-                                    )}
-                                  </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {employees.map((emp: any) => (
-                                    <SelectItem key={emp.id} value={emp.id}>
-                                      <span className="flex items-center">
-                                        <User className="mr-2 h-4 w-4" />
-                                        {emp.name} - {emp.designation}
-                                      </span>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Notes (Optional)</Label>
-                            <Input
-                              placeholder="Add notes for this item..."
-                              value={item.notes}
-                              onChange={(e) =>
-                                updateItemField(item.tempId, "notes", e.target.value)
-                              }
-                            />
-                          </div>
+                  <div className="space-y-2">
+                    <Label>Items in Order ({orderItems.length})</Label>
+                    <div className="rounded-lg border max-h-[200px] overflow-y-auto">
+                      {orderItems.map((item, index) => (
+                        <div key={index} className="p-3 border-b last:border-b-0">
+                          <p className="font-medium">
+                            {item.name || item.item_name || "Unnamed Item"}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Quantity: {item.quantity} {item.unit || "unit"}
+                          </p>
                         </div>
-                      </Card>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 text-center text-muted-foreground">
