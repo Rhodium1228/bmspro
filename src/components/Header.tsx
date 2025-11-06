@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { NotificationBell } from "@/components/NotificationBell";
 
 /**
  * Header Component
@@ -46,6 +47,8 @@ export const Header = () => {
       
       {/* User information and sign out section */}
       <div className="flex items-center gap-4">
+        {/* Notification bell */}
+        <NotificationBell />
         {/* Display current user's email */}
         <span className="text-sm text-muted-foreground">
           {user?.email}
