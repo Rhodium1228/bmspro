@@ -100,9 +100,8 @@ export function JobScheduleCalendar() {
       const { error } = await supabase
         .from("job_work_schedule_items")
         .update({ 
-          due_date: newDueDate,
           availability_date: newAvailDate 
-        })
+        } as any)
         .eq("id", event.id);
 
       if (error) throw error;
@@ -125,11 +124,11 @@ export function JobScheduleCalendar() {
 
   const handleEventResize = async ({ event, start, end }: any) => {
     try {
-      const newDueDate = moment(end).format("YYYY-MM-DD");
+      const newAvailDate = moment(end).format("YYYY-MM-DD");
       
       const { error } = await supabase
         .from("job_work_schedule_items")
-        .update({ due_date: newDueDate })
+        .update({ availability_date: newAvailDate } as any)
         .eq("id", event.id);
 
       if (error) throw error;
