@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SmartEmployeeSelector } from "@/components/SmartEmployeeSelector";
+import { JobScheduleCalendar } from "@/components/JobScheduleCalendar";
 
 interface ManualWorkItem {
   tempId: string;
@@ -78,6 +79,7 @@ export default function JobWorkSchedule() {
   const [notes, setNotes] = useState("");
   const [viewingSchedule, setViewingSchedule] = useState<any>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   // Fetch purchase orders
   const { data: purchaseOrders = [] } = useQuery({
@@ -511,17 +513,35 @@ export default function JobWorkSchedule() {
           <h1 className="text-3xl font-bold tracking-tight">Job Work Schedule</h1>
           <p className="text-muted-foreground">Create and manage job work schedules from purchase orders or manually with per-item employee assignment</p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Schedule
-        </Button>
+        <div className="flex gap-2">
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-auto">
+            <TabsList>
+              <TabsTrigger value="list">List</TabsTrigger>
+              <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Schedule
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Job Work Schedules</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {viewMode === 'calendar' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Calendar View</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <JobScheduleCalendar />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>All Job Work Schedules</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -595,6 +615,7 @@ export default function JobWorkSchedule() {
           </div>
         </CardContent>
       </Card>
+      )}
 
       {/* Create Schedule Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
