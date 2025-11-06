@@ -16,9 +16,9 @@ export interface SystemCalculation {
 }
 
 export interface FinancialAnalysis {
-  yearlySavings: number;
-  totalSavings25Years: number;
-  netSavings: number;
+  yearlySavings: number; // AUD
+  totalSavings25Years: number; // AUD
+  netSavings: number; // AUD
   paybackPeriod: number;
   roi: number;
 }
@@ -48,9 +48,9 @@ export const calculateSystemOutput = (
 
 export const calculateFinancials = (
   estimatedKwhPerYear: number,
-  electricityRate: number = 0.25,
-  installationCost: number = 0,
-  maintenanceCostPerYear: number = 100,
+  electricityRate: number = 0.25, // AUD per kWh (Australian average)
+  installationCost: number = 0, // AUD
+  maintenanceCostPerYear: number = 100, // AUD per year
   systemLifeYears: number = 25
 ): FinancialAnalysis => {
   const yearlySavings = estimatedKwhPerYear * electricityRate;

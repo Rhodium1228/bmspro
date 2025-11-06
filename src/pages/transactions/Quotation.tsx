@@ -20,6 +20,7 @@ import { generateItemsFromLayout } from "@/lib/bomGeneration";
 import { ProjectData } from "@/lib/securityTypes";
 import { linkLayoutToQuotation, unlinkLayoutFromQuotation, checkLayoutLinkStatus } from "@/lib/layoutQuotationSync";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 interface QuotationItem {
   id: string;
@@ -847,10 +848,10 @@ export default function Quotation() {
                                 <p className="text-sm text-muted-foreground truncate">
                                   {quotation.customer_name}
                                 </p>
-                                <div className="flex items-center gap-3 mt-2 flex-wrap">
-                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                                    ${quotation.total.toFixed(2)}
-                                  </span>
+                                 <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                     {formatCurrency(quotation.total)}
+                                   </span>
                                   <span className="text-xs text-muted-foreground">
                                     {quotation.items?.length || 0} items
                                   </span>
@@ -1385,13 +1386,13 @@ export default function Quotation() {
                             <TableBody>
                               {items.map((item) => (
                                 <TableRow key={item.id} className="hover:bg-muted/30">
-                                  <TableCell className="font-medium py-2 text-sm">{item.itemName}</TableCell>
-                                  <TableCell className="max-w-[200px] truncate py-2 text-sm">{item.description}</TableCell>
-                                  <TableCell className="text-right py-2 text-sm">{item.quantity}</TableCell>
-                                  <TableCell className="text-right py-2 text-sm">${item.rate.toFixed(2)}</TableCell>
-                                  <TableCell className="text-right py-2 text-sm">{item.gst}%</TableCell>
-                                  <TableCell className="text-right py-2 text-sm">{item.discount}%</TableCell>
-                                  <TableCell className="text-right font-medium py-2 text-sm">${item.amount.toFixed(2)}</TableCell>
+                                   <TableCell className="font-medium py-2 text-sm">{item.itemName}</TableCell>
+                                   <TableCell className="max-w-[200px] truncate py-2 text-sm">{item.description}</TableCell>
+                                   <TableCell className="text-right py-2 text-sm">{item.quantity}</TableCell>
+                                   <TableCell className="text-right py-2 text-sm">{formatCurrency(item.rate)}</TableCell>
+                                   <TableCell className="text-right py-2 text-sm">{item.gst}%</TableCell>
+                                   <TableCell className="text-right py-2 text-sm">{item.discount}%</TableCell>
+                                   <TableCell className="text-right font-medium py-2 text-sm">{formatCurrency(item.amount)}</TableCell>
                                   <TableCell className="py-2">
                                     <Button
                                       variant="ghost"
@@ -1823,13 +1824,13 @@ export default function Quotation() {
                                     (!quotationSettings?.template) && "border-gray-200",
                                     idx % 2 === 0 && quotationSettings?.template === 'modern' && "bg-gray-50"
                                   )}>
-                                    <td className="py-3.5 px-4 text-sm text-gray-900 align-top">{item.itemName}</td>
-                                    <td className="py-3.5 px-4 text-sm text-gray-700 align-top">{item.description}</td>
-                                    <td className="py-3.5 px-4 text-sm text-gray-900 text-center align-top">{item.quantity}</td>
-                                    <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">${item.rate.toFixed(2)}</td>
-                                    <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">{item.gst}%</td>
-                                    <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">{item.discount}%</td>
-                                    <td className="py-3.5 px-4 text-sm font-semibold text-gray-900 text-right align-top">${item.amount.toFixed(2)}</td>
+                                     <td className="py-3.5 px-4 text-sm text-gray-900 align-top">{item.itemName}</td>
+                                     <td className="py-3.5 px-4 text-sm text-gray-700 align-top">{item.description}</td>
+                                     <td className="py-3.5 px-4 text-sm text-gray-900 text-center align-top">{item.quantity}</td>
+                                     <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">{formatCurrency(item.rate)}</td>
+                                     <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">{item.gst}%</td>
+                                     <td className="py-3.5 px-4 text-sm text-gray-900 text-right align-top">{item.discount}%</td>
+                                     <td className="py-3.5 px-4 text-sm font-semibold text-gray-900 text-right align-top">{formatCurrency(item.amount)}</td>
                                     <td className="py-3.5 px-4 text-center align-top">
                                       {item.datasheetUrl ? (
                                         <div className={cn(
@@ -1864,14 +1865,14 @@ export default function Quotation() {
                           <div className="mt-6">
                             <div className="flex justify-end">
                               <div className="w-96 space-y-3">
-                                <div className="flex justify-between text-base text-gray-700">
-                                  <span>Subtotal:</span>
-                                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between text-sm text-gray-600">
-                                  <span>GST Included:</span>
-                                  <span className="font-semibold">${(subtotal * 0.091).toFixed(2)}</span>
-                                </div>
+                                 <div className="flex justify-between text-base text-gray-700">
+                                   <span>Subtotal:</span>
+                                   <span className="font-semibold">{formatCurrency(subtotal)}</span>
+                                 </div>
+                                 <div className="flex justify-between text-sm text-gray-600">
+                                   <span>GST Included:</span>
+                                   <span className="font-semibold">{formatCurrency(subtotal * 0.091)}</span>
+                                 </div>
                                 <div className={cn(
                                   "flex justify-between text-lg font-bold px-5 py-4 mt-3",
                                   quotationSettings?.template === 'modern' && "bg-blue-100 text-blue-900 rounded",
@@ -1880,10 +1881,10 @@ export default function Quotation() {
                                   quotationSettings?.template === 'professional' && "bg-indigo-600 text-white rounded shadow",
                                   quotationSettings?.template === 'corporate-blue' && "bg-blue-100 border-2 border-blue-700 text-blue-800",
                                   quotationSettings?.template === 'elegant' && "bg-amber-100 border-l-4 border-amber-500 text-amber-900"
-                                )}>
-                                  <span>Total:</span>
-                                  <span>${total.toFixed(2)}</span>
-                                </div>
+                                 )}>
+                                   <span>Total:</span>
+                                   <span>{formatCurrency(total)}</span>
+                                 </div>
                               </div>
                             </div>
                           </div>
@@ -1908,28 +1909,28 @@ export default function Quotation() {
                           {/* Payment Summary Table */}
                           <table className="w-full max-w-md ml-auto">
                             <tbody>
-                              <tr className="border-b border-gray-200">
-                                <td className="py-2 text-sm font-medium text-gray-700">Subtotal</td>
-                                <td className="py-2 text-sm text-right font-semibold">${subtotal.toFixed(2)}</td>
-                              </tr>
-                              <tr className="border-b border-gray-200">
-                                <td className="py-2 text-sm font-medium text-gray-700">Includes GST 10% (${(subtotal * 0.909).toFixed(2)})</td>
-                                <td className="py-2 text-sm text-right font-semibold">${(subtotal * 0.091).toFixed(2)}</td>
-                              </tr>
-                              <tr className="border-b-2 border-gray-400">
-                                <td className="py-2 text-base font-bold text-gray-900">Total</td>
-                                <td className="py-2 text-base text-right font-bold text-gray-900">${total.toFixed(2)}</td>
-                              </tr>
-                              <tr className="border-b border-gray-200">
-                                <td className="py-2 text-sm font-medium text-gray-700">PAID</td>
-                                <td className="py-2 text-sm text-right font-semibold">$0.00</td>
-                              </tr>
-                              <tr className="bg-gray-50">
-                                <td className="py-3 text-base font-bold text-gray-900">Balance Due</td>
-                                <td className="py-3 text-base text-right font-bold" style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}>
-                                  ${total.toFixed(2)}
-                                </td>
-                              </tr>
+                               <tr className="border-b border-gray-200">
+                                 <td className="py-2 text-sm font-medium text-gray-700">Subtotal</td>
+                                 <td className="py-2 text-sm text-right font-semibold">{formatCurrency(subtotal)}</td>
+                               </tr>
+                               <tr className="border-b border-gray-200">
+                                 <td className="py-2 text-sm font-medium text-gray-700">Includes GST 10% ({formatCurrency(subtotal * 0.909)})</td>
+                                 <td className="py-2 text-sm text-right font-semibold">{formatCurrency(subtotal * 0.091)}</td>
+                               </tr>
+                               <tr className="border-b-2 border-gray-400">
+                                 <td className="py-2 text-base font-bold text-gray-900">Total</td>
+                                 <td className="py-2 text-base text-right font-bold text-gray-900">{formatCurrency(total)}</td>
+                               </tr>
+                               <tr className="border-b border-gray-200">
+                                 <td className="py-2 text-sm font-medium text-gray-700">PAID</td>
+                                 <td className="py-2 text-sm text-right font-semibold">{formatCurrency(0)}</td>
+                               </tr>
+                               <tr className="bg-gray-50">
+                                 <td className="py-3 text-base font-bold text-gray-900">Balance Due</td>
+                                 <td className="py-3 text-base text-right font-bold" style={{ color: quotationSettings?.primary_color || '#1D8FCC' }}>
+                                   {formatCurrency(total)}
+                                 </td>
+                               </tr>
                             </tbody>
                           </table>
 
@@ -2018,12 +2019,12 @@ export default function Quotation() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="emailMessage">Message</Label>
-                        <Textarea
-                          id="emailMessage"
-                          placeholder="Email message..."
-                          rows={6}
-                          defaultValue={`Dear ${customerName || 'Customer'},\n\nPlease find attached our quotation (${quotationNumber}) for your reference.\n\nQuotation Details:\n- Total Amount: $${total.toFixed(2)}\n- Payment Type: ${paymentType}\n- Valid Until: ${validUntil || 'As specified'}\n\nIf you have any questions or need further clarification, please don't hesitate to contact us.\n\nBest regards,\nBMS Pro Team`}
-                        />
+                         <Textarea
+                           id="emailMessage"
+                           placeholder="Email message..."
+                           rows={6}
+                           defaultValue={`Dear ${customerName || 'Customer'},\n\nPlease find attached our quotation (${quotationNumber}) for your reference.\n\nQuotation Details:\n- Total Amount: ${formatCurrency(total)}\n- Payment Type: ${paymentType}\n- Valid Until: ${validUntil || 'As specified'}\n\nIf you have any questions or need further clarification, please don't hesitate to contact us.\n\nBest regards,\nBMS Pro Team`}
+                         />
                       </div>
                       <Button onClick={sendEmail} className="w-full gap-2" disabled={!customerEmail || items.length === 0}>
                         <Send className="h-4 w-4" />
@@ -2047,27 +2048,27 @@ export default function Quotation() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Tax ({taxRate}%)</span>
-                  <span className="font-medium">${taxAmount.toFixed(2)}</span>
-                </div>
-                {discountRate > 0 && (
-                  <div className="flex justify-between items-center text-destructive">
-                    <span className="text-sm">Discount ({discountRate}%)</span>
-                    <span className="font-medium">-${discountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="border-t pt-3 mt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Total</span>
-                    <span className="font-bold text-lg text-primary">${total.toFixed(2)}</span>
-                  </div>
-                </div>
+               <div className="space-y-3">
+                 <div className="flex justify-between items-center">
+                   <span className="text-sm text-muted-foreground">Subtotal</span>
+                   <span className="font-medium">{formatCurrency(subtotal)}</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                   <span className="text-sm text-muted-foreground">Tax ({taxRate}%)</span>
+                   <span className="font-medium">{formatCurrency(taxAmount)}</span>
+                 </div>
+                 {discountRate > 0 && (
+                   <div className="flex justify-between items-center text-destructive">
+                     <span className="text-sm">Discount ({discountRate}%)</span>
+                     <span className="font-medium">-{formatCurrency(discountAmount)}</span>
+                   </div>
+                 )}
+                 <div className="border-t pt-3 mt-3">
+                   <div className="flex justify-between items-center">
+                     <span className="font-semibold">Total</span>
+                     <span className="font-bold text-lg text-primary">{formatCurrency(total)}</span>
+                   </div>
+                 </div>
               </div>
               
               <div className="pt-4 space-y-2 border-t">

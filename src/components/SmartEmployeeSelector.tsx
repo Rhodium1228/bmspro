@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { AlertCircle, CheckCircle2, Clock, DollarSign } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 interface SmartEmployeeSelectorProps {
   value: string;
@@ -179,19 +180,19 @@ export function SmartEmployeeSelector({
                       </TooltipContent>
                     </Tooltip>
                   )}
-                  {emp.hourly_rate && (
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Badge variant="outline" className="text-xs flex items-center gap-0.5">
-                          <DollarSign className="h-2.5 w-2.5" />
-                          {emp.hourly_rate}/hr
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">Hourly rate: ${emp.hourly_rate}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
+                   {emp.hourly_rate && (
+                     <Tooltip>
+                       <TooltipTrigger>
+                         <Badge variant="outline" className="text-xs flex items-center gap-0.5">
+                           <DollarSign className="h-2.5 w-2.5" />
+                           {formatCurrency(emp.hourly_rate, { maximumFractionDigits: 0 })}/hr
+                         </Badge>
+                       </TooltipTrigger>
+                       <TooltipContent>
+                         <p className="text-xs">Hourly rate: {formatCurrency(emp.hourly_rate)}</p>
+                       </TooltipContent>
+                     </Tooltip>
+                   )}
                 </div>
               </div>
             </SelectItem>

@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { calculateSystemOutput, calculateFinancials } from "@/lib/solarCalculations";
 import { SolarPanel, PanelSpec } from "@/lib/solarTypes";
 import { Zap, DollarSign, Leaf, TrendingUp } from "lucide-react";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 interface SolarAnalysisProps {
   panels: SolarPanel[];
@@ -105,19 +106,19 @@ const SolarAnalysis = ({
               Financial Analysis
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Yearly Savings</span>
-              <span className="font-semibold text-green-600">
-                ${financialCalc.yearlySavings.toFixed(0)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">25-Year Savings</span>
-              <span className="font-semibold text-green-600">
-                ${financialCalc.totalSavings25Years.toFixed(0)}
-              </span>
-            </div>
+           <CardContent className="space-y-3">
+             <div className="flex justify-between">
+               <span className="text-muted-foreground">Yearly Savings</span>
+               <span className="font-semibold text-green-600">
+                 {formatCurrency(financialCalc.yearlySavings, { maximumFractionDigits: 0 })}
+               </span>
+             </div>
+             <div className="flex justify-between">
+               <span className="text-muted-foreground">25-Year Savings</span>
+               <span className="font-semibold text-green-600">
+                 {formatCurrency(financialCalc.totalSavings25Years, { maximumFractionDigits: 0 })}
+               </span>
+             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Payback Period</span>
               <span className="font-semibold">

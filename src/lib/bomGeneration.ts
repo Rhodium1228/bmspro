@@ -6,15 +6,16 @@ export interface GeneratedQuotationItem {
   itemName: string;
   description: string;
   quantity: number;
-  rate: number;
+  rate: number; // AUD pricing
   gst: number;
   discount: number;
-  amount: number;
+  amount: number; // AUD amount
   datasheetUrl?: string;
 }
 
 /**
  * Generates quotation items from a security layout
+ * All pricing is in AUD
  */
 export function generateItemsFromLayout(
   projectData: ProjectData,
@@ -29,9 +30,9 @@ export function generateItemsFromLayout(
     return acc;
   }, {} as Record<string, number>);
 
-  // Add camera items
+  // Add camera items (prices in AUD)
   Object.entries(camerasByType).forEach(([type, count]) => {
-    const baseRate = type === "ptz" ? 350 : type === "dome" ? 250 : 200;
+    const baseRate = type === "ptz" ? 350 : type === "dome" ? 250 : 200; // AUD per unit
     const subtotal = count * baseRate;
     const gstAmount = (subtotal * 10) / 100;
     
@@ -47,10 +48,10 @@ export function generateItemsFromLayout(
     });
   });
 
-  // Count PIR sensors
+  // Count PIR sensors (prices in AUD)
   if (projectData.pirs.length > 0) {
     const count = projectData.pirs.length;
-    const baseRate = 80;
+    const baseRate = 80; // AUD per unit
     const subtotal = count * baseRate;
     const gstAmount = (subtotal * 10) / 100;
     
@@ -66,10 +67,10 @@ export function generateItemsFromLayout(
     });
   }
 
-  // Count fans
+  // Count fans (prices in AUD)
   if (projectData.fans.length > 0) {
     const count = projectData.fans.length;
-    const baseRate = 150;
+    const baseRate = 150; // AUD per unit
     const subtotal = count * baseRate;
     const gstAmount = (subtotal * 10) / 100;
     
@@ -85,7 +86,7 @@ export function generateItemsFromLayout(
     });
   }
 
-  // Calculate wall installation
+  // Calculate wall installation (prices in AUD)
   const walls = projectData.walls.filter(wall => wall.type === "wall");
   if (walls.length > 0) {
     const totalLength = walls.reduce((sum, wall) => {
@@ -93,7 +94,7 @@ export function generateItemsFromLayout(
     }, 0);
     
     if (totalLength > 0) {
-      const ratePerMeter = 50;
+      const ratePerMeter = 50; // AUD per meter
       const subtotal = totalLength * ratePerMeter;
       const gstAmount = (subtotal * 10) / 100;
       
@@ -110,11 +111,11 @@ export function generateItemsFromLayout(
     }
   }
 
-  // Count pillars
+  // Count pillars (prices in AUD)
   const pillars = projectData.walls.filter(wall => wall.type === "pillar");
   if (pillars.length > 0) {
     const count = pillars.length;
-    const baseRate = 75;
+    const baseRate = 75; // AUD per pillar
     const subtotal = count * baseRate;
     const gstAmount = (subtotal * 10) / 100;
     
@@ -130,10 +131,10 @@ export function generateItemsFromLayout(
     });
   }
 
-  // Add wiring and cabling if there are devices
+  // Add wiring and cabling if there are devices (prices in AUD)
   const totalDevices = projectData.cameras.length + projectData.pirs.length + projectData.fans.length;
   if (totalDevices > 0) {
-    const baseRate = 25;
+    const baseRate = 25; // AUD per device
     const subtotal = totalDevices * baseRate;
     const gstAmount = (subtotal * 10) / 100;
     
