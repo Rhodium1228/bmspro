@@ -77,6 +77,7 @@ export default function JobWorkSchedule() {
   
   // Common State
   const [notes, setNotes] = useState("");
+  const [siteAddress, setSiteAddress] = useState("");
   const [viewingSchedule, setViewingSchedule] = useState<any>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -181,6 +182,7 @@ export default function JobWorkSchedule() {
       notes: "",
     }]);
     setNotes("");
+    setSiteAddress("");
   };
 
   const addManualItem = () => {
@@ -341,6 +343,7 @@ export default function JobWorkSchedule() {
             total_items: manualItems.length,
             completed_items: 0,
             notes,
+            site_address: siteAddress,
           }])
           .select()
           .single();
@@ -392,6 +395,7 @@ export default function JobWorkSchedule() {
             total_items: orderItems.length,
             completed_items: 0,
             notes,
+            site_address: siteAddress,
           }])
           .select()
           .single();
@@ -548,6 +552,7 @@ export default function JobWorkSchedule() {
                 <TableRow>
                   <TableHead>Order Number</TableHead>
                   <TableHead>Supplier</TableHead>
+                  <TableHead>Site Address</TableHead>
                   <TableHead>Total Items</TableHead>
                   <TableHead>Completed</TableHead>
                   <TableHead>Status</TableHead>
@@ -558,13 +563,13 @@ export default function JobWorkSchedule() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : schedules.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                       No job work schedules found. Create one from a purchase order.
                     </TableCell>
                   </TableRow>
@@ -573,6 +578,7 @@ export default function JobWorkSchedule() {
                     <TableRow key={schedule.id}>
                       <TableCell className="font-medium">{schedule.order_number}</TableCell>
                       <TableCell>{schedule.supplier_name}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{schedule.site_address || "-"}</TableCell>
                       <TableCell>{schedule.total_items}</TableCell>
                       <TableCell>
                         <span className="text-sm">
@@ -741,6 +747,17 @@ export default function JobWorkSchedule() {
                     )}
 
                     <div className="space-y-2">
+                      <Label htmlFor="siteAddressPO">Site Address</Label>
+                      <Textarea
+                        id="siteAddressPO"
+                        value={siteAddress}
+                        onChange={(e) => setSiteAddress(e.target.value)}
+                        placeholder="Enter the site/project address..."
+                        rows={2}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="notes">Schedule Notes</Label>
                       <Textarea
                         id="notes"
@@ -791,43 +808,53 @@ export default function JobWorkSchedule() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Start Date *</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !manualStartDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {manualStartDate ? format(manualStartDate, "PPP") : <span>Pick a date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={manualStartDate}
-                            onSelect={setManualStartDate}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="jobNotes">Job Notes</Label>
-                      <Textarea
-                        id="jobNotes"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Overall job notes..."
-                        rows={1}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Start Date *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !manualStartDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {manualStartDate ? format(manualStartDate, "PPP") : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={manualStartDate}
+                          onSelect={setManualStartDate}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteAddressManual">Site Address</Label>
+                    <Textarea
+                      id="siteAddressManual"
+                      value={siteAddress}
+                      onChange={(e) => setSiteAddress(e.target.value)}
+                      placeholder="Enter the site/project address..."
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="jobNotes">Job Notes</Label>
+                    <Textarea
+                      id="jobNotes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Overall job notes..."
+                      rows={2}
+                    />
                   </div>
                 </div>
 
@@ -1035,6 +1062,12 @@ export default function JobWorkSchedule() {
                     </span>
                   </div>
                 </div>
+                {viewingSchedule.site_address && (
+                  <div className="mt-3">
+                    <span className="text-muted-foreground">Site Address:</span>{" "}
+                    <p className="text-sm mt-1">{viewingSchedule.site_address}</p>
+                  </div>
+                )}
                 {viewingSchedule.notes && (
                   <div className="mt-2">
                     <span className="text-muted-foreground">Notes:</span>{" "}

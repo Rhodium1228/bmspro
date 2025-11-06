@@ -68,40 +68,90 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_availability: {
+        Row: {
+          created_at: string
+          date: string
+          employee_id: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_availability_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           address: string
+          available_dates: Json | null
           created_at: string
           designation: string
           email: string
+          hourly_rate: number | null
           id: string
+          is_available: boolean | null
           name: string
           parent_name: string | null
           phone: string
+          skills: Json | null
           updated_at: string
           user_id: string
         }
         Insert: {
           address: string
+          available_dates?: Json | null
           created_at?: string
           designation: string
           email: string
+          hourly_rate?: number | null
           id?: string
+          is_available?: boolean | null
           name: string
           parent_name?: string | null
           phone: string
+          skills?: Json | null
           updated_at?: string
           user_id: string
         }
         Update: {
           address?: string
+          available_dates?: Json | null
           created_at?: string
           designation?: string
           email?: string
+          hourly_rate?: number | null
           id?: string
+          is_available?: boolean | null
           name?: string
           parent_name?: string | null
           phone?: string
+          skills?: Json | null
           updated_at?: string
           user_id?: string
         }
@@ -289,11 +339,16 @@ export type Database = {
           assigned_employee_name: string | null
           availability_date: string
           created_at: string
+          due_date: string | null
+          estimated_hours: number | null
           id: string
           item_name: string
           job_work_schedule_id: string
           notes: string | null
+          priority: string | null
           quantity: number
+          reassignment_history: Json | null
+          skills_required: Json | null
           status: string
           unit: string | null
           updated_at: string
@@ -303,11 +358,16 @@ export type Database = {
           assigned_employee_name?: string | null
           availability_date: string
           created_at?: string
+          due_date?: string | null
+          estimated_hours?: number | null
           id?: string
           item_name: string
           job_work_schedule_id: string
           notes?: string | null
+          priority?: string | null
           quantity: number
+          reassignment_history?: Json | null
+          skills_required?: Json | null
           status?: string
           unit?: string | null
           updated_at?: string
@@ -317,11 +377,16 @@ export type Database = {
           assigned_employee_name?: string | null
           availability_date?: string
           created_at?: string
+          due_date?: string | null
+          estimated_hours?: number | null
           id?: string
           item_name?: string
           job_work_schedule_id?: string
           notes?: string | null
+          priority?: string | null
           quantity?: number
+          reassignment_history?: Json | null
+          skills_required?: Json | null
           status?: string
           unit?: string | null
           updated_at?: string
@@ -344,6 +409,7 @@ export type Database = {
           notes: string | null
           order_number: string
           purchase_order_id: string | null
+          site_address: string | null
           status: string
           supplier_name: string
           total_items: number
@@ -357,6 +423,7 @@ export type Database = {
           notes?: string | null
           order_number: string
           purchase_order_id?: string | null
+          site_address?: string | null
           status?: string
           supplier_name: string
           total_items?: number
@@ -370,6 +437,7 @@ export type Database = {
           notes?: string | null
           order_number?: string
           purchase_order_id?: string | null
+          site_address?: string | null
           status?: string
           supplier_name?: string
           total_items?: number
@@ -382,6 +450,50 @@ export type Database = {
             columns: ["purchase_order_id"]
             isOneToOne: false
             referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          employee_id: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
