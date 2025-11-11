@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 interface CanvasAreaProps {
   activeTool: ToolType;
   cameras: Camera[];
@@ -49,7 +48,6 @@ interface CanvasAreaProps {
   onSelect: (element: SelectedElement) => void;
   onClearAll: () => void;
 }
-
 export const CanvasArea = ({
   activeTool,
   cameras,
@@ -84,38 +82,65 @@ export const CanvasArea = ({
   onFloorPlanUpload,
   onFloorPlanUpdate,
   onSelect,
-  onClearAll,
+  onClearAll
 }: CanvasAreaProps) => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const [canvasState, setCanvasState] = useState<CanvasState>({
     zoom: 1,
     panX: 0,
     panY: 0,
-    showGrid: true,
+    showGrid: true
   });
-
   const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-  const [multiSelectStart, setMultiSelectStart] = useState<{ x: number; y: number } | null>(null);
-  const [multiSelectEnd, setMultiSelectEnd] = useState<{ x: number; y: number } | null>(null);
+  const [panStart, setPanStart] = useState({
+    x: 0,
+    y: 0
+  });
+  const [multiSelectStart, setMultiSelectStart] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [multiSelectEnd, setMultiSelectEnd] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [isDraggingFloorPlan, setIsDraggingFloorPlan] = useState(false);
-  const [floorPlanDragStart, setFloorPlanDragStart] = useState({ x: 0, y: 0 });
-  const [annotationStart, setAnnotationStart] = useState<{ x: number; y: number } | null>(null);
-  
+  const [floorPlanDragStart, setFloorPlanDragStart] = useState({
+    x: 0,
+    y: 0
+  });
+  const [annotationStart, setAnnotationStart] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Drawing state
   const [isDrawing, setIsDrawing] = useState(false);
-  const [drawingStart, setDrawingStart] = useState<{ x: number; y: number } | null>(null);
+  const [drawingStart, setDrawingStart] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [currentDrawing, setCurrentDrawing] = useState<Partial<Drawing> | null>(null);
   const [freehandPoints, setFreehandPoints] = useState<number[]>([]);
-  const [currentMousePos, setCurrentMousePos] = useState<{ x: number; y: number } | null>(null);
-  
+  const [currentMousePos, setCurrentMousePos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Calibration state
   const [calibrationMode, setCalibrationMode] = useState(false);
-  const [calibrationPoint1, setCalibrationPoint1] = useState<{ x: number; y: number } | null>(null);
-  const [calibrationPoint2, setCalibrationPoint2] = useState<{ x: number; y: number } | null>(null);
+  const [calibrationPoint1, setCalibrationPoint1] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [calibrationPoint2, setCalibrationPoint2] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [showCalibrationDialog, setShowCalibrationDialog] = useState(false);
   const [calibrationDistance, setCalibrationDistance] = useState("");
 
@@ -126,7 +151,7 @@ export const CanvasArea = ({
     setDrawingStart(null);
     setCurrentDrawing(null);
     setFreehandPoints([]);
-    
+
     // Only set calibration mode when tool is 'calibrate', don't reset existing calibration
     if (activeTool === 'calibrate') {
       setCalibrationMode(true);
@@ -134,26 +159,29 @@ export const CanvasArea = ({
       setCalibrationMode(false);
     }
   }, [activeTool]);
-
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool === 'select' || activeTool === 'eraser') return;
-
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-
     const x = (e.clientX - rect.left - canvasState.panX) / canvasState.zoom;
     const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
 
     // Handle calibration mode
     if (activeTool === 'calibrate') {
       if (!calibrationPoint1) {
-        setCalibrationPoint1({ x, y });
+        setCalibrationPoint1({
+          x,
+          y
+        });
         toast({
           title: "Point 1 marked",
-          description: "Click second point on a known distance",
+          description: "Click second point on a known distance"
         });
       } else {
-        setCalibrationPoint2({ x, y });
+        setCalibrationPoint2({
+          x,
+          y
+        });
         setShowCalibrationDialog(true);
       }
       return;
@@ -162,21 +190,23 @@ export const CanvasArea = ({
     // Handle line drawing
     if (activeTool === 'line') {
       if (!drawingStart) {
-        setDrawingStart({ x, y });
+        setDrawingStart({
+          x,
+          y
+        });
       } else {
         const newDrawing: Drawing = {
           id: `LINE-${Date.now()}`,
           type: 'line',
           points: [drawingStart.x, drawingStart.y, x, y],
           color: '#3b82f6',
-          strokeWidth: 2,
+          strokeWidth: 2
         };
         onDrawingAdd(newDrawing);
         setDrawingStart(null);
       }
       return;
     }
-
     if (activeTool === 'camera') {
       const newCamera: Camera = {
         id: `CAM-${cameras.length + 1}`,
@@ -185,7 +215,7 @@ export const CanvasArea = ({
         rotation: 0,
         fov: 90,
         range: 30,
-        type: 'bullet',
+        type: 'bullet'
       };
       onCameraAdd(newCamera);
     } else if (activeTool === 'pir') {
@@ -195,7 +225,7 @@ export const CanvasArea = ({
         y,
         rotation: 0,
         range: 12,
-        fov: 110,
+        fov: 110
       };
       onPirAdd(newPir);
     } else if (activeTool === 'fan') {
@@ -203,12 +233,15 @@ export const CanvasArea = ({
         id: `FAN-${fans.length + 1}`,
         x,
         y,
-        rotation: 0,
+        rotation: 0
       };
       onFanAdd(newFan);
     } else if (activeTool === 'wall') {
       if (!drawingStart) {
-        setDrawingStart({ x, y });
+        setDrawingStart({
+          x,
+          y
+        });
       } else {
         const newWall: Wall = {
           id: `WALL-${walls.length + 1}`,
@@ -216,14 +249,17 @@ export const CanvasArea = ({
           points: [drawingStart.x, drawingStart.y, x, y],
           thickness: 10,
           height: 3,
-          color: '#64748b',
+          color: '#64748b'
         };
         onWallAdd(newWall);
         setDrawingStart(null);
       }
     } else if (activeTool === 'pillar') {
       if (!drawingStart) {
-        setDrawingStart({ x, y });
+        setDrawingStart({
+          x,
+          y
+        });
       } else {
         const width = Math.abs(x - drawingStart.x);
         const height = Math.abs(y - drawingStart.y);
@@ -233,7 +269,7 @@ export const CanvasArea = ({
           points: [Math.min(drawingStart.x, x), Math.min(drawingStart.y, y), width, height],
           thickness: 10,
           height: 3,
-          color: '#64748b',
+          color: '#64748b'
         };
         onWallAdd(newWall);
         setDrawingStart(null);
@@ -246,12 +282,15 @@ export const CanvasArea = ({
         y,
         text: 'New Label',
         color: '#3b82f6',
-        fontSize: 16,
+        fontSize: 16
       };
       onAnnotationAdd(newAnnotation);
     } else if (activeTool === 'zone') {
       if (!annotationStart) {
-        setAnnotationStart({ x, y });
+        setAnnotationStart({
+          x,
+          y
+        });
       } else {
         const newZone: SecurityZone = {
           id: `ZONE-${securityZones.length + 1}`,
@@ -261,14 +300,17 @@ export const CanvasArea = ({
           width: Math.abs(x - annotationStart.x),
           height: Math.abs(y - annotationStart.y),
           securityLevel: 'medium',
-          color: '#f59e0b',
+          color: '#f59e0b'
         };
         onZoneAdd(newZone);
         setAnnotationStart(null);
       }
     } else if (activeTool === 'dimension' || activeTool === 'arrow') {
       if (!annotationStart) {
-        setAnnotationStart({ x, y });
+        setAnnotationStart({
+          x,
+          y
+        });
       } else {
         const distance = Math.sqrt(Math.pow(x - annotationStart.x, 2) + Math.pow(y - annotationStart.y, 2));
         const meters = (distance / pixelsPerMeter).toFixed(1);
@@ -280,38 +322,47 @@ export const CanvasArea = ({
           x2: x,
           y2: y,
           text: activeTool === 'dimension' ? `${meters}m` : '',
-          color: '#3b82f6',
+          color: '#3b82f6'
         };
         onAnnotationAdd(newAnnotation);
         setAnnotationStart(null);
       }
     }
   };
-
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     const x = (e.clientX - rect.left - canvasState.panX) / canvasState.zoom;
     const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
-
     if (e.altKey) {
       // Pan mode with Alt key
       e.preventDefault();
       setIsPanning(true);
-      setPanStart({ x: e.clientX - canvasState.panX, y: e.clientY - canvasState.panY });
+      setPanStart({
+        x: e.clientX - canvasState.panX,
+        y: e.clientY - canvasState.panY
+      });
     } else if (e.button === 0 && activeTool === 'select' && !selected) {
       // Multi-select mode
-      setMultiSelectStart({ x, y });
-      setMultiSelectEnd({ x, y });
+      setMultiSelectStart({
+        x,
+        y
+      });
+      setMultiSelectEnd({
+        x,
+        y
+      });
     } else if (activeTool === 'rectangle' || activeTool === 'circle') {
       setIsDrawing(true);
-      setDrawingStart({ x, y });
+      setDrawingStart({
+        x,
+        y
+      });
     } else if (activeTool === 'freehand') {
       setIsDrawing(true);
       setFreehandPoints([x, y]);
     }
   };
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -319,16 +370,21 @@ export const CanvasArea = ({
     const y = (e.clientY - rect.top - canvasState.panY) / canvasState.zoom;
 
     // Track mouse position for line preview
-    setCurrentMousePos({ x, y });
-
+    setCurrentMousePos({
+      x,
+      y
+    });
     if (isPanning) {
       setCanvasState(prev => ({
         ...prev,
         panX: e.clientX - panStart.x,
-        panY: e.clientY - panStart.y,
+        panY: e.clientY - panStart.y
       }));
     } else if (multiSelectStart) {
-      setMultiSelectEnd({ x, y });
+      setMultiSelectEnd({
+        x,
+        y
+      });
     } else if (isDrawing) {
       if (activeTool === 'rectangle' && drawingStart) {
         // Fix rectangle drawing with negative dimensions
@@ -340,7 +396,7 @@ export const CanvasArea = ({
           type: 'rectangle',
           points: [minX, minY, width, height],
           color: '#3b82f6',
-          strokeWidth: 2,
+          strokeWidth: 2
         });
       } else if (activeTool === 'circle' && drawingStart) {
         const radius = Math.sqrt(Math.pow(x - drawingStart.x, 2) + Math.pow(y - drawingStart.y, 2));
@@ -348,21 +404,19 @@ export const CanvasArea = ({
           type: 'circle',
           points: [drawingStart.x, drawingStart.y, radius],
           color: '#3b82f6',
-          strokeWidth: 2,
+          strokeWidth: 2
         });
       } else if (activeTool === 'freehand') {
         setFreehandPoints(prev => [...prev, x, y]);
       }
     }
   };
-
   const handleMouseUp = () => {
     setIsPanning(false);
     if (multiSelectStart && multiSelectEnd) {
       setMultiSelectStart(null);
       setMultiSelectEnd(null);
     }
-    
     if (isDrawing) {
       if (activeTool === 'rectangle' && currentDrawing && drawingStart) {
         // Fix rectangle with proper coordinates
@@ -372,19 +426,18 @@ export const CanvasArea = ({
         const minY = Math.min(drawingStart.y, y);
         const width = Math.abs(x - drawingStart.x);
         const height = Math.abs(y - drawingStart.y);
-        
         const newDrawing: Drawing = {
           id: `RECT-${Date.now()}`,
           type: 'rectangle',
           points: [minX, minY, width, height],
           color: '#3b82f6',
-          strokeWidth: 2,
+          strokeWidth: 2
         };
         onDrawingAdd(newDrawing);
       } else if (activeTool === 'circle' && currentDrawing) {
         const newDrawing: Drawing = {
           id: `CIRCLE-${Date.now()}`,
-          ...currentDrawing as Omit<Drawing, 'id'>,
+          ...(currentDrawing as Omit<Drawing, 'id'>)
         };
         onDrawingAdd(newDrawing);
       } else if (activeTool === 'freehand' && freehandPoints.length > 2) {
@@ -393,58 +446,53 @@ export const CanvasArea = ({
           type: 'freehand',
           points: freehandPoints,
           color: '#3b82f6',
-          strokeWidth: 2,
+          strokeWidth: 2
         };
         onDrawingAdd(newDrawing);
       }
-      
       setIsDrawing(false);
       setDrawingStart(null);
       setCurrentDrawing(null);
       setFreehandPoints([]);
     }
   };
-
   const handleFloorPlanMouseDown = (e: React.MouseEvent) => {
     if (!floorPlan || floorPlan.locked || activeTool !== 'select') return;
     e.stopPropagation();
     setIsDraggingFloorPlan(true);
     setFloorPlanDragStart({
       x: e.clientX - floorPlan.x * canvasState.zoom,
-      y: e.clientY - floorPlan.y * canvasState.zoom,
+      y: e.clientY - floorPlan.y * canvasState.zoom
     });
   };
-
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => {
       if (isDraggingFloorPlan && floorPlan) {
         const newX = (e.clientX - floorPlanDragStart.x) / canvasState.zoom;
         const newY = (e.clientY - floorPlanDragStart.y) / canvasState.zoom;
-        onFloorPlanUpdate({ x: newX, y: newY });
+        onFloorPlanUpdate({
+          x: newX,
+          y: newY
+        });
       }
     };
-
     const handleGlobalMouseUp = () => {
       setIsDraggingFloorPlan(false);
     };
-
     if (isDraggingFloorPlan) {
       document.addEventListener('mousemove', handleGlobalMouseMove);
       document.addEventListener('mouseup', handleGlobalMouseUp);
     }
-
     return () => {
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
     };
   }, [isDraggingFloorPlan, floorPlan, floorPlanDragStart, canvasState.zoom, onFloorPlanUpdate]);
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = event => {
       const img = new Image();
       img.onload = () => {
         const scale = 0.5;
@@ -455,7 +503,7 @@ export const CanvasArea = ({
           scale,
           width: img.width * scale,
           height: img.height * scale,
-          locked: false,
+          locked: false
         };
         onFloorPlanUpload(newFloorPlan);
       };
@@ -463,232 +511,123 @@ export const CanvasArea = ({
     };
     reader.readAsDataURL(file);
   };
-
   const handleExport = async () => {
     if (!canvasRef.current) return;
-
     try {
       const canvas = await html2canvas(canvasRef.current, {
-        backgroundColor: "#ffffff",
+        backgroundColor: "#ffffff"
       });
       const link = document.createElement("a");
       link.download = `security-layout-${Date.now()}.png`;
       link.href = canvas.toDataURL();
       link.click();
-
       toast({
         title: "Success",
-        description: "Layout exported successfully",
+        description: "Layout exported successfully"
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to export layout",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const applyCalibration = () => {
     if (!calibrationPoint1 || !calibrationPoint2 || !calibrationDistance || !floorPlan) return;
-
     const distance = parseFloat(calibrationDistance);
     if (isNaN(distance) || distance <= 0) {
       toast({
         title: "Error",
         description: "Please enter a valid distance",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
-    const pixelDistance = Math.sqrt(
-      Math.pow(calibrationPoint2.x - calibrationPoint1.x, 2) +
-      Math.pow(calibrationPoint2.y - calibrationPoint1.y, 2)
-    );
-
+    const pixelDistance = Math.sqrt(Math.pow(calibrationPoint2.x - calibrationPoint1.x, 2) + Math.pow(calibrationPoint2.y - calibrationPoint1.y, 2));
     const pixelsPerMeter = pixelDistance / distance;
     const realWorldWidth = floorPlan.width / pixelsPerMeter;
     const realWorldHeight = floorPlan.height / pixelsPerMeter;
-
     console.log('📏 Calibration Applied:', {
       pixelDistance: pixelDistance.toFixed(2),
       realWorldDistance: distance,
       pixelsPerMeter: pixelsPerMeter.toFixed(2),
       floorPlanSize: `${realWorldWidth.toFixed(1)}m × ${realWorldHeight.toFixed(1)}m`
     });
-
     onFloorPlanUpdate({
       pixelsPerMeter,
       realWorldWidth,
       realWorldHeight,
-      isCalibrated: true,
+      isCalibrated: true
     });
-
     setShowCalibrationDialog(false);
     setCalibrationPoint1(null);
     setCalibrationPoint2(null);
     setCalibrationDistance("");
     setCalibrationMode(false);
-
     toast({
       title: "Success",
-      description: `Scale calibrated: 1m = ${pixelsPerMeter.toFixed(1)} pixels`,
+      description: `Scale calibrated: 1m = ${pixelsPerMeter.toFixed(1)} pixels`
     });
   };
-
   const renderGrid = () => {
     if (!canvasState.showGrid) return null;
-    
+
     // Grid spacing represents 5 meters in real world
     const metersPerGridLine = 5;
     const gridSize = metersPerGridLine * pixelsPerMeter;
     const lines = [];
     const width = 2000;
     const height = 2000;
-
     for (let i = 0; i <= width; i += gridSize) {
-      const isMainLine = (i / gridSize) % 2 === 0;
-      lines.push(
-        <line
-          key={`v-${i}`}
-          x1={i}
-          y1={0}
-          x2={i}
-          y2={height}
-          stroke="currentColor"
-          strokeWidth={isMainLine ? 0.5 : 0.25}
-          opacity={0.3}
-        />
-      );
+      const isMainLine = i / gridSize % 2 === 0;
+      lines.push(<line key={`v-${i}`} x1={i} y1={0} x2={i} y2={height} stroke="currentColor" strokeWidth={isMainLine ? 0.5 : 0.25} opacity={0.3} />);
       // Add meter labels on major grid lines
       if (isMainLine && floorPlan?.isCalibrated && canvasState.zoom > 0.4) {
         const meters = (i / pixelsPerMeter).toFixed(0);
-        lines.push(
-          <text
-            key={`label-v-${i}`}
-            x={i + 5}
-            y={15}
-            fill="currentColor"
-            fontSize={10}
-            opacity={0.5}
-          >
+        lines.push(<text key={`label-v-${i}`} x={i + 5} y={15} fill="currentColor" fontSize={10} opacity={0.5}>
             {meters}m
-          </text>
-        );
+          </text>);
       }
     }
-
     for (let i = 0; i <= height; i += gridSize) {
-      const isMainLine = (i / gridSize) % 2 === 0;
-      lines.push(
-        <line
-          key={`h-${i}`}
-          x1={0}
-          y1={i}
-          x2={width}
-          y2={i}
-          stroke="currentColor"
-          strokeWidth={isMainLine ? 0.5 : 0.25}
-          opacity={0.3}
-        />
-      );
+      const isMainLine = i / gridSize % 2 === 0;
+      lines.push(<line key={`h-${i}`} x1={0} y1={i} x2={width} y2={i} stroke="currentColor" strokeWidth={isMainLine ? 0.5 : 0.25} opacity={0.3} />);
       // Add meter labels on major grid lines
       if (isMainLine && floorPlan?.isCalibrated && canvasState.zoom > 0.4) {
         const meters = (i / pixelsPerMeter).toFixed(0);
-        lines.push(
-          <text
-            key={`label-h-${i}`}
-            x={5}
-            y={i + 15}
-            fill="currentColor"
-            fontSize={10}
-            opacity={0.5}
-          >
+        lines.push(<text key={`label-h-${i}`} x={5} y={i + 15} fill="currentColor" fontSize={10} opacity={0.5}>
             {meters}m
-          </text>
-        );
+          </text>);
       }
     }
-
     return <g className="text-muted-foreground">{lines}</g>;
   };
 
   // Render scale bar indicator
   const renderScaleBar = () => {
     if (!floorPlan?.isCalibrated) return null;
-    
     const scaleLength = 5 * pixelsPerMeter; // 5 meter scale bar
     const x = 50;
     const y = ((canvasRef.current?.clientHeight || 600) - 70) / canvasState.zoom;
-    
-    return (
-      <g className="scale-bar">
-        <line
-          x1={x}
-          y1={y}
-          x2={x + scaleLength}
-          y2={y}
-          stroke="hsl(var(--primary))"
-          strokeWidth={3 / canvasState.zoom}
-        />
-        <line
-          x1={x}
-          y1={y - 5 / canvasState.zoom}
-          x2={x}
-          y2={y + 5 / canvasState.zoom}
-          stroke="hsl(var(--primary))"
-          strokeWidth={3 / canvasState.zoom}
-        />
-        <line
-          x1={x + scaleLength}
-          y1={y - 5 / canvasState.zoom}
-          x2={x + scaleLength}
-          y2={y + 5 / canvasState.zoom}
-          stroke="hsl(var(--primary))"
-          strokeWidth={3 / canvasState.zoom}
-        />
-        <text
-          x={x + scaleLength / 2}
-          y={y - 10 / canvasState.zoom}
-          textAnchor="middle"
-          fill="hsl(var(--primary))"
-          fontSize={12 / canvasState.zoom}
-          fontWeight="bold"
-        >
+    return <g className="scale-bar">
+        <line x1={x} y1={y} x2={x + scaleLength} y2={y} stroke="hsl(var(--primary))" strokeWidth={3 / canvasState.zoom} />
+        <line x1={x} y1={y - 5 / canvasState.zoom} x2={x} y2={y + 5 / canvasState.zoom} stroke="hsl(var(--primary))" strokeWidth={3 / canvasState.zoom} />
+        <line x1={x + scaleLength} y1={y - 5 / canvasState.zoom} x2={x + scaleLength} y2={y + 5 / canvasState.zoom} stroke="hsl(var(--primary))" strokeWidth={3 / canvasState.zoom} />
+        <text x={x + scaleLength / 2} y={y - 10 / canvasState.zoom} textAnchor="middle" fill="hsl(var(--primary))" fontSize={12 / canvasState.zoom} fontWeight="bold">
           5m
         </text>
-        <text
-          x={x + scaleLength / 2}
-          y={y + 20 / canvasState.zoom}
-          textAnchor="middle"
-          fill="hsl(var(--muted-foreground))"
-          fontSize={10 / canvasState.zoom}
-        >
+        <text x={x + scaleLength / 2} y={y + 20 / canvasState.zoom} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize={10 / canvasState.zoom}>
           1m = {pixelsPerMeter.toFixed(1)}px
         </text>
-      </g>
-    );
+      </g>;
   };
-
-  return (
-    <div className="flex-1 relative bg-muted/30 min-h-0">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileUpload}
-        className="hidden"
-      />
+  return <div className="flex-1 relative bg-muted/30 min-h-0">
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
 
       {/* Toolbar */}
       <div className="absolute top-2 left-2 sm:top-4 sm:left-4 flex flex-col sm:flex-row gap-2 z-10">
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          variant="secondary"
-          size="sm"
-          className="gap-2"
-        >
+        <Button onClick={() => fileInputRef.current?.click()} variant="secondary" size="sm" className="gap-2">
           <Upload className="h-4 w-4" />
           <span className="hidden sm:inline">Upload Floor Plan</span>
         </Button>
@@ -696,517 +635,175 @@ export const CanvasArea = ({
           <Download className="h-4 w-4" />
           <span className="hidden sm:inline">Export</span>
         </Button>
-        <Button
-          onClick={onClearAll}
-          variant="destructive"
-          size="sm"
-          className="gap-2"
-        >
+        <Button onClick={onClearAll} variant="destructive" size="sm" className="gap-2">
           <Trash2 className="h-4 w-4" />
           <span className="hidden sm:inline">Clear All</span>
         </Button>
       </div>
 
       {/* Canvas Controls */}
-      <CanvasControls
-        zoom={canvasState.zoom}
-        showGrid={canvasState.showGrid}
-        floorPlanLocked={floorPlan?.locked ?? false}
-        onZoomChange={(zoom) => setCanvasState(prev => ({ ...prev, zoom }))}
-        onGridToggle={(showGrid) => setCanvasState(prev => ({ ...prev, showGrid }))}
-        onFloorPlanLockToggle={(locked) => floorPlan && onFloorPlanUpdate({ locked })}
-        onResetView={() => setCanvasState({ zoom: 1, panX: 0, panY: 0, showGrid: canvasState.showGrid })}
-      />
+      
 
       {/* Canvas */}
-      <div
-        ref={canvasRef}
-        className="w-full h-full overflow-hidden"
-        style={{ cursor: isPanning ? 'grabbing' : activeTool === 'select' ? 'default' : 'crosshair' }}
-        onClick={handleCanvasClick}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      >
-        <svg 
-          className="w-full h-full canvas-main-svg" 
-          viewBox={`${-canvasState.panX / canvasState.zoom} ${-canvasState.panY / canvasState.zoom} ${(canvasRef.current?.clientWidth || 800) / canvasState.zoom} ${(canvasRef.current?.clientHeight || 600) / canvasState.zoom}`}
-        >
+      <div ref={canvasRef} className="w-full h-full overflow-hidden" style={{
+      cursor: isPanning ? 'grabbing' : activeTool === 'select' ? 'default' : 'crosshair'
+    }} onClick={handleCanvasClick} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
+        <svg className="w-full h-full canvas-main-svg" viewBox={`${-canvasState.panX / canvasState.zoom} ${-canvasState.panY / canvasState.zoom} ${(canvasRef.current?.clientWidth || 800) / canvasState.zoom} ${(canvasRef.current?.clientHeight || 600) / canvasState.zoom}`}>
           {/* Grid */}
           {renderGrid()}
 
           {/* Floor Plan */}
-          {floorPlan && layerSettings.background.visible && (
-            <g opacity={layerSettings.background.opacity / 100}>
-              <image
-                href={floorPlan.url}
-                x={floorPlan.x}
-                y={floorPlan.y}
-                width={floorPlan.width}
-                height={floorPlan.height}
-                style={{ cursor: floorPlan.locked ? 'default' : 'move' }}
-                onMouseDown={handleFloorPlanMouseDown}
-              />
-              {!floorPlan.locked && (
-                <rect
-                  x={floorPlan.x}
-                  y={floorPlan.y}
-                  width={floorPlan.width}
-                  height={floorPlan.height}
-                  fill="none"
-                  stroke="#3b82f6"
-                  strokeWidth={2 / canvasState.zoom}
-                  strokeDasharray="8,4"
-                  pointerEvents="none"
-                />
-              )}
-            </g>
-          )}
+          {floorPlan && layerSettings.background.visible && <g opacity={layerSettings.background.opacity / 100}>
+              <image href={floorPlan.url} x={floorPlan.x} y={floorPlan.y} width={floorPlan.width} height={floorPlan.height} style={{
+            cursor: floorPlan.locked ? 'default' : 'move'
+          }} onMouseDown={handleFloorPlanMouseDown} />
+              {!floorPlan.locked && <rect x={floorPlan.x} y={floorPlan.y} width={floorPlan.width} height={floorPlan.height} fill="none" stroke="#3b82f6" strokeWidth={2 / canvasState.zoom} strokeDasharray="8,4" pointerEvents="none" />}
+            </g>}
 
           {/* Coverage Visualization */}
-          {layerSettings.coverage.visible && (
-            <g opacity={layerSettings.coverage.opacity / 100}>
-              <CoverageVisualization
-                cameras={cameras}
-                walls={walls}
-                showCoverage={coverageSettings.showCoverage}
-                showBlindSpots={coverageSettings.showBlindSpots}
-                canvasWidth={2000}
-                canvasHeight={1500}
-                pixelsPerMeter={pixelsPerMeter}
-              />
-            </g>
-          )}
+          {layerSettings.coverage.visible && <g opacity={layerSettings.coverage.opacity / 100}>
+              <CoverageVisualization cameras={cameras} walls={walls} showCoverage={coverageSettings.showCoverage} showBlindSpots={coverageSettings.showBlindSpots} canvasWidth={2000} canvasHeight={1500} pixelsPerMeter={pixelsPerMeter} />
+            </g>}
 
           {/* Security Zones */}
-          {layerSettings.annotations.visible && securityZones.map((zone) => (
-            <g key={zone.id} opacity={layerSettings.annotations.opacity / 100}>
-              <rect
-                x={zone.x}
-                y={zone.y}
-                width={zone.width}
-                height={zone.height}
-                fill={zone.color}
-                fillOpacity={0.15}
-                stroke={zone.color}
-                strokeWidth={2}
-                strokeDasharray="8,4"
-              />
-              <text
-                x={zone.x + zone.width / 2}
-                y={zone.y + zone.height / 2}
-                textAnchor="middle"
-                fill={zone.color}
-                fontSize={14}
-                fontWeight="bold"
-              >
+          {layerSettings.annotations.visible && securityZones.map(zone => <g key={zone.id} opacity={layerSettings.annotations.opacity / 100}>
+              <rect x={zone.x} y={zone.y} width={zone.width} height={zone.height} fill={zone.color} fillOpacity={0.15} stroke={zone.color} strokeWidth={2} strokeDasharray="8,4" />
+              <text x={zone.x + zone.width / 2} y={zone.y + zone.height / 2} textAnchor="middle" fill={zone.color} fontSize={14} fontWeight="bold">
                 {zone.name}
               </text>
-            </g>
-          ))}
+            </g>)}
 
           {/* Drawings */}
-          {layerSettings.annotations.visible && drawings.map((drawing) => {
-            const scaledStrokeWidth = drawing.strokeWidth / canvasState.zoom;
-            if (drawing.type === 'line') {
-              return (
-                <line
-                  key={drawing.id}
-                  x1={drawing.points[0]}
-                  y1={drawing.points[1]}
-                  x2={drawing.points[2]}
-                  y2={drawing.points[3]}
-                  stroke={drawing.color}
-                  strokeWidth={scaledStrokeWidth}
-                  opacity={layerSettings.annotations.opacity / 100}
-                />
-              );
-            } else if (drawing.type === 'rectangle') {
-              return (
-                <rect
-                  key={drawing.id}
-                  x={drawing.points[0]}
-                  y={drawing.points[1]}
-                  width={drawing.points[2]}
-                  height={drawing.points[3]}
-                  fill="none"
-                  stroke={drawing.color}
-                  strokeWidth={scaledStrokeWidth}
-                  opacity={layerSettings.annotations.opacity / 100}
-                />
-              );
-            } else if (drawing.type === 'circle') {
-              return (
-                <circle
-                  key={drawing.id}
-                  cx={drawing.points[0]}
-                  cy={drawing.points[1]}
-                  r={drawing.points[2]}
-                  fill="none"
-                  stroke={drawing.color}
-                  strokeWidth={scaledStrokeWidth}
-                  opacity={layerSettings.annotations.opacity / 100}
-                />
-              );
-            } else if (drawing.type === 'freehand') {
-              return (
-                <polyline
-                  key={drawing.id}
-                  points={drawing.points.join(' ')}
-                  fill="none"
-                  stroke={drawing.color}
-                  strokeWidth={scaledStrokeWidth}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity={layerSettings.annotations.opacity / 100}
-                />
-              );
-            }
-            return null;
-          })}
+          {layerSettings.annotations.visible && drawings.map(drawing => {
+          const scaledStrokeWidth = drawing.strokeWidth / canvasState.zoom;
+          if (drawing.type === 'line') {
+            return <line key={drawing.id} x1={drawing.points[0]} y1={drawing.points[1]} x2={drawing.points[2]} y2={drawing.points[3]} stroke={drawing.color} strokeWidth={scaledStrokeWidth} opacity={layerSettings.annotations.opacity / 100} />;
+          } else if (drawing.type === 'rectangle') {
+            return <rect key={drawing.id} x={drawing.points[0]} y={drawing.points[1]} width={drawing.points[2]} height={drawing.points[3]} fill="none" stroke={drawing.color} strokeWidth={scaledStrokeWidth} opacity={layerSettings.annotations.opacity / 100} />;
+          } else if (drawing.type === 'circle') {
+            return <circle key={drawing.id} cx={drawing.points[0]} cy={drawing.points[1]} r={drawing.points[2]} fill="none" stroke={drawing.color} strokeWidth={scaledStrokeWidth} opacity={layerSettings.annotations.opacity / 100} />;
+          } else if (drawing.type === 'freehand') {
+            return <polyline key={drawing.id} points={drawing.points.join(' ')} fill="none" stroke={drawing.color} strokeWidth={scaledStrokeWidth} strokeLinecap="round" strokeLinejoin="round" opacity={layerSettings.annotations.opacity / 100} />;
+          }
+          return null;
+        })}
 
           {/* Current drawing preview */}
-          {currentDrawing && (
-            <>
-              {currentDrawing.type === 'rectangle' && (
-                <rect
-                  x={currentDrawing.points![0]}
-                  y={currentDrawing.points![1]}
-                  width={currentDrawing.points![2]}
-                  height={currentDrawing.points![3]}
-                  fill="none"
-                  stroke={currentDrawing.color}
-                  strokeWidth={currentDrawing.strokeWidth! / canvasState.zoom}
-                  strokeDasharray="4,4"
-                  opacity={0.7}
-                />
-              )}
-              {currentDrawing.type === 'circle' && (
-                <circle
-                  cx={currentDrawing.points![0]}
-                  cy={currentDrawing.points![1]}
-                  r={currentDrawing.points![2]}
-                  fill="none"
-                  stroke={currentDrawing.color}
-                  strokeWidth={currentDrawing.strokeWidth! / canvasState.zoom}
-                  strokeDasharray="4,4"
-                  opacity={0.7}
-                />
-              )}
-            </>
-          )}
+          {currentDrawing && <>
+              {currentDrawing.type === 'rectangle' && <rect x={currentDrawing.points![0]} y={currentDrawing.points![1]} width={currentDrawing.points![2]} height={currentDrawing.points![3]} fill="none" stroke={currentDrawing.color} strokeWidth={currentDrawing.strokeWidth! / canvasState.zoom} strokeDasharray="4,4" opacity={0.7} />}
+              {currentDrawing.type === 'circle' && <circle cx={currentDrawing.points![0]} cy={currentDrawing.points![1]} r={currentDrawing.points![2]} fill="none" stroke={currentDrawing.color} strokeWidth={currentDrawing.strokeWidth! / canvasState.zoom} strokeDasharray="4,4" opacity={0.7} />}
+            </>}
 
           {/* Freehand drawing preview */}
-          {isDrawing && activeTool === 'freehand' && freehandPoints.length > 2 && (
-            <polyline
-              points={freehandPoints.join(' ')}
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth={2 / canvasState.zoom}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity={0.7}
-            />
-          )}
+          {isDrawing && activeTool === 'freehand' && freehandPoints.length > 2 && <polyline points={freehandPoints.join(' ')} fill="none" stroke="#3b82f6" strokeWidth={2 / canvasState.zoom} strokeLinecap="round" strokeLinejoin="round" opacity={0.7} />}
 
           {/* Line drawing preview with live feedback */}
-          {drawingStart && activeTool === 'line' && (
-            <>
-              <circle
-                cx={drawingStart.x}
-                cy={drawingStart.y}
-                r={4 / canvasState.zoom}
-                fill="#3b82f6"
-                opacity={0.7}
-              />
-              {currentMousePos && (
-                <line
-                  x1={drawingStart.x}
-                  y1={drawingStart.y}
-                  x2={currentMousePos.x}
-                  y2={currentMousePos.y}
-                  stroke="#3b82f6"
-                  strokeWidth={2 / canvasState.zoom}
-                  strokeDasharray="4,4"
-                  opacity={0.7}
-                />
-              )}
-            </>
-          )}
+          {drawingStart && activeTool === 'line' && <>
+              <circle cx={drawingStart.x} cy={drawingStart.y} r={4 / canvasState.zoom} fill="#3b82f6" opacity={0.7} />
+              {currentMousePos && <line x1={drawingStart.x} y1={drawingStart.y} x2={currentMousePos.x} y2={currentMousePos.y} stroke="#3b82f6" strokeWidth={2 / canvasState.zoom} strokeDasharray="4,4" opacity={0.7} />}
+            </>}
           
           {/* Scale bar */}
           {renderScaleBar()}
 
           {/* Calibration markers */}
-          {calibrationMode && calibrationPoint1 && (
-            <>
-              <circle
-                cx={calibrationPoint1.x}
-                cy={calibrationPoint1.y}
-                r={6}
-                fill="#f59e0b"
-                stroke="#ffffff"
-                strokeWidth={2}
-              />
-              <text
-                x={calibrationPoint1.x}
-                y={calibrationPoint1.y - 10}
-                fill="#f59e0b"
-                fontSize={12}
-                fontWeight="bold"
-                textAnchor="middle"
-              >
+          {calibrationMode && calibrationPoint1 && <>
+              <circle cx={calibrationPoint1.x} cy={calibrationPoint1.y} r={6} fill="#f59e0b" stroke="#ffffff" strokeWidth={2} />
+              <text x={calibrationPoint1.x} y={calibrationPoint1.y - 10} fill="#f59e0b" fontSize={12} fontWeight="bold" textAnchor="middle">
                 A
               </text>
-            </>
-          )}
-          {calibrationMode && calibrationPoint2 && (
-            <>
-              <line
-                x1={calibrationPoint1!.x}
-                y1={calibrationPoint1!.y}
-                x2={calibrationPoint2.x}
-                y2={calibrationPoint2.y}
-                stroke="#f59e0b"
-                strokeWidth={2}
-                strokeDasharray="4,4"
-              />
-              <circle
-                cx={calibrationPoint2.x}
-                cy={calibrationPoint2.y}
-                r={6}
-                fill="#f59e0b"
-                stroke="#ffffff"
-                strokeWidth={2}
-              />
-              <text
-                x={calibrationPoint2.x}
-                y={calibrationPoint2.y - 10}
-                fill="#f59e0b"
-                fontSize={12}
-                fontWeight="bold"
-                textAnchor="middle"
-              >
+            </>}
+          {calibrationMode && calibrationPoint2 && <>
+              <line x1={calibrationPoint1!.x} y1={calibrationPoint1!.y} x2={calibrationPoint2.x} y2={calibrationPoint2.y} stroke="#f59e0b" strokeWidth={2} strokeDasharray="4,4" />
+              <circle cx={calibrationPoint2.x} cy={calibrationPoint2.y} r={6} fill="#f59e0b" stroke="#ffffff" strokeWidth={2} />
+              <text x={calibrationPoint2.x} y={calibrationPoint2.y - 10} fill="#f59e0b" fontSize={12} fontWeight="bold" textAnchor="middle">
                 B
               </text>
-            </>
-          )}
+            </>}
 
           {/* Annotations */}
-          {layerSettings.annotations.visible && annotations.map((annotation) => {
-            if (annotation.type === 'text') {
-              return (
-                <text
-                  key={annotation.id}
-                  x={annotation.x}
-                  y={annotation.y}
-                  fill={annotation.color}
-                  fontSize={annotation.fontSize || 16}
-                  fontWeight="bold"
-                  opacity={layerSettings.annotations.opacity / 100}
-                >
+          {layerSettings.annotations.visible && annotations.map(annotation => {
+          if (annotation.type === 'text') {
+            return <text key={annotation.id} x={annotation.x} y={annotation.y} fill={annotation.color} fontSize={annotation.fontSize || 16} fontWeight="bold" opacity={layerSettings.annotations.opacity / 100}>
                   {annotation.text}
-                </text>
-              );
-            } else if (annotation.type === 'dimension') {
-              return (
-                <g key={annotation.id} opacity={layerSettings.annotations.opacity / 100}>
-                  <line
-                    x1={annotation.x}
-                    y1={annotation.y}
-                    x2={annotation.x2}
-                    y2={annotation.y2}
-                    stroke={annotation.color}
-                    strokeWidth={2}
-                  />
-                  <text
-                    x={(annotation.x + (annotation.x2 || annotation.x)) / 2}
-                    y={(annotation.y + (annotation.y2 || annotation.y)) / 2 - 5}
-                    fill={annotation.color}
-                    fontSize={12}
-                    fontWeight="bold"
-                    textAnchor="middle"
-                  >
+                </text>;
+          } else if (annotation.type === 'dimension') {
+            return <g key={annotation.id} opacity={layerSettings.annotations.opacity / 100}>
+                  <line x1={annotation.x} y1={annotation.y} x2={annotation.x2} y2={annotation.y2} stroke={annotation.color} strokeWidth={2} />
+                  <text x={(annotation.x + (annotation.x2 || annotation.x)) / 2} y={(annotation.y + (annotation.y2 || annotation.y)) / 2 - 5} fill={annotation.color} fontSize={12} fontWeight="bold" textAnchor="middle">
                     {annotation.text}
                   </text>
-                </g>
-              );
-            } else if (annotation.type === 'arrow') {
-              return (
-                <g key={annotation.id} opacity={layerSettings.annotations.opacity / 100}>
+                </g>;
+          } else if (annotation.type === 'arrow') {
+            return <g key={annotation.id} opacity={layerSettings.annotations.opacity / 100}>
                   <defs>
-                    <marker
-                      id={`arrow-${annotation.id}`}
-                      markerWidth={10}
-                      markerHeight={7}
-                      refX={9}
-                      refY={3.5}
-                      orient="auto"
-                    >
+                    <marker id={`arrow-${annotation.id}`} markerWidth={10} markerHeight={7} refX={9} refY={3.5} orient="auto">
                       <polygon points="0 0, 10 3.5, 0 7" fill={annotation.color} />
                     </marker>
                   </defs>
-                  <line
-                    x1={annotation.x}
-                    y1={annotation.y}
-                    x2={annotation.x2}
-                    y2={annotation.y2}
-                    stroke={annotation.color}
-                    strokeWidth={2.5}
-                    markerEnd={`url(#arrow-${annotation.id})`}
-                  />
-                </g>
-              );
-            }
-            return null;
-          })}
+                  <line x1={annotation.x} y1={annotation.y} x2={annotation.x2} y2={annotation.y2} stroke={annotation.color} strokeWidth={2.5} markerEnd={`url(#arrow-${annotation.id})`} />
+                </g>;
+          }
+          return null;
+        })}
 
           {/* Cameras */}
-          {layerSettings.cameras.visible && cameras.map((camera) => (
-            <g key={camera.id} opacity={layerSettings.cameras.opacity / 100}>
-              <CameraIcon
-                camera={camera}
-                isSelected={selected?.type === 'camera' && selected.data.id === camera.id}
-                zoom={canvasState.zoom}
-                onSelect={() => onSelect({ type: 'camera', data: camera })}
-                onMove={(x, y) => onCameraUpdate(camera.id, { x, y })}
-                onRotate={(rotation) => onCameraUpdate(camera.id, { rotation })}
-              />
-            </g>
-          ))}
+          {layerSettings.cameras.visible && cameras.map(camera => <g key={camera.id} opacity={layerSettings.cameras.opacity / 100}>
+              <CameraIcon camera={camera} isSelected={selected?.type === 'camera' && selected.data.id === camera.id} zoom={canvasState.zoom} onSelect={() => onSelect({
+            type: 'camera',
+            data: camera
+          })} onMove={(x, y) => onCameraUpdate(camera.id, {
+            x,
+            y
+          })} onRotate={rotation => onCameraUpdate(camera.id, {
+            rotation
+          })} />
+            </g>)}
 
           {/* PIR Sensors */}
-          {layerSettings.pirs.visible && pirs.map((pir) => (
-            <g key={pir.id} opacity={layerSettings.pirs.opacity / 100}>
-              <PirIcon
-                pir={pir}
-                isSelected={selected?.type === 'pir' && selected.data.id === pir.id}
-                zoom={canvasState.zoom}
-                onSelect={() => onSelect({ type: 'pir', data: pir })}
-                onMove={(x, y) => onPirUpdate(pir.id, { x, y })}
-                onRotate={(rotation) => onPirUpdate(pir.id, { rotation })}
-              />
-            </g>
-          ))}
+          {layerSettings.pirs.visible && pirs.map(pir => <g key={pir.id} opacity={layerSettings.pirs.opacity / 100}>
+              <PirIcon pir={pir} isSelected={selected?.type === 'pir' && selected.data.id === pir.id} zoom={canvasState.zoom} onSelect={() => onSelect({
+            type: 'pir',
+            data: pir
+          })} onMove={(x, y) => onPirUpdate(pir.id, {
+            x,
+            y
+          })} onRotate={rotation => onPirUpdate(pir.id, {
+            rotation
+          })} />
+            </g>)}
 
           {/* Fans */}
-          {layerSettings.fans.visible && fans.map((fan) => (
-            <g key={fan.id} opacity={layerSettings.fans.opacity / 100}>
-              <FanIcon
-                fan={fan}
-                isSelected={selected?.type === 'fan' && selected.data.id === fan.id}
-                zoom={canvasState.zoom}
-                onSelect={() => onSelect({ type: 'fan', data: fan })}
-                onMove={(x, y) => onFanUpdate(fan.id, { x, y })}
-              />
-            </g>
-          ))}
+          {layerSettings.fans.visible && fans.map(fan => <g key={fan.id} opacity={layerSettings.fans.opacity / 100}>
+              <FanIcon fan={fan} isSelected={selected?.type === 'fan' && selected.data.id === fan.id} zoom={canvasState.zoom} onSelect={() => onSelect({
+            type: 'fan',
+            data: fan
+          })} onMove={(x, y) => onFanUpdate(fan.id, {
+            x,
+            y
+          })} />
+            </g>)}
 
           {/* Walls */}
-          {layerSettings.walls.visible && walls.map((wall) => (
-            <g 
-              key={wall.id} 
-              opacity={layerSettings.walls.opacity / 100}
-              onClick={() => onSelect({ type: 'wall', data: wall })}
-              style={{ cursor: 'pointer' }}
-            >
-              {wall.type === 'wall' && (
-                <line
-                  x1={wall.points[0]}
-                  y1={wall.points[1]}
-                  x2={wall.points[2]}
-                  y2={wall.points[3]}
-                  stroke={wall.color || '#64748b'}
-                  strokeWidth={wall.thickness / canvasState.zoom}
-                  strokeLinecap="square"
-                />
-              )}
-              {wall.type === 'pillar' && (
-                <rect
-                  x={wall.points[0]}
-                  y={wall.points[1]}
-                  width={wall.points[2]}
-                  height={wall.points[3]}
-                  fill={wall.color || '#64748b'}
-                  fillOpacity={0.8}
-                  stroke={wall.color || '#64748b'}
-                  strokeWidth={2 / canvasState.zoom}
-                />
-              )}
-              {selected?.type === 'wall' && selected.data.id === wall.id && (
-                wall.type === 'wall' ? (
-                  <line
-                    x1={wall.points[0]}
-                    y1={wall.points[1]}
-                    x2={wall.points[2]}
-                    y2={wall.points[3]}
-                    stroke="#3b82f6"
-                    strokeWidth={(wall.thickness + 4) / canvasState.zoom}
-                    strokeLinecap="square"
-                    opacity={0.5}
-                    pointerEvents="none"
-                  />
-                ) : (
-                  <rect
-                    x={wall.points[0] - 2 / canvasState.zoom}
-                    y={wall.points[1] - 2 / canvasState.zoom}
-                    width={wall.points[2] + 4 / canvasState.zoom}
-                    height={wall.points[3] + 4 / canvasState.zoom}
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth={2 / canvasState.zoom}
-                    strokeDasharray="4,4"
-                    pointerEvents="none"
-                  />
-                )
-              )}
-            </g>
-          ))}
+          {layerSettings.walls.visible && walls.map(wall => <g key={wall.id} opacity={layerSettings.walls.opacity / 100} onClick={() => onSelect({
+          type: 'wall',
+          data: wall
+        })} style={{
+          cursor: 'pointer'
+        }}>
+              {wall.type === 'wall' && <line x1={wall.points[0]} y1={wall.points[1]} x2={wall.points[2]} y2={wall.points[3]} stroke={wall.color || '#64748b'} strokeWidth={wall.thickness / canvasState.zoom} strokeLinecap="square" />}
+              {wall.type === 'pillar' && <rect x={wall.points[0]} y={wall.points[1]} width={wall.points[2]} height={wall.points[3]} fill={wall.color || '#64748b'} fillOpacity={0.8} stroke={wall.color || '#64748b'} strokeWidth={2 / canvasState.zoom} />}
+              {selected?.type === 'wall' && selected.data.id === wall.id && (wall.type === 'wall' ? <line x1={wall.points[0]} y1={wall.points[1]} x2={wall.points[2]} y2={wall.points[3]} stroke="#3b82f6" strokeWidth={(wall.thickness + 4) / canvasState.zoom} strokeLinecap="square" opacity={0.5} pointerEvents="none" /> : <rect x={wall.points[0] - 2 / canvasState.zoom} y={wall.points[1] - 2 / canvasState.zoom} width={wall.points[2] + 4 / canvasState.zoom} height={wall.points[3] + 4 / canvasState.zoom} fill="none" stroke="#3b82f6" strokeWidth={2 / canvasState.zoom} strokeDasharray="4,4" pointerEvents="none" />)}
+            </g>)}
 
           {/* Wall drawing preview */}
-          {drawingStart && (activeTool === 'wall' || activeTool === 'pillar') && currentMousePos && (
-            <g opacity={0.7}>
-              {activeTool === 'wall' && (
-                <line
-                  x1={drawingStart.x}
-                  y1={drawingStart.y}
-                  x2={currentMousePos.x}
-                  y2={currentMousePos.y}
-                  stroke="#64748b"
-                  strokeWidth={10 / canvasState.zoom}
-                  strokeLinecap="square"
-                  strokeDasharray="4,4"
-                />
-              )}
-              {activeTool === 'pillar' && (
-                <rect
-                  x={Math.min(drawingStart.x, currentMousePos.x)}
-                  y={Math.min(drawingStart.y, currentMousePos.y)}
-                  width={Math.abs(currentMousePos.x - drawingStart.x)}
-                  height={Math.abs(currentMousePos.y - drawingStart.y)}
-                  fill="#64748b"
-                  fillOpacity={0.5}
-                  stroke="#64748b"
-                  strokeWidth={2 / canvasState.zoom}
-                  strokeDasharray="4,4"
-                />
-              )}
-            </g>
-          )}
+          {drawingStart && (activeTool === 'wall' || activeTool === 'pillar') && currentMousePos && <g opacity={0.7}>
+              {activeTool === 'wall' && <line x1={drawingStart.x} y1={drawingStart.y} x2={currentMousePos.x} y2={currentMousePos.y} stroke="#64748b" strokeWidth={10 / canvasState.zoom} strokeLinecap="square" strokeDasharray="4,4" />}
+              {activeTool === 'pillar' && <rect x={Math.min(drawingStart.x, currentMousePos.x)} y={Math.min(drawingStart.y, currentMousePos.y)} width={Math.abs(currentMousePos.x - drawingStart.x)} height={Math.abs(currentMousePos.y - drawingStart.y)} fill="#64748b" fillOpacity={0.5} stroke="#64748b" strokeWidth={2 / canvasState.zoom} strokeDasharray="4,4" />}
+            </g>}
 
           {/* Multi-select box */}
-          {multiSelectStart && multiSelectEnd && (
-            <rect
-              x={Math.min(multiSelectStart.x, multiSelectEnd.x)}
-              y={Math.min(multiSelectStart.y, multiSelectEnd.y)}
-              width={Math.abs(multiSelectEnd.x - multiSelectStart.x)}
-              height={Math.abs(multiSelectEnd.y - multiSelectStart.y)}
-              fill="rgba(59, 130, 246, 0.1)"
-              stroke="#3b82f6"
-              strokeWidth={2 / canvasState.zoom}
-              strokeDasharray="4,4"
-            />
-          )}
+          {multiSelectStart && multiSelectEnd && <rect x={Math.min(multiSelectStart.x, multiSelectEnd.x)} y={Math.min(multiSelectStart.y, multiSelectEnd.y)} width={Math.abs(multiSelectEnd.x - multiSelectStart.x)} height={Math.abs(multiSelectEnd.y - multiSelectStart.y)} fill="rgba(59, 130, 246, 0.1)" stroke="#3b82f6" strokeWidth={2 / canvasState.zoom} strokeDasharray="4,4" />}
         </svg>
       </div>
 
@@ -1219,30 +816,21 @@ export const CanvasArea = ({
           <div className="space-y-4">
             <div>
               <Label htmlFor="distance">Distance between marked points (in meters)</Label>
-              <Input
-                id="distance"
-                type="number"
-                step="0.1"
-                min="0.1"
-                placeholder="e.g., 5.0"
-                value={calibrationDistance}
-                onChange={(e) => setCalibrationDistance(e.target.value)}
-              />
+              <Input id="distance" type="number" step="0.1" min="0.1" placeholder="e.g., 5.0" value={calibrationDistance} onChange={e => setCalibrationDistance(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => {
-              setShowCalibrationDialog(false);
-              setCalibrationPoint1(null);
-              setCalibrationPoint2(null);
-              setCalibrationDistance("");
-            }}>
+            setShowCalibrationDialog(false);
+            setCalibrationPoint1(null);
+            setCalibrationPoint2(null);
+            setCalibrationDistance("");
+          }}>
               Cancel
             </Button>
             <Button onClick={applyCalibration}>Apply Calibration</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
