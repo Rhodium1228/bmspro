@@ -15,11 +15,15 @@ export const formatCurrency = (
   amount: number,
   options?: CurrencyFormatOptions
 ): string => {
+  // Ensure minimumFractionDigits <= maximumFractionDigits
+  const maxFractionDigits = options?.maximumFractionDigits ?? 2;
+  const minFractionDigits = options?.minimumFractionDigits ?? Math.min(2, maxFractionDigits);
+  
   const formatter = new Intl.NumberFormat('en-AU', {
     style: 'currency',
     currency: 'AUD',
-    minimumFractionDigits: options?.minimumFractionDigits ?? 2,
-    maximumFractionDigits: options?.maximumFractionDigits ?? 2,
+    minimumFractionDigits: Math.min(minFractionDigits, maxFractionDigits),
+    maximumFractionDigits: maxFractionDigits,
   });
   
   return formatter.format(amount);
