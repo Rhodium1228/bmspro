@@ -10,6 +10,18 @@ export interface Camera {
   fov: number; // Field of view in degrees (1-180)
   range: number; // Range in meters (1-120)
   type: CameraType;
+  model_id?: string; // Link to camera_models table
+  model_brand?: string; // Camera brand
+  model_name?: string; // Camera model
+  resolution_width?: number; // Resolution width in pixels
+  resolution_height?: number; // Resolution height in pixels
+  lens_mm?: number; // Focal length in mm
+  sensor_size?: string; // Sensor size (e.g., '1/3"')
+  bitrate_kbps?: number; // Bitrate in kbps
+  codec?: 'H.264' | 'H.265'; // Video codec
+  fps?: number; // Frames per second
+  poe_standard?: string; // PoE standard
+  power_watts?: number; // Power consumption in watts
 }
 
 export interface PirSensor {
