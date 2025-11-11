@@ -41,18 +41,18 @@ export function CoverageAnalysis({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Statistics */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">Total Coverage</div>
-            <div className="text-2xl font-bold">{stats.totalCoverage}%</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Total Coverage</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.totalCoverage}%</div>
           </div>
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">Redundant</div>
-            <div className="text-2xl font-bold">{stats.redundantCoverage}%</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Redundant</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.redundantCoverage}%</div>
           </div>
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">Blind Spots</div>
-            <div className="text-2xl font-bold flex items-center gap-1">
+            <div className="text-xs sm:text-sm text-muted-foreground">Blind Spots</div>
+            <div className="text-xl sm:text-2xl font-bold flex items-center gap-1">
               {stats.blindSpotCount}
               {stats.blindSpotCount > 50 && (
                 <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -60,8 +60,8 @@ export function CoverageAnalysis({
             </div>
           </div>
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">Avg Overlap</div>
-            <div className="text-2xl font-bold">{stats.averageOverlap.toFixed(1)}x</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Avg Overlap</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.averageOverlap.toFixed(1)}x</div>
           </div>
         </div>
 

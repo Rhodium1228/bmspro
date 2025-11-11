@@ -672,7 +672,7 @@ export const CanvasArea = ({
   };
 
   return (
-    <div className="flex-1 relative bg-muted/30">
+    <div className="flex-1 relative bg-muted/30 min-h-0">
       <input
         ref={fileInputRef}
         type="file"
@@ -682,7 +682,7 @@ export const CanvasArea = ({
       />
 
       {/* Toolbar */}
-      <div className="absolute top-4 left-4 flex gap-2 z-10">
+      <div className="absolute top-2 left-2 sm:top-4 sm:left-4 flex flex-col sm:flex-row gap-2 z-10">
         <Button
           onClick={() => fileInputRef.current?.click()}
           variant="secondary"
@@ -690,11 +690,11 @@ export const CanvasArea = ({
           className="gap-2"
         >
           <Upload className="h-4 w-4" />
-          Upload Floor Plan
+          <span className="hidden sm:inline">Upload Floor Plan</span>
         </Button>
         <Button onClick={handleExport} variant="secondary" size="sm" className="gap-2">
           <Download className="h-4 w-4" />
-          Export as Image
+          <span className="hidden sm:inline">Export</span>
         </Button>
         <Button
           onClick={onClearAll}
@@ -703,7 +703,7 @@ export const CanvasArea = ({
           className="gap-2"
         >
           <Trash2 className="h-4 w-4" />
-          Clear All
+          <span className="hidden sm:inline">Clear All</span>
         </Button>
       </div>
 

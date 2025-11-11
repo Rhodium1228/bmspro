@@ -11,6 +11,7 @@ import { ZoneManager } from "@/components/security/ZoneManager";
 import { ScaleCalibration } from "@/components/security/ScaleCalibration";
 import { DrawingEditor } from "@/components/security/DrawingEditor";
 import { KeyboardShortcuts } from "@/components/security/KeyboardShortcuts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Camera,
   PirSensor,
@@ -27,7 +28,7 @@ import {
 } from "@/lib/securityTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save, FileText, ExternalLink, FileDown, Sparkles, Undo2, Redo2, Copy, Clipboard } from "lucide-react";
+import { Save, FileText, ExternalLink, FileDown, Sparkles, Undo2, Redo2, Copy, Clipboard, Settings, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/integrations/supabase/auth";
@@ -44,6 +45,8 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -58,6 +61,7 @@ export default function SecurityLayout() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isMobile = useIsMobile();
   const [projectName, setProjectName] = useState("Untitled Security Layout");
   const [activeTool, setActiveTool] = useState<ToolType>('select');
   const [selected, setSelected] = useState<SelectedElement>(null);
@@ -70,6 +74,7 @@ export default function SecurityLayout() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
   const [linkedQuotationData, setLinkedQuotationData] = useState<any>(null);
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   
   // Undo/Redo state
   const [history, setHistory] = useState<ProjectData[]>([]);
@@ -1068,9 +1073,10 @@ export default function SecurityLayout() {
               </Badge>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button onClick={handleNewProject} variant="outline" size="sm">
-              New Project
+              <span className="hidden sm:inline">New Project</span>
+              <span className="sm:hidden">New</span>
             </Button>
             
             {/* Undo/Redo */}
@@ -1095,8 +1101,8 @@ export default function SecurityLayout() {
               </Button>
             </div>
             
-            {/* Copy/Paste */}
-            <div className="flex gap-1 border-l pl-2">
+            {/* Copy/Paste - Hidden on mobile */}
+            <div className="hidden sm:flex gap-1 border-l pl-2">
               <Button 
                 onClick={handleCopy} 
                 variant="ghost" 
@@ -1117,18 +1123,19 @@ export default function SecurityLayout() {
               </Button>
             </div>
             
-            <div className="border-l pl-2 flex gap-2">
+            {/* Desktop-only Actions */}
+            <div className="hidden lg:flex border-l pl-2 gap-2">
               <FloorPlanTemplates onSelectTemplate={handleTemplateSelect} />
               <AiPlanner />
               <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2">
                 <FileDown className="h-4 w-4" />
-                Export PDF
+                <span className="hidden xl:inline">Export PDF</span>
               </Button>
               <Dialog open={saveAsTemplateOpen} onOpenChange={setSaveAsTemplateOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
                     <Sparkles className="h-4 w-4" />
-                    Save as Template
+                    <span className="hidden xl:inline">Template</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -1174,37 +1181,64 @@ export default function SecurityLayout() {
               </Dialog>
             </div>
             
+            {/* Mobile Overflow Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild className="lg:hidden">
+                <Button variant="outline" size="sm">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleCopy} disabled={!selected && selectedElements.length === 0} className="sm:hidden">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handlePaste} disabled={!clipboard} className="sm:hidden">
+                  <Clipboard className="h-4 w-4 mr-2" />
+                  Paste
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPDF}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSaveAsTemplateOpen(true)}>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Save as Template
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             {savedLayoutId ? (
               <>
-                <Button onClick={handleUpdate} variant="outline" className="gap-2">
+                <Button onClick={handleUpdate} variant="outline" size="sm" className="gap-2">
                   <Save className="h-4 w-4" />
-                  Update
+                  <span className="hidden sm:inline">Update</span>
                 </Button>
-                <Button onClick={handleSaveAsCopy} variant="outline" size="sm">
+                <Button onClick={handleSaveAsCopy} variant="outline" size="sm" className="hidden sm:flex">
                   Save as Copy
                 </Button>
               </>
             ) : (
-              <Button onClick={handleSave} variant="outline" className="gap-2">
+              <Button onClick={handleSave} variant="outline" size="sm" className="gap-2">
                 <Save className="h-4 w-4" />
-                Save Project
+                <span className="hidden sm:inline">Save</span>
               </Button>
             )}
-            <Button onClick={handleGenerateQuotation} className="gap-2">
+            <Button onClick={handleGenerateQuotation} size="sm" className="gap-2">
               <FileText className="h-4 w-4" />
-              Generate Quotation
+              <span className="hidden sm:inline">Quote</span>
             </Button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
           <KeyboardShortcuts />
           <SecurityToolbar activeTool={activeTool} onToolChange={setActiveTool} />
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         <CanvasArea
           activeTool={activeTool}
           cameras={projectData.cameras}
@@ -1350,7 +1384,8 @@ export default function SecurityLayout() {
           }}
         />
 
-        <div className="w-80 border-l overflow-y-auto">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-80 border-l overflow-y-auto">
           <Tabs defaultValue="coverage" className="w-full">
             <TabsList className="w-full grid grid-cols-5 text-xs">
               <TabsTrigger value="coverage">Cover</TabsTrigger>
@@ -1502,6 +1537,172 @@ export default function SecurityLayout() {
             </div>
           </Tabs>
         </div>
+
+        {/* Mobile Sidebar Sheet */}
+        <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
+          <SheetContent side="right" className="w-full sm:w-96 p-0 overflow-y-auto">
+            <Tabs defaultValue="coverage" className="w-full">
+              <TabsList className="w-full grid grid-cols-5 text-xs sticky top-0 bg-background z-10">
+                <TabsTrigger value="coverage">Cover</TabsTrigger>
+                <TabsTrigger value="layers">Layers</TabsTrigger>
+                <TabsTrigger value="zones">Zones</TabsTrigger>
+                <TabsTrigger value="properties">Props</TabsTrigger>
+                <TabsTrigger value="quotations">
+                  Quotes {linkedQuotations.length > 0 && `(${linkedQuotations.length})`}
+                </TabsTrigger>
+              </TabsList>
+              
+              <div className="p-4">
+                <TabsContent value="coverage" className="mt-0 space-y-4">
+                  <ScaleCalibration floorPlan={projectData.floorPlan} />
+                  <CoverageAnalysis
+                    cameras={projectData.cameras}
+                    coverageSettings={projectData.coverageSettings}
+                    onCoverageSettingsChange={(settings) =>
+                      setProjectData({ ...projectData, coverageSettings: settings })
+                    }
+                    canvasWidth={2000}
+                    canvasHeight={1500}
+                    pixelsPerMeter={pixelsPerMeter}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="layers" className="mt-0">
+                  <LayerManagement
+                    layerSettings={projectData.layerSettings}
+                    onLayerSettingsChange={(settings) =>
+                      setProjectData({ ...projectData, layerSettings: settings })
+                    }
+                  />
+                </TabsContent>
+                
+                <TabsContent value="zones" className="mt-0">
+                  <ZoneManager
+                    zones={projectData.securityZones}
+                    onZonesChange={(zones) =>
+                      setProjectData({ ...projectData, securityZones: zones })
+                    }
+                  />
+                </TabsContent>
+                
+                <TabsContent value="properties" className="mt-0">
+                  <PropertiesSidebar
+                    selected={selected}
+                    onUpdate={updateSelected}
+                    onDelete={deleteSelected}
+                    pixelsPerMeter={pixelsPerMeter}
+                  />
+                </TabsContent>
+
+                <TabsContent value="quotations" className="mt-0">
+                  {/* Same quotations content as desktop */}
+                  <div className="space-y-4">
+                    {linkedQuotationData && (
+                      <div className="border-l-4 border-primary bg-primary/5 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-primary">Currently Linked</h4>
+                          <Badge variant="default" className="text-xs">Active Link</Badge>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-medium text-sm">{linkedQuotationData.quotation_number}</p>
+                          <p className="text-xs text-muted-foreground">{linkedQuotationData.customer_name}</p>
+                          <p className="text-sm font-semibold">${linkedQuotationData.total?.toLocaleString() || '0'}</p>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 text-xs"
+                            onClick={() => navigate(`/transactions/quotation?quotationId=${linkedQuotationData.id}`)}
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            View
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 text-xs"
+                            onClick={async () => {
+                              if (savedLayoutId && linkedQuotationData.id) {
+                                await unlinkLayoutFromQuotation(savedLayoutId, linkedQuotationData.id);
+                                setLinkedQuotationData(null);
+                                setSelectedQuotationId(null);
+                                refetchQuotations();
+                                toast({
+                                  title: "Unlinked",
+                                  description: "Layout has been unlinked from quotation",
+                                });
+                              }
+                            }}
+                          >
+                            Unlink
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold">All Linked Quotations</h3>
+                      {linkedQuotations.length > 0 && (
+                        <Badge variant="secondary">{linkedQuotations.length}</Badge>
+                      )}
+                    </div>
+
+                    {!savedLayoutId ? (
+                      <div className="text-sm text-muted-foreground text-center py-8">
+                        Save the layout first to view linked quotations
+                      </div>
+                    ) : linkedQuotations.length === 0 ? (
+                      <div className="text-sm text-muted-foreground text-center py-8">
+                        No quotations linked to this layout yet
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {linkedQuotations.map((quotation) => (
+                          <div key={quotation.id} className="border rounded-lg p-3 space-y-2">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <p className="font-medium text-sm">{quotation.quotation_number}</p>
+                                <p className="text-xs text-muted-foreground">{quotation.customer_name}</p>
+                              </div>
+                              <p className="text-sm font-semibold">${quotation.total.toLocaleString()}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={quotation.status === "sent" ? "default" : "secondary"} className="text-xs">
+                                {quotation.status === "sent" ? "Sent" : "Unsent"}
+                              </Badge>
+                              <Badge variant={quotation.is_completed ? "default" : "outline"} className="text-xs">
+                                {quotation.is_completed ? "Done" : "Pending"}
+                              </Badge>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full mt-2 text-xs"
+                              onClick={() => navigate(`/transactions/quotation?quotationId=${quotation.id}`)}
+                            >
+                              <ExternalLink className="w-3 h-3 mr-1" />
+                              View Quotation
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </SheetContent>
+        </Sheet>
+
+        {/* Mobile Floating Action Button */}
+        <Button
+          className="fixed bottom-4 right-4 lg:hidden z-50 h-14 w-14 rounded-full shadow-lg"
+          size="icon"
+          onClick={() => setMobileSheetOpen(true)}
+        >
+          <Settings className="h-6 w-6" />
+        </Button>
       </div>
       
       {/* Drawing Editor Dialog */}

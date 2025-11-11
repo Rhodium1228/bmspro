@@ -62,7 +62,7 @@ export const PropertiesSidebar = ({
     : null;
 
   return (
-    <div className="w-80 border-l bg-card p-6 space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-lg">Properties</h3>
         <Button variant="destructive" size="sm" onClick={onDelete}>
@@ -93,7 +93,7 @@ export const PropertiesSidebar = ({
                 min={0}
                 max={360}
                 step={1}
-                className="mt-2"
+                className="mt-2 h-8 touch-manipulation"
               />
             </div>
           </>
