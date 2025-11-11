@@ -14,6 +14,120 @@ export type Database = {
   }
   public: {
     Tables: {
+      camera_models: {
+        Row: {
+          bitrate_kbps_default: number | null
+          bitrate_kbps_max: number | null
+          bitrate_kbps_min: number | null
+          brand: string
+          category: string
+          created_at: string | null
+          datasheet_url: string | null
+          fov_horizontal: number | null
+          fov_vertical: number | null
+          id: string
+          image_url: string | null
+          ip_rating: string | null
+          ir_distance_m: number | null
+          is_active: boolean | null
+          is_default: boolean | null
+          lens_mm: number
+          low_light_capability: boolean | null
+          manufacturer_url: string | null
+          max_fps: number | null
+          max_range_m: number | null
+          model: string
+          mounting_type: string | null
+          network_interface: string | null
+          operating_temp_range: string | null
+          poe_standard: string | null
+          power_watts: number | null
+          resolution_height: number
+          resolution_mp: number
+          resolution_width: number
+          retail_price_aud: number | null
+          sensor_size: string | null
+          updated_at: string | null
+          user_id: string | null
+          video_compression: string[] | null
+          wholesale_price_aud: number | null
+        }
+        Insert: {
+          bitrate_kbps_default?: number | null
+          bitrate_kbps_max?: number | null
+          bitrate_kbps_min?: number | null
+          brand: string
+          category: string
+          created_at?: string | null
+          datasheet_url?: string | null
+          fov_horizontal?: number | null
+          fov_vertical?: number | null
+          id?: string
+          image_url?: string | null
+          ip_rating?: string | null
+          ir_distance_m?: number | null
+          is_active?: boolean | null
+          is_default?: boolean | null
+          lens_mm: number
+          low_light_capability?: boolean | null
+          manufacturer_url?: string | null
+          max_fps?: number | null
+          max_range_m?: number | null
+          model: string
+          mounting_type?: string | null
+          network_interface?: string | null
+          operating_temp_range?: string | null
+          poe_standard?: string | null
+          power_watts?: number | null
+          resolution_height: number
+          resolution_mp: number
+          resolution_width: number
+          retail_price_aud?: number | null
+          sensor_size?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          video_compression?: string[] | null
+          wholesale_price_aud?: number | null
+        }
+        Update: {
+          bitrate_kbps_default?: number | null
+          bitrate_kbps_max?: number | null
+          bitrate_kbps_min?: number | null
+          brand?: string
+          category?: string
+          created_at?: string | null
+          datasheet_url?: string | null
+          fov_horizontal?: number | null
+          fov_vertical?: number | null
+          id?: string
+          image_url?: string | null
+          ip_rating?: string | null
+          ir_distance_m?: number | null
+          is_active?: boolean | null
+          is_default?: boolean | null
+          lens_mm?: number
+          low_light_capability?: boolean | null
+          manufacturer_url?: string | null
+          max_fps?: number | null
+          max_range_m?: number | null
+          model?: string
+          mounting_type?: string | null
+          network_interface?: string | null
+          operating_temp_range?: string | null
+          poe_standard?: string | null
+          power_watts?: number | null
+          resolution_height?: number
+          resolution_mp?: number
+          resolution_width?: number
+          retail_price_aud?: number | null
+          sensor_size?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          video_compression?: string[] | null
+          wholesale_price_aud?: number | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -852,10 +966,13 @@ export type Database = {
       security_layouts: {
         Row: {
           annotations: Json | null
+          bandwidth_analysis: Json | null
           canvas_data: Json | null
+          compliance_report: Json | null
           coverage_settings: Json | null
           created_at: string
           description: string | null
+          dori_mode_enabled: boolean | null
           export_image_url: string | null
           floor_plan_type: string | null
           floor_plan_url: string | null
@@ -864,16 +981,20 @@ export type Database = {
           name: string
           quotation_id: string | null
           security_zones: Json | null
+          storage_requirements: Json | null
           template_name: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           annotations?: Json | null
+          bandwidth_analysis?: Json | null
           canvas_data?: Json | null
+          compliance_report?: Json | null
           coverage_settings?: Json | null
           created_at?: string
           description?: string | null
+          dori_mode_enabled?: boolean | null
           export_image_url?: string | null
           floor_plan_type?: string | null
           floor_plan_url?: string | null
@@ -882,16 +1003,20 @@ export type Database = {
           name: string
           quotation_id?: string | null
           security_zones?: Json | null
+          storage_requirements?: Json | null
           template_name?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           annotations?: Json | null
+          bandwidth_analysis?: Json | null
           canvas_data?: Json | null
+          compliance_report?: Json | null
           coverage_settings?: Json | null
           created_at?: string
           description?: string | null
+          dori_mode_enabled?: boolean | null
           export_image_url?: string | null
           floor_plan_type?: string | null
           floor_plan_url?: string | null
@@ -900,6 +1025,7 @@ export type Database = {
           name?: string
           quotation_id?: string | null
           security_zones?: Json | null
+          storage_requirements?: Json | null
           template_name?: string | null
           updated_at?: string
           user_id?: string
