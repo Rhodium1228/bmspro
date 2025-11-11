@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2 } from "lucide-react";
+import { Trash2, Camera as CameraIcon } from "lucide-react";
 import { SelectedElement, CameraType } from "@/lib/securityTypes";
 import {
   Select,
@@ -12,6 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { calculateDORIDistances, DORI_STANDARDS } from "@/lib/doriCalculations";
+import { Separator } from "@/components/ui/separator";
 
 interface PropertiesSidebarProps {
   selected: SelectedElement;
@@ -26,6 +30,22 @@ export const PropertiesSidebar = ({
   onDelete,
   pixelsPerMeter = 10,
 }: PropertiesSidebarProps) => {
+  // Fetch camera models
+  const { data: cameraModels } = useQuery({
+    queryKey: ["camera-models"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("camera_models")
+        .select("*")
+        .eq("is_active", true)
+        .order("brand", { ascending: true })
+        .order("model", { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   if (!selected) {
     return (
       <div className="w-full p-6 text-center text-muted-foreground">
@@ -35,6 +55,11 @@ export const PropertiesSidebar = ({
   }
 
   const { type, data } = selected;
+  
+  // Calculate DORI distances for cameras with model specs
+  const doriDistances = type === 'camera' && data.resolution_height && data.lens_mm && data.sensor_size
+    ? calculateDORIDistances(data.resolution_height, data.lens_mm, data.sensor_size)
+    : null;
 
   return (
     <div className="w-80 border-l bg-card p-6 space-y-6">
@@ -76,6 +101,123 @@ export const PropertiesSidebar = ({
 
         {type === 'camera' && (
           <>
+            <div>
+              <Label>Camera Model</Label>
+              <Select
+                value={data.model_id || "default"}
+                onValueChange={(modelId) => {
+                  if (modelId === "default") {
+                    onUpdate({
+                      model_id: undefined,
+                      model_brand: undefined,
+                      model_name: undefined,
+                      resolution_width: undefined,
+                      resolution_height: undefined,
+                      lens_mm: undefined,
+                      sensor_size: undefined,
+                      bitrate_kbps: undefined,
+                      codec: undefined,
+                      fps: undefined,
+                      poe_standard: undefined,
+                      power_watts: undefined,
+                    });
+                  } else {
+                    const model = cameraModels?.find(m => m.id === modelId);
+                    if (model) {
+                      onUpdate({
+                        model_id: model.id,
+                        model_brand: model.brand,
+                        model_name: model.model,
+                        resolution_width: model.resolution_width,
+                        resolution_height: model.resolution_height,
+                        lens_mm: model.lens_mm,
+                        sensor_size: model.sensor_size,
+                        bitrate_kbps: model.bitrate_kbps_default,
+                        codec: 'H.265' as const,
+                        fps: model.max_fps,
+                        poe_standard: model.poe_standard,
+                        power_watts: model.power_watts,
+                      });
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select camera model" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Default (4MP, 2.8mm)</SelectItem>
+                  {cameraModels && cameraModels.length > 0 && (
+                    <>
+                      <Separator className="my-2" />
+                      {Array.from(new Set(cameraModels.map(m => m.brand))).map(brand => (
+                        <div key={brand}>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                            {brand}
+                          </div>
+                          {cameraModels
+                            .filter(m => m.brand === brand)
+                            .map(model => (
+                              <SelectItem key={model.id} value={model.id}>
+                                {model.model} ({model.resolution_mp}MP, {model.lens_mm}mm)
+                              </SelectItem>
+                            ))}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {data.model_brand && (
+              <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <CameraIcon className="h-4 w-4" />
+                  <span>{data.model_brand} {data.model_name}</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>Resolution: {data.resolution_width}×{data.resolution_height}</p>
+                  <p>Lens: {data.lens_mm}mm | Sensor: {data.sensor_size}</p>
+                  {data.bitrate_kbps && <p>Bitrate: {(data.bitrate_kbps / 1024).toFixed(1)} Mbps</p>}
+                  {data.poe_standard && <p>Power: {data.poe_standard} ({data.power_watts}W)</p>}
+                </div>
+              </div>
+            )}
+
+            {doriDistances && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">DORI Distances (IEC/EN 62676-4)</Label>
+                  <div className="space-y-2">
+                    {Object.entries(doriDistances).map(([level, distance]) => {
+                      const standard = DORI_STANDARDS[level as keyof typeof DORI_STANDARDS];
+                      return (
+                        <div 
+                          key={level}
+                          className="flex items-center justify-between p-2 rounded bg-muted/30"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: standard.color }}
+                            />
+                            <span className="text-sm">{standard.label}</span>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">{distance}m</p>
+                            <p className="text-xs text-muted-foreground">{standard.ppm} PPM</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
+
             <div>
               <Label>Camera Type</Label>
               <Select
