@@ -7,6 +7,10 @@ import { toast } from "sonner";
 import { Maximize2, Minimize2 } from "lucide-react";
 import StaffDrawer from "@/components/staff/StaffDrawer";
 import MapFilters from "@/components/staff/MapFilters";
+import { LocationHistory } from "@/components/staff/LocationHistory";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Layout } from "@/components/Layout";
+import { cn } from "@/lib/utils";
 
 interface StaffLocation {
   id: string;
@@ -271,49 +275,67 @@ export default function LiveLocations() {
   }, [filteredLocations, updateMarkers]);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Live Staff Locations</h1>
-          <p className="text-muted-foreground">Real-time GPS tracking of staff and supervisors</p>
-        </div>
-        <div className="flex gap-2">
+    <Layout>
+      <div className="h-[calc(100vh-4rem)] flex flex-col">
+        <div className="flex items-center justify-between p-4 bg-background border-b">
+          <div>
+            <h1 className="text-2xl font-semibold">Staff Location Tracking</h1>
+            <p className="text-sm text-muted-foreground">Real-time GPS tracking and location history</p>
+          </div>
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="gap-2"
           >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </Button>
         </div>
+
+        <Tabs defaultValue="live" className="flex-1 flex flex-col">
+          <TabsList className="mx-4 mt-2 w-fit">
+            <TabsTrigger value="live">Live Tracking</TabsTrigger>
+            <TabsTrigger value="history">Location History</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="live" className="flex-1 flex flex-col m-0 p-4">
+            <MapFilters
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              roleFilter={roleFilter}
+              setRoleFilter={setRoleFilter}
+              lastUpdateFilter={lastUpdateFilter}
+              setLastUpdateFilter={setLastUpdateFilter}
+              showTrails={showTrails}
+              setShowTrails={setShowTrails}
+              totalStaff={locations.length}
+              onlineStaff={locations.filter((l) => l.status === "online").length}
+            />
+            
+            <Card className={`flex-1 ${isFullscreen ? "fixed inset-4 z-50" : ""} overflow-hidden mt-4`}>
+              <div ref={mapRef} className="w-full h-full" />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history" className="flex-1 flex flex-col gap-4 p-4 m-0">
+            <LocationHistory 
+              map={mapInstanceRef.current} 
+              selectedEmployeeId={selectedStaff?.employee_id || null}
+            />
+            
+            <Card className="flex-1 overflow-hidden">
+              <div ref={mapRef} className="w-full h-full" />
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      <MapFilters
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        roleFilter={roleFilter}
-        setRoleFilter={setRoleFilter}
-        lastUpdateFilter={lastUpdateFilter}
-        setLastUpdateFilter={setLastUpdateFilter}
-        showTrails={showTrails}
-        setShowTrails={setShowTrails}
-        totalStaff={locations.length}
-        onlineStaff={locations.filter((l) => l.status === "online").length}
-      />
-
-      <Card className={`flex-1 ${isFullscreen ? "fixed inset-4 z-50" : ""} overflow-hidden`}>
-        <div ref={mapRef} className="w-full h-full" />
-      </Card>
 
       <StaffDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         staff={selectedStaff}
       />
-    </div>
+    </Layout>
   );
 }
