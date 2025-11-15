@@ -22,7 +22,7 @@ import { formatDistanceToNow } from "date-fns";
 const stats = [
   {
     title: "Total Revenue",
-    value: "₹45,231.89",
+    value: "45,231.89",
     change: "+20.1%",
     icon: DollarSign,
     color: "text-green-600",
