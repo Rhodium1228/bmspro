@@ -168,7 +168,10 @@ export default function Dashboard() {
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-2xl font-bold flex items-center gap-2">
+                {stat.title === "Total Revenue" && <DollarSign className="h-6 w-6" />}
+                {stat.value}
+              </div>
               <p className={`text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                 {stat.change} from last month
               </p>
