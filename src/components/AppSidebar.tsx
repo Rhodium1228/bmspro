@@ -70,7 +70,7 @@ import logo from "@/assets/bms-pro-logo.jpg";
  *   - Company information
  *   - Other options
  */
-const menuItems = [
+  const menuItems = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -84,6 +84,13 @@ const menuItems = [
       { title: "Items", url: "/masters/items", icon: Package },
       { title: "Employees", url: "/masters/employees", icon: Users },
       { title: "Customer Management", url: "/masters/customers", icon: UserCog },
+    ],
+  },
+  {
+    title: "Staff",
+    icon: Users,
+    items: [
+      { title: "Live Locations", url: "/staff/live-locations", icon: Camera },
     ],
   },
   {
