@@ -22,6 +22,7 @@ import Bank from "./pages/masters/Bank";
 import Items from "./pages/masters/Items";
 import Employees from "./pages/masters/Employees";
 import Customers from "./pages/masters/Customers";
+import LiveLocations from "./pages/staff/LiveLocations";
 import Quotation from "./pages/transactions/Quotation";
 import SaleOrder from "./pages/transactions/SaleOrder";
 import PurchaseOrder from "./pages/transactions/PurchaseOrder";
@@ -132,6 +133,17 @@ const App = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Customers />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/staff/live-locations"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <LiveLocations />
                   </Layout>
                 </ProtectedRoute>
               }
