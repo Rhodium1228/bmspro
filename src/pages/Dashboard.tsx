@@ -1,5 +1,7 @@
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Building2,
   Package,
@@ -10,7 +12,12 @@ import {
   DollarSign,
   Activity,
   MapPin,
+  Navigation,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/integrations/supabase/auth";
+import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
 
 const stats = [
   {
@@ -50,16 +57,102 @@ const recentActivity = [
   { action: "Bank account verified", time: "1 day ago", icon: Building2 },
 ];
 
-const workerLocations = [
-  { location: "Sydney Office", workers: 45, status: "active", color: "bg-green-500" },
-  { location: "Melbourne Office", workers: 32, status: "active", color: "bg-green-500" },
-  { location: "Brisbane Office", workers: 28, status: "active", color: "bg-blue-500" },
-  { location: "Perth Office", workers: 18, status: "active", color: "bg-blue-500" },
-  { location: "Adelaide Office", workers: 15, status: "active", color: "bg-orange-500" },
-  { location: "Remote Workers", workers: 18, status: "remote", color: "bg-purple-500" },
-];
+interface StaffLocation {
+  id: string;
+  employee_id: string;
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+  battery_level: number | null;
+  accuracy_level: string;
+  timestamp: string;
+  name: string;
+  designation: string;
+  status: string;
+}
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [staffLocations, setStaffLocations] = useState<StaffLocation[]>([]);
+
+  const fetchStaffLocations = useCallback(async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("staff_locations")
+      .select(`
+        id,
+        employee_id,
+        latitude,
+        longitude,
+        accuracy,
+        battery_level,
+        accuracy_level,
+        timestamp,
+        employees!inner(
+          name,
+          designation,
+          user_id
+        )
+      `)
+      .eq("employees.user_id", user.id)
+      .eq("is_active", true)
+      .order("timestamp", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching staff locations:", error);
+      return;
+    }
+
+    // Group by employee_id and get latest location
+    const latestLocations = new Map<string, any>();
+    data?.forEach((loc: any) => {
+      if (!latestLocations.has(loc.employee_id)) {
+        const employee = loc.employees;
+        const now = new Date();
+        const timestamp = new Date(loc.timestamp);
+        const minutesAgo = (now.getTime() - timestamp.getTime()) / (1000 * 60);
+        
+        latestLocations.set(loc.employee_id, {
+          ...loc,
+          name: employee.name,
+          designation: employee.designation,
+          status: minutesAgo <= 10 ? "online" : "offline",
+        });
+      }
+    });
+
+    setStaffLocations(Array.from(latestLocations.values()));
+  }, [user]);
+
+  useEffect(() => {
+    fetchStaffLocations();
+  }, [fetchStaffLocations]);
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("dashboard-staff-locations")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "staff_locations",
+        },
+        () => {
+          fetchStaffLocations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, fetchStaffLocations]);
   return (
     <div className="space-y-6">
       <div>
@@ -85,27 +178,69 @@ export default function Dashboard() {
       </div>
 
       <Card className="hover:shadow-md transition-shadow">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-primary" />
-            Workers Location Overview
+            <Navigation className="h-5 w-5 text-primary" />
+            Live Staff Locations
           </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/staff/locations")}
+            className="gap-2"
+          >
+            <MapPin className="h-4 w-4" />
+            View Map
+          </Button>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workerLocations.map((location) => (
-              <div key={location.location} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors">
-                <div className={`h-3 w-3 rounded-full ${location.color} animate-pulse`} />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{location.location}</p>
-                  <p className="text-xs text-muted-foreground">{location.workers} workers</p>
+          {staffLocations.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p>No staff locations available</p>
+              <p className="text-xs mt-1">Staff locations will appear when mobile app sends GPS data</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {staffLocations.slice(0, 5).map((staff) => (
+                <div
+                  key={staff.id}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors"
+                >
+                  <div className={`h-3 w-3 rounded-full ${
+                    staff.status === "online" 
+                      ? "bg-green-500 animate-pulse" 
+                      : "bg-gray-400"
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{staff.name}</p>
+                    <p className="text-xs text-muted-foreground">{staff.designation}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge
+                      variant={staff.status === "online" ? "default" : "outline"}
+                      className="text-xs"
+                    >
+                      {staff.status}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formatDistanceToNow(new Date(staff.timestamp), { addSuffix: true })}
+                    </p>
+                  </div>
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  {location.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
+              ))}
+              {staffLocations.length > 5 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/staff/locations")}
+                  className="w-full"
+                >
+                  View all {staffLocations.length} staff locations
+                </Button>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
