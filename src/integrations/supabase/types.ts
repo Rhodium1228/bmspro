@@ -1218,15 +1218,103 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_locations: {
+        Row: {
+          accuracy: number | null
+          accuracy_level:
+            | Database["public"]["Enums"]["location_accuracy"]
+            | null
+          battery_level: number | null
+          created_at: string
+          current_job_id: string | null
+          employee_id: string
+          id: string
+          is_active: boolean | null
+          latitude: number
+          longitude: number
+          timestamp: string
+          updated_at: string
+        }
+        Insert: {
+          accuracy?: number | null
+          accuracy_level?:
+            | Database["public"]["Enums"]["location_accuracy"]
+            | null
+          battery_level?: number | null
+          created_at?: string
+          current_job_id?: string | null
+          employee_id: string
+          id?: string
+          is_active?: boolean | null
+          latitude: number
+          longitude: number
+          timestamp?: string
+          updated_at?: string
+        }
+        Update: {
+          accuracy?: number | null
+          accuracy_level?:
+            | Database["public"]["Enums"]["location_accuracy"]
+            | null
+          battery_level?: number | null
+          created_at?: string
+          current_job_id?: string | null
+          employee_id?: string
+          id?: string
+          is_active?: boolean | null
+          latitude?: number
+          longitude?: number
+          timestamp?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_locations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      latest_staff_locations: {
+        Row: {
+          accuracy: number | null
+          accuracy_level:
+            | Database["public"]["Enums"]["location_accuracy"]
+            | null
+          battery_level: number | null
+          current_job_id: string | null
+          designation: string | null
+          email: string | null
+          employee_id: string | null
+          id: string | null
+          is_active: boolean | null
+          latitude: number | null
+          longitude: number | null
+          name: string | null
+          phone: string | null
+          status: string | null
+          timestamp: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_locations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      location_accuracy: "high" | "medium" | "low"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1353,6 +1441,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      location_accuracy: ["high", "medium", "low"],
+    },
   },
 } as const
