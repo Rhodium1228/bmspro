@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Plus, Eye, Trash2, X, Calendar as CalendarIcon, FileText } from "lucide-react";
+import { Plus, Eye, Trash2, X, Calendar as CalendarIcon, FileText, List } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -31,6 +31,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SmartEmployeeSelector } from "@/components/SmartEmployeeSelector";
 import { JobScheduleCalendar } from "@/components/JobScheduleCalendar";
+import { TaskHierarchyView } from "@/components/tasks/TaskHierarchyView";
+import { TaskFormDialog } from "@/components/tasks/TaskFormDialog";
 
 interface ManualWorkItem {
   tempId: string;
@@ -81,6 +83,12 @@ export default function JobWorkSchedule() {
   const [viewingSchedule, setViewingSchedule] = useState<any>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  
+  // Task Management State
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [taskDialogMode, setTaskDialogMode] = useState<'create' | 'edit'>('create');
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [parentTaskIdForSubtask, setParentTaskIdForSubtask] = useState<string | null>(null);
 
   // Fetch purchase orders
   const { data: purchaseOrders = [] } = useQuery({
@@ -501,6 +509,158 @@ export default function JobWorkSchedule() {
 
       queryClient.invalidateQueries({ queryKey: ["jobWorkSchedules"] });
       setIsViewDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Task Management Handlers
+  const handleAddTask = () => {
+    if (!viewingSchedule) return;
+    setTaskDialogMode('create');
+    setSelectedTask(null);
+    setParentTaskIdForSubtask(null);
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleAddSubTask = (parentTaskId: string) => {
+    setTaskDialogMode('create');
+    setSelectedTask(null);
+    setParentTaskIdForSubtask(parentTaskId);
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleEditTask = (task: any) => {
+    setTaskDialogMode('edit');
+    setSelectedTask(task);
+    setParentTaskIdForSubtask(null);
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm("Are you sure you want to delete this task?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("job_work_schedule_items")
+        .delete()
+        .eq("id", taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Task deleted successfully",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["jobWorkSchedules"] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateTaskStatus = async (taskId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from("job_work_schedule_items")
+        .update({ status })
+        .eq("id", taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Task marked as ${status.replace("-", " ")}`,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["jobWorkSchedules"] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTaskFormSubmit = async (values: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      if (!viewingSchedule) throw new Error("No schedule selected");
+
+      const taskData: any = {
+        job_work_schedule_id: viewingSchedule.id,
+        item_name: values.item_name,
+        quantity: values.quantity,
+        unit: values.unit || "unit",
+        availability_date: values.due_date || new Date().toISOString().split('T')[0],
+        due_date: values.due_date,
+        priority: values.priority,
+        estimated_hours: values.estimated_hours || 0,
+        skills_required: values.skills_required || [],
+        notes: values.notes || "",
+        status: "pending",
+        task_level: values.task_type === "subtask" ? 1 : 0,
+        parent_task_id: values.task_type === "subtask" ? (values.parent_task_id || parentTaskIdForSubtask) : null,
+        task_order: 0,
+      };
+
+      // Assign employee based on task type
+      if (values.task_type === "parent" && values.task_lead_id) {
+        taskData.task_lead_id = values.task_lead_id;
+      } else if (values.assigned_employee_id) {
+        taskData.assigned_employee_id = values.assigned_employee_id;
+        const employee = employees.find((e: any) => e.id === values.assigned_employee_id);
+        if (employee) {
+          taskData.assigned_employee_name = employee.name;
+        }
+      }
+
+      if (taskDialogMode === 'edit' && selectedTask) {
+        const { error } = await supabase
+          .from("job_work_schedule_items")
+          .update(taskData)
+          .eq("id", selectedTask.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Task updated successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from("job_work_schedule_items")
+          .insert([taskData]);
+
+        if (error) throw error;
+
+        // Update total_items count
+        await supabase
+          .from("job_work_schedules")
+          .update({ total_items: viewingSchedule.total_items + 1 })
+          .eq("id", viewingSchedule.id);
+
+        toast({
+          title: "Success",
+          description: "Task created successfully",
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["jobWorkSchedules"] });
+      setIsTaskDialogOpen(false);
+      setSelectedTask(null);
+      setParentTaskIdForSubtask(null);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1076,63 +1236,49 @@ export default function JobWorkSchedule() {
                 )}
               </div>
 
-              <div className="space-y-3">
-                <h3 className="font-semibold">Assigned Tasks</h3>
-                {viewingSchedule.job_work_schedule_items?.map((item: any) => (
-                  <Card key={item.id} className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="font-medium">{item.item_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Quantity: {item.quantity} {item.unit || "unit"}
-                          </p>
-                        </div>
-                        <Badge 
-                          variant={
-                            item.status === "completed" ? "default" : 
-                            item.status === "in-progress" ? "secondary" : 
-                            "outline"
-                          }
-                        >
-                          {item.status}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Availability:</span>{" "}
-                          <span>{new Date(item.availability_date).toLocaleDateString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Assigned to:</span>{" "}
-                          <span>{item.assigned_employee_name}</span>
-                        </div>
-                      </div>
-                      {item.status !== "completed" && (
-                        <div className="flex gap-2 mt-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateItemStatus(item.id, "in-progress")}
-                          >
-                            Mark In Progress
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => updateItemStatus(item.id, "completed")}
-                          >
-                            Mark Completed
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                ))}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">Tasks & Sub-Tasks</h3>
+                  <Button onClick={handleAddTask} size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Task
+                  </Button>
+                </div>
+
+                <TaskHierarchyView
+                  tasks={viewingSchedule.job_work_schedule_items || []}
+                  onAddSubTask={handleAddSubTask}
+                  onEditTask={handleEditTask}
+                  onDeleteTask={handleDeleteTask}
+                  onUpdateStatus={handleUpdateTaskStatus}
+                />
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Task Form Dialog */}
+      {viewingSchedule && (
+        <TaskFormDialog
+          open={isTaskDialogOpen}
+          onOpenChange={setIsTaskDialogOpen}
+          onSubmit={handleTaskFormSubmit}
+          scheduleId={viewingSchedule.id}
+          parentTasks={viewingSchedule.job_work_schedule_items?.filter((t: any) => !t.parent_task_id) || []}
+          initialValues={
+            selectedTask
+              ? {
+                  ...selectedTask,
+                  task_type: selectedTask.parent_task_id ? 'subtask' : 'parent',
+                }
+              : parentTaskIdForSubtask
+              ? { parent_task_id: parentTaskIdForSubtask, task_type: 'subtask' }
+              : undefined
+          }
+          mode={taskDialogMode}
+        />
+      )}
     </div>
   );
 }
