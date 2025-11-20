@@ -26,8 +26,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, MoreVertical, Trash2, Eye, CheckCircle2, Circle, X } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Eye, CheckCircle2, Circle, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -51,6 +58,7 @@ export default function Checklist() {
   // Create form state
   const [checklistTitle, setChecklistTitle] = useState("");
   const [checklistDescription, setChecklistDescription] = useState("");
+  const [selectedQuotationId, setSelectedQuotationId] = useState<string>("");
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
     { id: crypto.randomUUID(), text: "", completed: false, order: 0 }
   ]);
@@ -64,9 +72,27 @@ export default function Checklist() {
 
       const { data, error } = await (supabase as any)
         .from("checklists")
-        .select("*")
+        .select("*, quotations(quotation_number, customer_name)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch quotations for dropdown
+  const { data: quotations = [] } = useQuery({
+    queryKey: ["quotations"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await (supabase as any)
+        .from("quotations")
+        .select("id, quotation_number, customer_name")
+        .eq("user_id", user.id)
+        .order("quotation_date", { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -125,6 +151,7 @@ export default function Checklist() {
           user_id: user.id,
           title: checklistTitle,
           description: checklistDescription || null,
+          quotation_id: selectedQuotationId || null,
           items: validItems,
           total_items: totalItems,
           completed_items: completedItems,
@@ -219,6 +246,7 @@ export default function Checklist() {
   const resetForm = () => {
     setChecklistTitle("");
     setChecklistDescription("");
+    setSelectedQuotationId("");
     setChecklistItems([{ id: crypto.randomUUID(), text: "", completed: false, order: 0 }]);
   };
 
@@ -256,6 +284,7 @@ export default function Checklist() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
+                  <TableHead>Linked To</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Progress</TableHead>
                   <TableHead>Status</TableHead>
@@ -286,6 +315,16 @@ export default function Checklist() {
                   checklists.map((checklist: any) => (
                     <TableRow key={checklist.id}>
                       <TableCell className="font-medium">{checklist.title}</TableCell>
+                      <TableCell>
+                        {checklist.quotations ? (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span>{checklist.quotations.quotation_number}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Manual</span>
+                        )}
+                      </TableCell>
                       <TableCell className="max-w-[300px] truncate">
                         {checklist.description || "-"}
                       </TableCell>
@@ -362,6 +401,23 @@ export default function Checklist() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="quotation">Link to Quotation (Optional)</Label>
+              <Select value={selectedQuotationId} onValueChange={setSelectedQuotationId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a quotation or create manually" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Manual - No quotation</SelectItem>
+                  {quotations.map((quotation: any) => (
+                    <SelectItem key={quotation.id} value={quotation.id}>
+                      {quotation.quotation_number} - {quotation.customer_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
@@ -423,6 +479,18 @@ export default function Checklist() {
 
           {selectedChecklist && (
             <div className="space-y-4">
+              {selectedChecklist.quotations && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Linked to Quotation</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedChecklist.quotations.quotation_number} - {selectedChecklist.quotations.customer_name}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {selectedChecklist.description && (
                 <p className="text-sm text-muted-foreground">
                   {selectedChecklist.description}
