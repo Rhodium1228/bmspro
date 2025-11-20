@@ -452,18 +452,25 @@ export type Database = {
           assigned_employee_id: string | null
           assigned_employee_name: string | null
           availability_date: string
+          completion_percentage: number | null
           created_at: string
+          dependencies: Json | null
           due_date: string | null
           estimated_hours: number | null
           id: string
+          is_parent_task: boolean
           item_name: string
           job_work_schedule_id: string
           notes: string | null
+          parent_task_id: string | null
           priority: string | null
           quantity: number
           reassignment_history: Json | null
           skills_required: Json | null
           status: string
+          task_lead_id: string | null
+          task_level: number
+          task_order: number
           unit: string | null
           updated_at: string
         }
@@ -471,18 +478,25 @@ export type Database = {
           assigned_employee_id?: string | null
           assigned_employee_name?: string | null
           availability_date: string
+          completion_percentage?: number | null
           created_at?: string
+          dependencies?: Json | null
           due_date?: string | null
           estimated_hours?: number | null
           id?: string
+          is_parent_task?: boolean
           item_name: string
           job_work_schedule_id: string
           notes?: string | null
+          parent_task_id?: string | null
           priority?: string | null
           quantity: number
           reassignment_history?: Json | null
           skills_required?: Json | null
           status?: string
+          task_lead_id?: string | null
+          task_level?: number
+          task_order?: number
           unit?: string | null
           updated_at?: string
         }
@@ -490,18 +504,25 @@ export type Database = {
           assigned_employee_id?: string | null
           assigned_employee_name?: string | null
           availability_date?: string
+          completion_percentage?: number | null
           created_at?: string
+          dependencies?: Json | null
           due_date?: string | null
           estimated_hours?: number | null
           id?: string
+          is_parent_task?: boolean
           item_name?: string
           job_work_schedule_id?: string
           notes?: string | null
+          parent_task_id?: string | null
           priority?: string | null
           quantity?: number
           reassignment_history?: Json | null
           skills_required?: Json | null
           status?: string
+          task_lead_id?: string | null
+          task_level?: number
+          task_order?: number
           unit?: string | null
           updated_at?: string
         }
@@ -511,6 +532,20 @@ export type Database = {
             columns: ["job_work_schedule_id"]
             isOneToOne: false
             referencedRelation: "job_work_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_work_schedule_items_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "job_work_schedule_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_work_schedule_items_task_lead_id_fkey"
+            columns: ["task_lead_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
