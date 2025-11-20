@@ -125,7 +125,7 @@ export default function Checklist() {
           user_id: user.id,
           title: checklistTitle,
           description: checklistDescription || null,
-          items: validItems,
+          items: validItems as any,
           total_items: totalItems,
           completed_items: completedItems,
           status: completedItems === totalItems ? "completed" : completedItems > 0 ? "in-progress" : "pending"
@@ -162,7 +162,7 @@ export default function Checklist() {
       const { error } = await supabase
         .from("checklists")
         .update({
-          items: updatedItems,
+          items: updatedItems as any,
           completed_items: completedCount,
           status: completedCount === totalCount ? "completed" : completedCount > 0 ? "in-progress" : "pending"
         })
