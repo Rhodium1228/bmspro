@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Plus, Eye, Trash2, X, Calendar as CalendarIcon, FileText, List } from "lucide-react";
+import { Plus, Eye, Trash2, X, Calendar as CalendarIcon, FileText, List, Wrench } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -33,6 +33,7 @@ import { SmartEmployeeSelector } from "@/components/SmartEmployeeSelector";
 import { JobScheduleCalendar } from "@/components/JobScheduleCalendar";
 import { TaskHierarchyView } from "@/components/tasks/TaskHierarchyView";
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog";
+import { TemplateSelector } from "@/components/tasks/TemplateSelector";
 
 interface ManualWorkItem {
   tempId: string;
@@ -89,6 +90,7 @@ export default function JobWorkSchedule() {
   const [taskDialogMode, setTaskDialogMode] = useState<'create' | 'edit'>('create');
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [parentTaskIdForSubtask, setParentTaskIdForSubtask] = useState<string | null>(null);
+  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
 
   // Fetch purchase orders
   const { data: purchaseOrders = [] } = useQuery({
@@ -670,6 +672,86 @@ export default function JobWorkSchedule() {
     }
   };
 
+  const handleApplyTemplate = async (template: any) => {
+    try {
+      if (!viewingSchedule) throw new Error("No schedule selected");
+
+      const templateData = template.template_data[0];
+      if (!templateData || !templateData.sub_tasks) {
+        throw new Error("Invalid template data");
+      }
+
+      // Create parent task
+      const parentTaskData: any = {
+        job_work_schedule_id: viewingSchedule.id,
+        item_name: templateData.item_name,
+        quantity: templateData.quantity || 1,
+        unit: templateData.unit || "project",
+        availability_date: new Date().toISOString().split('T')[0],
+        priority: templateData.priority || "medium",
+        estimated_hours: templateData.estimated_hours || 0,
+        skills_required: templateData.skills_required || [],
+        status: "pending",
+        task_level: 0,
+        parent_task_id: null,
+        is_parent_task: true,
+        task_order: 0,
+      };
+
+      const { data: parentTask, error: parentError } = await supabase
+        .from("job_work_schedule_items")
+        .insert([parentTaskData])
+        .select()
+        .single();
+
+      if (parentError) throw parentError;
+
+      // Create sub-tasks
+      const subTasks = templateData.sub_tasks.map((subTask: any, index: number) => ({
+        job_work_schedule_id: viewingSchedule.id,
+        parent_task_id: parentTask.id,
+        item_name: subTask.item_name,
+        quantity: subTask.quantity || 1,
+        unit: subTask.unit || "task",
+        availability_date: new Date().toISOString().split('T')[0],
+        priority: subTask.priority || "medium",
+        estimated_hours: subTask.estimated_hours || 0,
+        skills_required: subTask.skills_required || [],
+        notes: subTask.notes || "",
+        status: "pending",
+        task_level: 1,
+        task_order: index,
+      }));
+
+      const { error: subTasksError } = await supabase
+        .from("job_work_schedule_items")
+        .insert(subTasks);
+
+      if (subTasksError) throw subTasksError;
+
+      // Update total_items count
+      await supabase
+        .from("job_work_schedules")
+        .update({ 
+          total_items: viewingSchedule.total_items + 1 + subTasks.length 
+        })
+        .eq("id", viewingSchedule.id);
+
+      toast({
+        title: "Success",
+        description: `Applied template "${template.name}" with ${subTasks.length} sub-tasks`,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["jobWorkSchedules"] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -1239,10 +1321,16 @@ export default function JobWorkSchedule() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-lg">Tasks & Sub-Tasks</h3>
-                  <Button onClick={handleAddTask} size="sm">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Task
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setIsTemplateSelectorOpen(true)} size="sm" variant="outline">
+                      <Wrench className="mr-2 h-4 w-4" />
+                      Apply Template
+                    </Button>
+                    <Button onClick={handleAddTask} size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Task
+                    </Button>
+                  </div>
                 </div>
 
                 <TaskHierarchyView
@@ -1257,6 +1345,13 @@ export default function JobWorkSchedule() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Template Selector */}
+      <TemplateSelector
+        open={isTemplateSelectorOpen}
+        onOpenChange={setIsTemplateSelectorOpen}
+        onSelectTemplate={handleApplyTemplate}
+      />
 
       {/* Task Form Dialog */}
       {viewingSchedule && (
