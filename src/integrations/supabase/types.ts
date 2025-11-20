@@ -135,6 +135,7 @@ export type Database = {
           description: string | null
           id: string
           items: Json
+          quotation_id: string | null
           status: string | null
           title: string
           total_items: number | null
@@ -147,6 +148,7 @@ export type Database = {
           description?: string | null
           id?: string
           items?: Json
+          quotation_id?: string | null
           status?: string | null
           title: string
           total_items?: number | null
@@ -159,13 +161,22 @@ export type Database = {
           description?: string | null
           id?: string
           items?: Json
+          quotation_id?: string | null
           status?: string | null
           title?: string
           total_items?: number | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "checklists_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
