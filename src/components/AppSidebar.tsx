@@ -15,6 +15,7 @@ import {
   UserCog,
   FileEdit,
   Building,
+  ClipboardCheck,
   ChevronDown,
   Briefcase,
   ShoppingCart,
@@ -101,6 +102,7 @@ import logo from "@/assets/bms-pro-logo.jpg";
       { title: "Sale Order", url: "/transactions/sale-order", icon: ShoppingCart },
       { title: "Purchase Order", url: "/transactions/purchase-order", icon: ShoppingBag },
       { title: "Job Work Schedule", url: "/transactions/job-work-schedule", icon: Briefcase },
+      { title: "Checklist", url: "/transactions/checklist", icon: ClipboardCheck },
     ],
   },
   {

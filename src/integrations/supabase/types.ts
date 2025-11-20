@@ -128,6 +128,45 @@ export type Database = {
         }
         Relationships: []
       }
+      checklists: {
+        Row: {
+          completed_items: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          items: Json
+          status: string | null
+          title: string
+          total_items: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_items?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          items?: Json
+          status?: string | null
+          title: string
+          total_items?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_items?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          items?: Json
+          status?: string | null
+          title?: string
+          total_items?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
