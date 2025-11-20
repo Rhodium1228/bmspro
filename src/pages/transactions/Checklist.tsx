@@ -62,7 +62,7 @@ export default function Checklist() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("checklists")
         .select("*")
         .eq("user_id", user.id)
@@ -119,13 +119,13 @@ export default function Checklist() {
       const totalItems = validItems.length;
       const completedItems = validItems.filter(item => item.completed).length;
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("checklists")
         .insert([{
           user_id: user.id,
           title: checklistTitle,
           description: checklistDescription || null,
-          items: validItems as any,
+          items: validItems,
           total_items: totalItems,
           completed_items: completedItems,
           status: completedItems === totalItems ? "completed" : completedItems > 0 ? "in-progress" : "pending"
@@ -159,10 +159,10 @@ export default function Checklist() {
       const completedCount = updatedItems.filter(item => item.completed).length;
       const totalCount = updatedItems.length;
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("checklists")
         .update({
-          items: updatedItems as any,
+          items: updatedItems,
           completed_items: completedCount,
           status: completedCount === totalCount ? "completed" : completedCount > 0 ? "in-progress" : "pending"
         })
@@ -189,7 +189,7 @@ export default function Checklist() {
     if (!confirm("Are you sure you want to delete this checklist?")) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("checklists")
         .delete()
         .eq("id", id);
