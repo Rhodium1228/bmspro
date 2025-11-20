@@ -58,7 +58,7 @@ export default function Checklist() {
   // Create form state
   const [checklistTitle, setChecklistTitle] = useState("");
   const [checklistDescription, setChecklistDescription] = useState("");
-  const [selectedQuotationId, setSelectedQuotationId] = useState<string>("");
+  const [selectedQuotationId, setSelectedQuotationId] = useState<string>("manual");
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
     { id: crypto.randomUUID(), text: "", completed: false, order: 0 }
   ]);
@@ -151,7 +151,7 @@ export default function Checklist() {
           user_id: user.id,
           title: checklistTitle,
           description: checklistDescription || null,
-          quotation_id: selectedQuotationId || null,
+          quotation_id: selectedQuotationId === "manual" ? null : selectedQuotationId || null,
           items: validItems,
           total_items: totalItems,
           completed_items: completedItems,
@@ -246,7 +246,7 @@ export default function Checklist() {
   const resetForm = () => {
     setChecklistTitle("");
     setChecklistDescription("");
-    setSelectedQuotationId("");
+    setSelectedQuotationId("manual");
     setChecklistItems([{ id: crypto.randomUUID(), text: "", completed: false, order: 0 }]);
   };
 
@@ -407,7 +407,7 @@ export default function Checklist() {
                   <SelectValue placeholder="Select a quotation or create manually" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Manual - No quotation</SelectItem>
+                  <SelectItem value="manual">Manual - No quotation</SelectItem>
                   {quotations.map((quotation: any) => (
                     <SelectItem key={quotation.id} value={quotation.id}>
                       {quotation.quotation_number} - {quotation.customer_name}
